@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Swift / Xcode
+.build/
+DerivedData/
+*.xcworkspace/
+*.xcuserdata/
+*.xccheckout
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+
+# SwiftPM
+.swiftpm/
+
+# Logs
+*.log
+

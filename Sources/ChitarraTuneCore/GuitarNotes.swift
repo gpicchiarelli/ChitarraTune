@@ -1,0 +1,51 @@
+import Foundation
+
+public enum GuitarString: CaseIterable, Sendable {
+    case e2, a2, d3, g3, b3, e4
+
+    public var name: String {
+        switch self {
+        case .e2: return "E2"
+        case .a2: return "A2"
+        case .d3: return "D3"
+        case .g3: return "G3"
+        case .b3: return "B3"
+        case .e4: return "E4"
+        }
+    }
+
+    public var frequency: Double {
+        switch self {
+        case .e2: return 82.4069
+        case .a2: return 110.0
+        case .d3: return 146.832
+        case .g3: return 196.0
+        case .b3: return 246.942
+        case .e4: return 329.628
+        }
+    }
+}
+
+public struct TuningEstimate: Sendable {
+    public let frequency: Double
+    public let clarity: Double
+    public let nearestString: GuitarString
+    public let cents: Double
+
+    public init(frequency: Double, clarity: Double, nearestString: GuitarString, cents: Double) {
+        self.frequency = frequency
+        self.clarity = clarity
+        self.nearestString = nearestString
+        self.cents = cents
+    }
+}
+
+@inlinable
+public func nearestGuitarString(for frequency: Double) -> (string: GuitarString, cents: Double) {
+    let best = GuitarString.allCases.min { a, b in
+        abs(log2(frequency / a.frequency)) < abs(log2(frequency / b.frequency))
+    } ?? .e2
+    let cents = 1200.0 * log2(frequency / best.frequency)
+    return (best, cents)
+}
+

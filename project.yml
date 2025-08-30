@@ -1,0 +1,60 @@
+name: ChitarraTune
+options:
+  indentWidth: 2
+packages:
+  ChitarraTuneCore:
+    path: .
+targets:
+  ChitarraTune iOS:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Apps/Shared
+      - path: Apps/iOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.picchiarelli.ChitarraTune
+        INFOPLIST_FILE: Apps/iOS/Info.plist
+    dependencies:
+      - package: ChitarraTuneCore
+        product: ChitarraTuneCore
+
+  ChitarraTune macOS:
+    type: application
+    platform: macOS
+    deploymentTarget: "12.0"
+    sources:
+      - path: Apps/Shared
+      - path: Apps/macOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.picchiarelli.ChitarraTune-macOS
+        INFOPLIST_FILE: Apps/macOS/Info.plist
+    dependencies:
+      - package: ChitarraTuneCore
+        product: ChitarraTuneCore
+
+  ChitarraTune tvOS:
+    type: application
+    platform: tvOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Apps/Shared
+      - path: Apps/tvOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.picchiarelli.ChitarraTune-tvOS
+        INFOPLIST_FILE: Apps/tvOS/Info.plist
+    dependencies:
+      - package: ChitarraTuneCore
+        product: ChitarraTuneCore
+
+schemes:
+  ChitarraTune-All:
+    build:
+      targets:
+        ChitarraTune iOS: [run]
+        ChitarraTune macOS: [run]
+        ChitarraTune tvOS: [run]
+
