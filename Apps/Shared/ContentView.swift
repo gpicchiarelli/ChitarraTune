@@ -47,9 +47,11 @@ struct ContentView: View {
 
             HStack(spacing: 16) {
                 let freq = audio.latestEstimate?.frequency ?? 0
-                Text("\(freq, format: .number.precision(.fractionLength(2))) \(String(localized: \"units.hz\"))")
+                Text(freq, format: .number.precision(.fractionLength(2)))
+                Text("units.hz")
                 if let c = audio.latestEstimate?.cents {
-                    Text("\(c, format: .number.sign(strategy: .always).precision(.fractionLength(1))) \(String(localized: \"units.cents\"))")
+                    Text(c, format: .number.sign(strategy: .always()).precision(.fractionLength(1)))
+                    Text("units.cents")
                 }
             }
             .font(.headline)
@@ -82,11 +84,12 @@ struct ContentView: View {
                     .pickerStyle(.segmented)
                 }
 
-                HStack {
+                HStack(spacing: 8) {
                     Text("A4")
                     Slider(value: $audio.referenceA, in: 415...466, step: 1)
-                    Text("\(audio.referenceA, format: .number.precision(.fractionLength(0))) \(String(localized: \"units.hz\"))")
-                        .frame(width: 80, alignment: .trailing)
+                    Text(audio.referenceA, format: .number.precision(.fractionLength(0)))
+                        .frame(width: 50, alignment: .trailing)
+                    Text("units.hz")
                 }
             }
         }
