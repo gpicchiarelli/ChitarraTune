@@ -1,25 +1,13 @@
 name: ChitarraTune
 options:
   indentWidth: 2
+  knownRegions:
+    - it
+    - en
 packages:
   ChitarraTuneCore:
     path: .
 targets:
-  ChitarraTune iOS:
-    type: application
-    platform: iOS
-    deploymentTarget: "15.0"
-    sources:
-      - path: Apps/Shared
-      - path: Apps/iOS
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.picchiarelli.ChitarraTune
-        INFOPLIST_FILE: Apps/iOS/Info.plist
-    dependencies:
-      - package: ChitarraTuneCore
-        product: ChitarraTuneCore
-
   ChitarraTune macOS:
     type: application
     platform: macOS
@@ -27,34 +15,20 @@ targets:
     sources:
       - path: Apps/Shared
       - path: Apps/macOS
+      - path: Apps/Shared/Localization
+        type: folder
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.picchiarelli.ChitarraTune-macOS
+        PRODUCT_BUNDLE_IDENTIFIER: com.picchiarelli.ChitarraTune
         INFOPLIST_FILE: Apps/macOS/Info.plist
-    dependencies:
-      - package: ChitarraTuneCore
-        product: ChitarraTuneCore
-
-  ChitarraTune tvOS:
-    type: application
-    platform: tvOS
-    deploymentTarget: "15.0"
-    sources:
-      - path: Apps/Shared
-      - path: Apps/tvOS
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.picchiarelli.ChitarraTune-tvOS
-        INFOPLIST_FILE: Apps/tvOS/Info.plist
+        DEVELOPMENT_LANGUAGE: it
+        CFBundleDevelopmentRegion: it
     dependencies:
       - package: ChitarraTuneCore
         product: ChitarraTuneCore
 
 schemes:
-  ChitarraTune-All:
+  ChitarraTune:
     build:
       targets:
-        ChitarraTune iOS: [run]
         ChitarraTune macOS: [run]
-        ChitarraTune tvOS: [run]
-

@@ -1,0 +1,7 @@
+/* UI strings - English */
+"app.title" = "ChitarraTune";
+"mic.unavailable" = "Microphone unavailable";
+"mic.instructions" = "Allow microphone access in Settings.";
+"tuning.low" = "low";
+"tuning.high" = "high";
+

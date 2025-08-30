@@ -6,33 +6,17 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-#if os(tvOS)
-            if !audio.inputAvailable {
-                VStack(spacing: 16) {
-                    Text("ChitarraTune")
-                        .font(.largeTitle).bold()
-                    Text("tvOS non supporta l'ingresso microfono.")
-                        .multilineTextAlignment(.center)
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-            } else {
-                tunerView
-            }
-#else
             if audio.inputAvailable {
                 tunerView
             } else {
                 VStack(spacing: 12) {
-                    Text("Microfono non disponibile")
+                    Text("mic.unavailable")
                         .font(.title2).bold()
-                    Text("Concedi l'accesso al microfono nelle Impostazioni.")
+                    Text("mic.instructions")
                         .foregroundColor(.secondary)
                 }
                 .padding()
             }
-#endif
         }
         .onAppear { audio.start() }
         .onDisappear { audio.stop() }
@@ -40,7 +24,7 @@ struct ContentView: View {
 
     private var tunerView: some View {
         VStack(spacing: 24) {
-            Text("ChitarraTune")
+            Text("app.title")
                 .font(.title2).bold()
 
             Text(audio.latestEstimate?.nearestString.name ?? "—")
@@ -105,9 +89,9 @@ struct NeedleView: View {
 
                 // Labels
                 HStack {
-                    Text("basso").font(.caption)
+                    Text("tuning.low").font(.caption)
                     Spacer()
-                    Text("alto").font(.caption)
+                    Text("tuning.high").font(.caption)
                 }
                 .foregroundColor(.secondary)
             }
@@ -130,4 +114,3 @@ struct ContentView_Previews: PreviewProvider {
     }
 }
 #endif
-
