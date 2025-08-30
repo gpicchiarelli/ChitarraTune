@@ -23,6 +23,7 @@ targets:
         INFOPLIST_FILE: Apps/macOS/Info.plist
         DEVELOPMENT_LANGUAGE: it
         CFBundleDevelopmentRegion: it
+        CODE_SIGN_ENTITLEMENTS: Apps/macOS/ChitarraTune.entitlements
     dependencies:
       - package: ChitarraTuneCore
         product: ChitarraTuneCore

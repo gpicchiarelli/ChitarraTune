@@ -3,6 +3,11 @@ import ChitarraTuneCore
 
 struct ContentView: View {
     @StateObject private var audio = AudioEngineManager()
+    @State private var isAuto: Bool = true
+    @State private var manualString: GuitarString = .e2
+    @AppStorage("A4") private var storedA4: Double = 440
+    @AppStorage("isAutoMode") private var storedIsAuto: Bool = true
+    @AppStorage("manualStringName") private var storedManualStringName: String = "E2"
 
     var body: some View {
         Group {
@@ -27,6 +32,11 @@ struct ContentView: View {
             Text("app.title")
                 .font(.title2).bold()
 
+            if audio.isInTune {
+                Text("status.inTune")
+                    .foregroundColor(.green)
+            }
+
             Text(audio.latestEstimate?.nearestString.name ?? "—")
                 .font(.system(size: 72, weight: .bold, design: .rounded))
                 .minimumScaleFactor(0.5)
@@ -34,18 +44,77 @@ struct ContentView: View {
 
             let cents = audio.latestEstimate?.cents ?? 0
             NeedleView(cents: cents)
-                .frame(height: 120)
+                .frame(height: 140)
 
             HStack(spacing: 16) {
-                Text(String(format: "%.2f Hz", audio.latestEstimate?.frequency ?? 0))
+                let freq = audio.latestEstimate?.frequency ?? 0
+                Text("\(freq, format: .number.precision(.fractionLength(2))) \(String(localized: \"units.hz\"))")
                 if let c = audio.latestEstimate?.cents {
-                    Text(String(format: "%+.1f cents", c))
+                    Text("\(c, format: .number.sign(strategy: .always).precision(.fractionLength(1))) \(String(localized: \"units.cents\"))")
                 }
             }
             .font(.headline)
             .foregroundColor(.secondary)
+
+            Divider()
+
+            // Controls
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Button(audio.isRunning ? String(localized: "controls.stop") : String(localized: "controls.start")) {
+                        audio.isRunning ? audio.stop() : audio.start()
+                    }
+                }
+
+                Text("controls.mode").font(.headline)
+                Picker("controls.mode", selection: $isAuto) {
+                    Text("mode.auto").tag(true)
+                    Text("mode.manual").tag(false)
+                }
+                .pickerStyle(.segmented)
+
+                if !isAuto {
+                    Text("controls.string").font(.headline)
+                    Picker("controls.string", selection: $manualString) {
+                        ForEach(GuitarString.allCases, id: \.self) { s in
+                            Text(s.name).tag(s)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                HStack {
+                    Text("A4")
+                    Slider(value: $audio.referenceA, in: 415...466, step: 1)
+                    Text("\(audio.referenceA, format: .number.precision(.fractionLength(0))) \(String(localized: \"units.hz\"))")
+                        .frame(width: 80, alignment: .trailing)
+                }
+            }
         }
         .padding()
+        .onChange(of: isAuto) { newValue in
+            audio.mode = newValue ? .auto : .manual(manualString)
+            storedIsAuto = newValue
+        }
+        .onChange(of: manualString) { newValue in
+            if !isAuto { audio.mode = .manual(newValue) }
+            storedManualStringName = newValue.name
+        }
+        .onChange(of: audio.referenceA) { newValue in storedA4 = newValue }
+        .onAppear {
+            switch audio.mode {
+            case .auto:
+                isAuto = storedIsAuto
+            case .manual(let s):
+                isAuto = storedIsAuto
+                manualString = s
+            }
+            audio.referenceA = storedA4
+            if let restored = GuitarString.allCases.first(where: { $0.name == storedManualStringName }) {
+                manualString = restored
+                if !isAuto { audio.mode = .manual(restored) }
+            }
+        }
     }
 }
 

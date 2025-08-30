@@ -14,7 +14,8 @@ public enum GuitarString: CaseIterable, Sendable {
         }
     }
 
-    public var frequency: Double {
+    /// Base frequency with A4 = 440 Hz
+    public var baseFrequency: Double {
         switch self {
         case .e2: return 82.4069
         case .a2: return 110.0
@@ -41,11 +42,17 @@ public struct TuningEstimate: Sendable {
 }
 
 @inlinable
-public func nearestGuitarString(for frequency: Double) -> (string: GuitarString, cents: Double) {
-    let best = GuitarString.allCases.min { a, b in
-        abs(log2(frequency / a.frequency)) < abs(log2(frequency / b.frequency))
-    } ?? .e2
-    let cents = 1200.0 * log2(frequency / best.frequency)
-    return (best, cents)
+public func scaledFrequency(for string: GuitarString, referenceA: Double = 440.0) -> Double {
+    let scale = referenceA / 440.0
+    return string.baseFrequency * scale
 }
 
+@inlinable
+public func nearestGuitarString(for frequency: Double, referenceA: Double = 440.0) -> (string: GuitarString, cents: Double) {
+    let best = GuitarString.allCases.min { a, b in
+        abs(log2(frequency / scaledFrequency(for: a, referenceA: referenceA)))
+        < abs(log2(frequency / scaledFrequency(for: b, referenceA: referenceA)))
+    } ?? .e2
+    let cents = 1200.0 * log2(frequency / scaledFrequency(for: best, referenceA: referenceA))
+    return (best, cents)
+}

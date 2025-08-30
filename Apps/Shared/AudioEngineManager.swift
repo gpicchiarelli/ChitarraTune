@@ -7,6 +7,11 @@ final class AudioEngineManager: ObservableObject {
     @Published var latestEstimate: TuningEstimate? = nil
     @Published var isRunning: Bool = false
     @Published var inputAvailable: Bool = true
+    @Published var isInTune: Bool = false
+    @Published var referenceA: Double = 440.0
+
+    enum Mode: Equatable { case auto, manual(GuitarString) }
+    @Published var mode: Mode = .auto
 
     private let engine = AVAudioEngine()
     private var detector: PitchDetector?
@@ -14,27 +19,31 @@ final class AudioEngineManager: ObservableObject {
 
     private var sampleBuffer: [Float] = []
     private let analysisWindow: Int = 4096
+    private var smoothedCents: Double = 0
+    private let smoothingAlpha: Double = 0.25
+    private var stableCount: Int = 0
+    private let stableThreshold: Int = 6
+    private let noiseGateRMS: Double = 0.005
 
     func start() {
-#if os(tvOS)
-        // tvOS non ha input microfono accessibile alle app
-        inputAvailable = false
-        isRunning = false
-        return
-#else
-        do {
-#if os(iOS)
-            let session = AVAudioSession.sharedInstance()
-            do {
-                try session.setCategory(.record, mode: .measurement, options: [])
-                try session.setActive(true, options: [])
-            } catch {
-                DispatchQueue.main.async { [weak self] in
-                    self?.inputAvailable = false
+        // Check permission
+        let status = AVCaptureDevice.authorizationStatus(for: .audio)
+        if status == .denied || status == .restricted {
+            self.inputAvailable = false
+            self.isRunning = false
+            return
+        }
+
+        if status == .notDetermined {
+            AVCaptureDevice.requestAccess(for: .audio) { granted in
+                DispatchQueue.main.async {
+                    if granted { self.start() } else { self.inputAvailable = false; self.isRunning = false }
                 }
-                return
             }
-#endif
+            return
+        }
+
+        do {
             let input = engine.inputNode
             let format = input.inputFormat(forBus: 0)
             let sr = Double(format.sampleRate)
@@ -63,17 +72,11 @@ final class AudioEngineManager: ObservableObject {
                 self?.inputAvailable = false
             }
         }
-#endif
     }
 
     func stop() {
-#if !os(tvOS)
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
-#if os(iOS)
-        try? AVAudioSession.sharedInstance().setActive(false, options: [])
-#endif
-#endif
         DispatchQueue.main.async {
             self.isRunning = false
         }
@@ -91,18 +94,43 @@ final class AudioEngineManager: ObservableObject {
         let startIndex = sampleBuffer.count - analysisWindow
         let window = Array(sampleBuffer[startIndex..<sampleBuffer.count])
 
+        // Noise gate by RMS
+        var sumSq: Double = 0
+        for s in window { let d = Double(s); sumSq += d * d }
+        let rms = sqrt(sumSq / Double(window.count))
+        if rms < noiseGateRMS { return }
+
         if let pitch = detector.estimateFrequency(samples: window) {
-            let nearest = nearestGuitarString(for: pitch.frequency)
-            let estimate = TuningEstimate(
-                frequency: pitch.frequency,
-                clarity: pitch.clarity,
-                nearestString: nearest.string,
-                cents: nearest.cents
-            )
-            DispatchQueue.main.async {
-                self.latestEstimate = estimate
+            let forced: GuitarString? = {
+                switch mode {
+                case .auto: return nil
+                case .manual(let s): return s
+                }
+            }()
+            if let estimate = estimateGuitarTuning(samples: window, sampleRate: detector.sampleRate, referenceA: referenceA, forcedString: forced) {
+                // Smoothing on cents
+                if latestEstimate == nil { smoothedCents = estimate.cents }
+                smoothedCents = smoothingAlpha * estimate.cents + (1 - smoothingAlpha) * smoothedCents
+
+                let smoothEstimate = TuningEstimate(
+                    frequency: estimate.frequency,
+                    clarity: estimate.clarity,
+                    nearestString: estimate.nearestString,
+                    cents: smoothedCents
+                )
+
+                // Stability detection
+                if abs(smoothedCents) < 5 {
+                    stableCount = min(stableThreshold, stableCount + 1)
+                } else {
+                    stableCount = 0
+                }
+
+                DispatchQueue.main.async {
+                    self.latestEstimate = smoothEstimate
+                    self.isInTune = (self.stableCount >= self.stableThreshold)
+                }
             }
         }
     }
 }
-

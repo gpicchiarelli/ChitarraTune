@@ -94,10 +94,19 @@ public struct PitchDetector: Sendable {
 }
 
 // Helper: full tuning estimate for guitar
-public func estimateGuitarTuning(samples: [Float], sampleRate: Double) -> TuningEstimate? {
+public func estimateGuitarTuning(
+    samples: [Float],
+    sampleRate: Double,
+    referenceA: Double = 440.0,
+    forcedString: GuitarString? = nil
+) -> TuningEstimate? {
     let detector = PitchDetector(sampleRate: sampleRate)
     guard let res = detector.estimateFrequency(samples: samples) else { return nil }
-    let nearest = nearestGuitarString(for: res.frequency)
-    return TuningEstimate(frequency: res.frequency, clarity: res.clarity, nearestString: nearest.string, cents: nearest.cents)
+    if let forced = forcedString {
+        let cents = 1200.0 * log2(res.frequency / scaledFrequency(for: forced, referenceA: referenceA))
+        return TuningEstimate(frequency: res.frequency, clarity: res.clarity, nearestString: forced, cents: cents)
+    } else {
+        let nearest = nearestGuitarString(for: res.frequency, referenceA: referenceA)
+        return TuningEstimate(frequency: res.frequency, clarity: res.clarity, nearestString: nearest.string, cents: nearest.cents)
+    }
 }
-

@@ -4,4 +4,12 @@
 "mic.instructions" = "Allow microphone access in Settings.";
 "tuning.low" = "low";
 "tuning.high" = "high";
-
+"status.inTune" = "In tune!";
+"controls.mode" = "Mode";
+"mode.auto" = "Auto";
+"mode.manual" = "Manual";
+"controls.string" = "String";
+"units.hz" = "Hz";
+"units.cents" = "cents";
+"controls.start" = "Start";
+"controls.stop" = "Stop";
