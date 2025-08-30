@@ -1,5 +1,4 @@
 import SwiftUI
-import ChitarraTuneCore
 
 struct ContentView: View {
     @StateObject private var audio = AudioEngineManager()
