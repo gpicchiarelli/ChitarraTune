@@ -23,7 +23,7 @@ Caratteristiche principali
 - Sicurezza e privacy: sandbox, richiesta microfono, elaborazione interamente locale.
 - Licenza: BSD 3‑Clause.
 
-Sito: https://chitarratune.github.io
+Sito: https://gpicchiarelli.github.io/chitarratune
 
 ## Requisiti
 - Xcode 15 o successivo
@@ -49,10 +49,9 @@ Note
 - Le App Icons si generano con `scripts/generate_appicons.sh` partendo da un PNG sorgente (vedi `doc/appicon.md`).
 
 ## Sito Web (GitHub Pages)
-- Cartella `chitarratune.github.io`: sito statico pronto per GitHub Pages.
-- Istruzioni dettagliate: `chitarratune.github.io/README.md`.
- - Branding: `doc/branding.md`
- - Licenza pubblica: `chitarratune.github.io/license.html`
+- Cartella `docs/`: sito statico mostrato su GitHub Pages (impostazione “Pages → Build from /docs”).
+- URL: https://gpicchiarelli.github.io/chitarratune
+- Branding: `doc/branding.md`
 
 ## Localizzazione
 - UI: chiavi in `Apps/Shared/Localization/*/Localizable.strings`

@@ -12,7 +12,7 @@ struct ChitarraTuneApp: App {
                 Button("Informazioni su ChitarraTune") { showAboutPanel() }
             }
             CommandGroup(after: .help) {
-                if let url = URL(string: "https://chitarratune.github.io") {
+                if let url = URL(string: "https://gpicchiarelli.github.io/chitarratune") {
                     Link("Sito Web", destination: url)
                 }
                 Button("Licenza (BSD-3)") { showLicensePanel() }

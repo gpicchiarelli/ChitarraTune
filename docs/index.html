@@ -6,43 +6,27 @@
   <meta name="color-scheme" content="light dark">
   <title>ChitarraTune — Accordatore per macOS</title>
   <meta name="description" content="ChitarraTune: accordatore per chitarra su macOS. DSP in Swift, modalità Auto/Manuale, calibrazione A4, multi‑lingua.">
-  <link rel="canonical" href="https://chitarratune.github.io/">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f6f7">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0c0d">
-
-  <!-- Open Graph / Twitter -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://chitarratune.github.io/">
-  <meta property="og:title" content="ChitarraTune — Accordatore per macOS">
-  <meta property="og:description" content="Accordatore per chitarra su macOS. DSP in Swift, Auto/Manuale, calibrazione A4, multi‑lingua.">
-  <meta property="og:image" content="https://chitarratune.github.io/chitarratune.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ChitarraTune — Accordatore per macOS">
-  <meta name="twitter:description" content="Accordatore per chitarra su macOS. DSP in Swift, Auto/Manuale, calibrazione A4, multi‑lingua.">
-  <meta name="twitter:image" content="https://chitarratune.github.io/chitarratune.png">
-
-  <link rel="icon" href="assets/img/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" type="image/png" href="assets/img/app-icon.png">
 </head>
 <body>
-  <a class="skip-link" href="#main">Salta al contenuto</a>
   <header class="nav">
     <div class="container nav-inner">
       <div class="brand">
-        <img src="assets/img/app-icon.svg" alt="ChitarraTune" class="brand-icon" width="28" height="28">
+        <img src="assets/img/app-icon.png" onerror="this.src='assets/img/app-icon.svg'" alt="ChitarraTune" class="brand-icon" width="28" height="28">
         <span class="brand-name">ChitarraTune</span>
       </div>
       <nav>
-        <a href="https://github.com/gpicchiarelli/ChitarraTune" data-github="https://github.com/gpicchiarelli/ChitarraTune">GitHub</a>
+        <a href="https://github.com/gpicchiarelli/ChitarraTune">GitHub</a>
         <a href="license.html">Licenza</a>
       </nav>
     </div>
   </header>
 
-  <main id="main">
+  <main>
     <section class="hero one">
       <div class="container hero-inner">
-        <img src="assets/img/app-icon.svg" alt="Icona ChitarraTune" class="hero-icon" width="128" height="128">
+        <img src="assets/img/app-icon.png" onerror="this.src='assets/img/app-icon.svg'" alt="Icona ChitarraTune" class="hero-icon" width="128" height="128">
         <h1>Accordatore per macOS</h1>
         <p class="subtitle">Rilevamento in tempo reale — Auto/Manuale • A4 • Accordature.</p>
         <div class="badges" id="badges" data-repo="gpicchiarelli/ChitarraTune">
@@ -54,8 +38,8 @@
           <img data-badge="platform" alt="Platform" src="#">
         </div>
         <div class="cta">
-          <a class="btn primary lg" id="download-btn" href="https://github.com/gpicchiarelli/ChitarraTune/releases/latest" data-download="https://github.com/gpicchiarelli/ChitarraTune/releases/latest">Scarica l’ultima versione</a>
-          <a class="btn" id="github-btn" href="https://github.com/gpicchiarelli/ChitarraTune" data-github="https://github.com/gpicchiarelli/ChitarraTune">GitHub</a>
+          <a class="btn primary lg" id="download-btn" href="https://github.com/gpicchiarelli/ChitarraTune/releases/latest">Scarica l’ultima versione</a>
+          <a class="btn" href="https://github.com/gpicchiarelli/ChitarraTune">Repository</a>
         </div>
         <p class="micro"><span id="ver">Versione</span> • BSD‑3 • macOS 12+ • Tutto in locale</p>
       </div>
@@ -66,28 +50,12 @@
     <div class="container footer-inner">
       <div>© <span id="year"></span> ChitarraTune — <a href="license.html">Licenza</a></div>
       <div class="footer-links">
-        <a id="github-foot" href="https://github.com/gpicchiarelli/ChitarraTune" data-github="https://github.com/gpicchiarelli/ChitarraTune">GitHub</a>
+        <a href="https://github.com/gpicchiarelli/ChitarraTune">GitHub</a>
       </div>
     </div>
   </footer>
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "ChitarraTune",
-    "operatingSystem": "macOS",
-    "applicationCategory": "MultimediaApplication",
-    "description": "Accordatore per chitarra su macOS con rilevamento in tempo reale, modalità Auto/Manuale e calibrazione A4.",
-    "url": "https://chitarratune.github.io/",
-    "softwareVersion": "latest",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "EUR"
-    }
-  }
-  </script>
-  <script defer src="assets/js/main.js"></script>
+
+  <script src="assets/js/main.js"></script>
 </body>
 </html>
+
