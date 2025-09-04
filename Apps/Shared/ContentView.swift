@@ -30,6 +30,7 @@ struct ContentView: View {
     }
 
     private var tunerView: some View {
+        ScrollView {
         VStack(spacing: 24) {
             Text("app.title")
                 .font(.title2).bold()
@@ -51,8 +52,8 @@ struct ContentView: View {
                 .lineLimit(1)
 
             let cents = audio.latestEstimate?.cents ?? 0
-            NeedleView(cents: cents)
-                .frame(height: 140)
+            TuningBarView(cents: cents)
+                .frame(height: 120)
 
             HStack(spacing: 16) {
                 let freq = audio.latestEstimate?.frequency ?? 0
@@ -84,6 +85,8 @@ struct ContentView: View {
                         audio.isRunning ? audio.stop() : audio.start()
                     }
                 }
+
+                
                 GroupBox(String(localized: "controls.mode")) {
                     VStack(alignment: .leading) {
                         Picker("controls.mode", selection: $isAuto) {
@@ -177,6 +180,8 @@ struct ContentView: View {
             }
         }
         .padding()
+        }
+        .frame(minWidth: 720, minHeight: 720)
         .onChange(of: isAuto) { newValue in
             audio.mode = newValue ? .auto : .manual(manualIndex)
             storedIsAuto = newValue
@@ -225,45 +230,53 @@ struct ContentView: View {
     }
 }
 
-struct NeedleView: View {
-    let cents: Double // -50..+50 typical display
+// MARK: - Alternative Bar View
 
-    private var clamped: Double {
-        max(-100, min(100, cents))
-    }
+struct TuningBarView: View {
+    let cents: Double // -100..+100 typical
+
+    private var clamped: Double { max(-100, min(100, cents)) }
 
     var body: some View {
         GeometryReader { geo in
             let width = geo.size.width
             let height = geo.size.height
             let midX = width / 2
-            let midY = height * 0.8
 
             ZStack {
-                // Scale
-                Path { path in
-                    path.move(to: CGPoint(x: 16, y: midY))
-                    path.addLine(to: CGPoint(x: width - 16, y: midY))
-                }
-                .stroke(Color.secondary.opacity(0.4), lineWidth: 3)
+                // Base track
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.secondary.opacity(0.15))
+                    .frame(height: height * 0.35)
+                    .frame(maxHeight: .infinity, alignment: .center)
 
-                // Center marker
-                Path { path in
-                    path.move(to: CGPoint(x: midX, y: midY - 20))
-                    path.addLine(to: CGPoint(x: midX, y: midY + 20))
-                }
-                .stroke(Color.secondary, style: StrokeStyle(lineWidth: 2, dash: [4,4]))
+                // Green in-tune zone (±5 cents)
+                let zoneWidth = width * 0.10 // ~10% width
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.green.opacity(0.25))
+                    .frame(width: zoneWidth, height: height * 0.35)
+                    .position(x: midX, y: height/2)
 
-                // Needle
+                // Tick marks (-50, -25, 0, +25, +50)
+                let ticks: [Double] = [-50, -25, 0, 25, 50]
+                ForEach(Array(ticks.enumerated()), id: \.offset) { _, t in
+                    let x = midX + CGFloat(t/100) * (width/2 - 12)
+                    Path { p in
+                        p.move(to: CGPoint(x: x, y: height*0.25))
+                        p.addLine(to: CGPoint(x: x, y: height*0.75))
+                    }
+                    .stroke(t == 0 ? Color.secondary : Color.secondary.opacity(0.6), lineWidth: t == 0 ? 2 : 1)
+                }
+
+                // Moving indicator
                 let normalized = clamped / 100.0 // -1..1
-                let needleX = midX + CGFloat(normalized) * (width/2 - 24)
-                Path { path in
-                    path.move(to: CGPoint(x: midX, y: midY))
-                    path.addLine(to: CGPoint(x: needleX, y: 24))
-                }
-                .stroke(color(for: clamped), lineWidth: 4)
+                let indicatorX = midX + CGFloat(normalized) * (width/2 - 12)
+                Capsule()
+                    .fill(color(for: clamped))
+                    .frame(width: 6, height: height * 0.6)
+                    .position(x: indicatorX, y: height/2)
 
-                // Labels
+                // Edge labels
                 HStack {
                     Text("tuning.low").font(.caption)
                     Spacer()

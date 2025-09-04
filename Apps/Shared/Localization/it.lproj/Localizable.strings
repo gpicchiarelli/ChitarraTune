@@ -29,3 +29,6 @@
 "controls.reset" = "Reset";
 "controls.fine" = "Fine";
 "controls.audio" = "Audio";
+"controls.display" = "Visualizzazione";
+"display.needle" = "Ago";
+"display.bar" = "Barra";

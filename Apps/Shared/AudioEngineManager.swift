@@ -138,7 +138,7 @@ final class AudioEngineManager: ObservableObject {
         DispatchQueue.main.async { self.isSignalWeak = (rms < self.noiseGateRMS) }
         if rms < noiseGateRMS { return }
 
-        if let pitch = detector.estimateFrequency(samples: window) {
+        do {
             let forcedIndex: Int? = {
                 switch mode {
                 case .auto: return nil
@@ -207,26 +207,10 @@ final class AudioEngineManager: ObservableObject {
             if !hasInput { continue }
 
             // Name
-            var nameAddr = AudioObjectPropertyAddress(
-                mSelector: kAudioObjectPropertyName,
-                mScope: kAudioObjectPropertyScopeGlobal,
-                mElement: kAudioObjectPropertyElementMain
-            )
-            var cfName = "" as CFString
-            var nameSize = UInt32(MemoryLayout<CFString>.size)
-            _ = AudioObjectGetPropertyData(dev, &nameAddr, 0, nil, &nameSize, &cfName)
-            let name = cfName as String
+            let name = getCFStringProperty(dev, kAudioObjectPropertyName) ?? ""
 
             // UID
-            var uidAddr = AudioObjectPropertyAddress(
-                mSelector: kAudioDevicePropertyDeviceUID,
-                mScope: kAudioObjectPropertyScopeGlobal,
-                mElement: kAudioObjectPropertyElementMain
-            )
-            var cfUID = "" as CFString
-            var uidSize = UInt32(MemoryLayout<CFString>.size)
-            if AudioObjectGetPropertyData(dev, &uidAddr, 0, nil, &uidSize, &cfUID) == noErr {
-                let uid = cfUID as String
+            if let uid = getCFStringProperty(dev, kAudioDevicePropertyDeviceUID) {
                 devices.append(AudioInputDevice(id: uid, name: name, deviceID: dev))
             }
         }
@@ -308,17 +292,22 @@ final class AudioEngineManager: ObservableObject {
     }
 
     private func deviceName(for deviceID: AudioDeviceID) -> String? {
-        var nameAddr = AudioObjectPropertyAddress(
-            mSelector: kAudioObjectPropertyName,
+        return getCFStringProperty(deviceID, kAudioObjectPropertyName)
+    }
+
+    private func getCFStringProperty(_ objectID: AudioObjectID, _ selector: AudioObjectPropertySelector) -> String? {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: selector,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
-        var cfName: CFString = "" as CFString
-        var nameSize = UInt32(MemoryLayout<CFString>.size)
-        let status = AudioObjectGetPropertyData(deviceID, &nameAddr, 0, nil, &nameSize, &cfName)
-        if status == noErr {
-            return cfName as String
+        var value: CFString = "" as CFString
+        var size = UInt32(MemoryLayout<CFString>.size)
+        let status: OSStatus = withUnsafeMutableBytes(of: &value) { rawBuf in
+            guard let base = rawBuf.baseAddress else { return -1 }
+            return AudioObjectGetPropertyData(objectID, &addr, 0, nil, &size, base)
         }
+        if status == noErr { return value as String }
         return nil
     }
 }

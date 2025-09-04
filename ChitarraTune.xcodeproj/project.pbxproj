@@ -1,207 +1,392 @@
 // !$*UTF8*$!
 {
-  archiveVersion = 1;
-  classes = {};
-  objectVersion = 56;
-  objects = {
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
 
 /* Begin PBXBuildFile section */
-  0F1F0DA81C6F45AAB34B7B30 /* ChitarraTuneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B16 /* ChitarraTuneApp.swift */; };
-  0F1F0DA81C6F45AAB34B7B31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B17 /* ContentView.swift */; };
-  0F1F0DA81C6F45AAB34B7B32 /* AudioEngineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */; };
-  0F1F0DA81C6F45AAB34B7B33 /* GuitarNotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */; };
-  0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */; };
-  AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
-  0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */; };
-  0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */; };
+		0F1F0DA81C6F45AAB34B7B30 /* ChitarraTuneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B16 /* ChitarraTuneApp.swift */; };
+		0F1F0DA81C6F45AAB34B7B31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B17 /* ContentView.swift */; };
+		0F1F0DA81C6F45AAB34B7B32 /* AudioEngineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */; };
+		0F1F0DA81C6F45AAB34B7B33 /* GuitarNotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */; };
+		0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */; };
+		0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */; };
+		0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */; };
+		AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-  0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChitarraTune.app; sourceTree = BUILT_PRODUCTS_DIR; };
-  0F1F0DA81C6F45AAB34B7B16 /* ChitarraTuneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChitarraTuneApp.swift; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B17 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngineManager.swift; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuitarNotes.swift; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
-  AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B1C /* ChitarraTune.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChitarraTune.entitlements; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B1E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B1F /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B21 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-  0F1F0DA81C6F45AAB34B7B22 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChitarraTune.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F1F0DA81C6F45AAB34B7B16 /* ChitarraTuneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChitarraTuneApp.swift; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B17 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngineManager.swift; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuitarNotes.swift; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B1C /* ChitarraTune.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChitarraTune.entitlements; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B1E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B1F /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B21 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B22 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-  0F1F0DA81C6F45AAB34B7B06 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
+		0F1F0DA81C6F45AAB34B7B06 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-  0F1F0DA81C6F45AAB34B7B02 = {isa = PBXGroup; children = (
-      0F1F0DA81C6F45AAB34B7B10 /* Apps */, 
-      0F1F0DA81C6F45AAB34B7B14 /* Sources */, 
-      0F1F0DA81C6F45AAB34B7B03 /* Products */
-    ); sourceTree = "<group>"; };
-
-  0F1F0DA81C6F45AAB34B7B03 /* Products */ = {isa = PBXGroup; children = (
-      0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */,
-    ); name = Products; sourceTree = "<group>"; };
-
-  0F1F0DA81C6F45AAB34B7B10 /* Apps */ = {isa = PBXGroup; children = (
-      0F1F0DA81C6F45AAB34B7B11 /* Shared */, 
-      0F1F0DA81C6F45AAB34B7B12 /* macOS */
-    ); path = Apps; sourceTree = "<group>"; };
-
-  0F1F0DA81C6F45AAB34B7B11 /* Shared */ = {isa = PBXGroup; children = (
-      0F1F0DA81C6F45AAB34B7B16 /* ChitarraTuneApp.swift */, 
-      0F1F0DA81C6F45AAB34B7B17 /* ContentView.swift */, 
-      0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */, 
-      0F1F0DA81C6F45AAB34B7B13 /* Localization */
-    ); path = Shared; sourceTree = "<group>"; };
-
-  0F1F0DA81C6F45AAB34B7B13 /* Localization */ = {isa = PBXGroup; children = (
-      0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */
-    ); path = Localization; sourceTree = "<group>"; };
-
-  0F1F0DA81C6F45AAB34B7B12 /* macOS */ = {isa = PBXGroup; children = (
-      0F1F0DA81C6F45AAB34B7B1B /* Info.plist */, 
-      0F1F0DA81C6F45AAB34B7B1C /* ChitarraTune.entitlements */, 
-      0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */
-    ); path = macOS; sourceTree = "<group>"; };
-
-  0F1F0DA81C6F45AAB34B7B14 /* Sources */ = {isa = PBXGroup; children = (
-      0F1F0DA81C6F45AAB34B7B15 /* ChitarraTuneCore */
-    ); path = Sources; sourceTree = "<group>"; };
-
-  0F1F0DA81C6F45AAB34B7B15 /* ChitarraTuneCore */ = {isa = PBXGroup; children = (
-      0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */, 
-      0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */,
-      AABBCCDD0011223344556677 /* TuningPresets.swift */
-    ); path = ChitarraTuneCore; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B02 = {
+			isa = PBXGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B10 /* Apps */,
+				0F1F0DA81C6F45AAB34B7B14 /* Sources */,
+				0F1F0DA81C6F45AAB34B7B03 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0F1F0DA81C6F45AAB34B7B03 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0F1F0DA81C6F45AAB34B7B10 /* Apps */ = {
+			isa = PBXGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B11 /* Shared */,
+				0F1F0DA81C6F45AAB34B7B12 /* macOS */,
+			);
+			path = Apps;
+			sourceTree = "<group>";
+		};
+		0F1F0DA81C6F45AAB34B7B11 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B16 /* ChitarraTuneApp.swift */,
+				0F1F0DA81C6F45AAB34B7B17 /* ContentView.swift */,
+				0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */,
+				0F1F0DA81C6F45AAB34B7B13 /* Localization */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		0F1F0DA81C6F45AAB34B7B12 /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B1B /* Info.plist */,
+				0F1F0DA81C6F45AAB34B7B1C /* ChitarraTune.entitlements */,
+				0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */,
+			);
+			path = macOS;
+			sourceTree = "<group>";
+		};
+		0F1F0DA81C6F45AAB34B7B13 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */,
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
+		0F1F0DA81C6F45AAB34B7B14 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B15 /* ChitarraTuneCore */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		0F1F0DA81C6F45AAB34B7B15 /* ChitarraTuneCore */ = {
+			isa = PBXGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */,
+				0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */,
+				AABBCCDD0011223344556677 /* TuningPresets.swift */,
+			);
+			path = ChitarraTuneCore;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-  0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */ = {isa = PBXNativeTarget; buildConfigurationList = 0F1F0DA81C6F45AAB34B7B0B /* Build configuration list for PBXNativeTarget "ChitarraTune" */; buildPhases = (
-      0F1F0DA81C6F45AAB34B7B05 /* Sources */,
-      0F1F0DA81C6F45AAB34B7B06 /* Frameworks */,
-      0F1F0DA81C6F45AAB34B7B07 /* Resources */
-    ); buildRules = ( ); dependencies = ( ); name = ChitarraTune; productName = ChitarraTune; productReference = 0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */; productType = "com.apple.product-type.application"; };
+		0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0F1F0DA81C6F45AAB34B7B0B /* Build configuration list for PBXNativeTarget "ChitarraTune" */;
+			buildPhases = (
+				0F1F0DA81C6F45AAB34B7B05 /* Sources */,
+				0F1F0DA81C6F45AAB34B7B06 /* Frameworks */,
+				0F1F0DA81C6F45AAB34B7B07 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ChitarraTune;
+			productName = ChitarraTune;
+			productReference = 0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-  0F1F0DA81C6F45AAB34B7B01 /* Project object */ = {isa = PBXProject; attributes = { LastSwiftUpdateCheck = 1500; LastUpgradeCheck = 1500; ORGANIZATIONNAME = "Picchiarelli Giacomo"; TargetAttributes = { 0F1F0DA81C6F45AAB34B7B04 = { CreatedOnToolsVersion = 15.0; }; }; }; buildConfigurationList = 0F1F0DA81C6F45AAB34B7B08 /* Build configuration list for PBXProject "ChitarraTune" */; compatibilityVersion = "Xcode 14.0"; developmentRegion = it; hasScannedForEncodings = 0; knownRegions = ( it, en, Base ); mainGroup = 0F1F0DA81C6F45AAB34B7B02; productRefGroup = 0F1F0DA81C6F45AAB34B7B03 /* Products */; projectDirPath = ""; projectRoot = ""; targets = ( 0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */, ); };
+		0F1F0DA81C6F45AAB34B7B01 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1640;
+				ORGANIZATIONNAME = "Picchiarelli Giacomo";
+				TargetAttributes = {
+					0F1F0DA81C6F45AAB34B7B04 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 0F1F0DA81C6F45AAB34B7B08 /* Build configuration list for PBXProject "ChitarraTune" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = it;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				it,
+				en,
+				Base,
+			);
+			mainGroup = 0F1F0DA81C6F45AAB34B7B02;
+			productRefGroup = 0F1F0DA81C6F45AAB34B7B03 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */,
+			);
+		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-  0F1F0DA81C6F45AAB34B7B07 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
-      0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */, 
-      0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */
-    ); runOnlyForDeploymentPostprocessing = 0; };
+		0F1F0DA81C6F45AAB34B7B07 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */,
+				0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-  0F1F0DA81C6F45AAB34B7B05 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (
-      0F1F0DA81C6F45AAB34B7B30 /* ChitarraTuneApp.swift in Sources */, 
-      0F1F0DA81C6F45AAB34B7B31 /* ContentView.swift in Sources */, 
-      0F1F0DA81C6F45AAB34B7B32 /* AudioEngineManager.swift in Sources */, 
-      0F1F0DA81C6F45AAB34B7B33 /* GuitarNotes.swift in Sources */, 
-      0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */,
-      AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */
-    ); runOnlyForDeploymentPostprocessing = 0; };
+		0F1F0DA81C6F45AAB34B7B05 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F1F0DA81C6F45AAB34B7B30 /* ChitarraTuneApp.swift in Sources */,
+				0F1F0DA81C6F45AAB34B7B31 /* ContentView.swift in Sources */,
+				0F1F0DA81C6F45AAB34B7B32 /* AudioEngineManager.swift in Sources */,
+				0F1F0DA81C6F45AAB34B7B33 /* GuitarNotes.swift in Sources */,
+				0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */,
+				AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-  0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */ = {isa = PBXVariantGroup; children = (
-      0F1F0DA81C6F45AAB34B7B1E /* en */, 
-      0F1F0DA81C6F45AAB34B7B1F /* it */
-    ); name = Localizable.strings; sourceTree = "<group>"; };
-
-  0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (
-      0F1F0DA81C6F45AAB34B7B21 /* en */, 
-      0F1F0DA81C6F45AAB34B7B22 /* it */
-    ); name = InfoPlist.strings; sourceTree = "<group>"; };
+		0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B1E /* en */,
+				0F1F0DA81C6F45AAB34B7B1F /* it */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0F1F0DA81C6F45AAB34B7B21 /* en */,
+				0F1F0DA81C6F45AAB34B7B22 /* it */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-  0F1F0DA81C6F45AAB34B7B09 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {
-      ALWAYS_SEARCH_USER_PATHS = NO;
-      CLANG_ANALYZER_NONNULL = YES;
-      CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-      CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-      CLANG_ENABLE_OBJC_ARC = YES;
-      CLANG_ENABLE_MODULES = YES;
-      CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-      CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-      ENABLE_STRICT_OBJC_MSGSEND = YES;
-      ENABLE_TESTABILITY = YES;
-      GCC_C_LANGUAGE_STANDARD = gnu11;
-      MACOSX_DEPLOYMENT_TARGET = 12.0;
-      ONLY_ACTIVE_ARCH = YES;
-      SWIFT_VERSION = 5.0;
-    }; name = Debug; };
-
-  0F1F0DA81C6F45AAB34B7B0A /* Release */ = {isa = XCBuildConfiguration; buildSettings = {
-      ALWAYS_SEARCH_USER_PATHS = NO;
-      CLANG_ANALYZER_NONNULL = YES;
-      CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-      CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-      CLANG_ENABLE_OBJC_ARC = YES;
-      CLANG_ENABLE_MODULES = YES;
-      CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-      CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-      ENABLE_NS_ASSERTIONS = NO;
-      GCC_C_LANGUAGE_STANDARD = gnu11;
-      MACOSX_DEPLOYMENT_TARGET = 12.0;
-      SWIFT_VERSION = 5.0;
-    }; name = Release; };
-
-  0F1F0DA81C6F45AAB34B7B0C /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {
-      CODE_SIGN_ENTITLEMENTS = Apps/macOS/ChitarraTune.entitlements;
-      CODE_SIGN_STYLE = Automatic;
-      CURRENT_PROJECT_VERSION = 1;
-      DEVELOPMENT_TEAM = "";
-      GENERATE_INFOPLIST_FILE = NO;
-      INFOPLIST_FILE = Apps/macOS/Info.plist;
-      LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/../Frameworks" );
-      MACOSX_DEPLOYMENT_TARGET = 12.0;
-      MARKETING_VERSION = 0.1.0;
-      PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTune;
-      PRODUCT_NAME = "$(TARGET_NAME)";
-      SWIFT_EMIT_LOC_STRINGS = YES;
-      SWIFT_VERSION = 5.0;
-      SDKROOT = macosx;
-    }; name = Debug; };
-
-  0F1F0DA81C6F45AAB34B7B0D /* Release */ = {isa = XCBuildConfiguration; buildSettings = {
-      CODE_SIGN_ENTITLEMENTS = Apps/macOS/ChitarraTune.entitlements;
-      CODE_SIGN_STYLE = Automatic;
-      CURRENT_PROJECT_VERSION = 1;
-      DEVELOPMENT_TEAM = "";
-      GENERATE_INFOPLIST_FILE = NO;
-      INFOPLIST_FILE = Apps/macOS/Info.plist;
-      LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/../Frameworks" );
-      MACOSX_DEPLOYMENT_TARGET = 12.0;
-      MARKETING_VERSION = 0.1.0;
-      PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTune;
-      PRODUCT_NAME = "$(TARGET_NAME)";
-      SWIFT_EMIT_LOC_STRINGS = YES;
-      SWIFT_VERSION = 5.0;
-      SDKROOT = macosx;
-    }; name = Release; };
+		0F1F0DA81C6F45AAB34B7B09 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		0F1F0DA81C6F45AAB34B7B0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		0F1F0DA81C6F45AAB34B7B0C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Apps/macOS/ChitarraTune.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Apps/macOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTune;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		0F1F0DA81C6F45AAB34B7B0D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Apps/macOS/ChitarraTune.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Apps/macOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTune;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-  0F1F0DA81C6F45AAB34B7B08 /* Build configuration list for PBXProject "ChitarraTune" */ = {isa = XCConfigurationList; buildConfigurations = (
-      0F1F0DA81C6F45AAB34B7B09 /* Debug */, 
-      0F1F0DA81C6F45AAB34B7B0A /* Release */
-    ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-
-  0F1F0DA81C6F45AAB34B7B0B /* Build configuration list for PBXNativeTarget "ChitarraTune" */ = {isa = XCConfigurationList; buildConfigurations = (
-      0F1F0DA81C6F45AAB34B7B0C /* Debug */, 
-      0F1F0DA81C6F45AAB34B7B0D /* Release */
-    ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		0F1F0DA81C6F45AAB34B7B08 /* Build configuration list for PBXProject "ChitarraTune" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F1F0DA81C6F45AAB34B7B09 /* Debug */,
+				0F1F0DA81C6F45AAB34B7B0A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0F1F0DA81C6F45AAB34B7B0B /* Build configuration list for PBXNativeTarget "ChitarraTune" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F1F0DA81C6F45AAB34B7B0C /* Debug */,
+				0F1F0DA81C6F45AAB34B7B0D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
-
-  };
-  rootObject = 0F1F0DA81C6F45AAB34B7B01 /* Project object */;
+	};
+	rootObject = 0F1F0DA81C6F45AAB34B7B01 /* Project object */;
 }
