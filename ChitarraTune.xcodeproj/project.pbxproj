@@ -32,7 +32,7 @@
 		0F1F0DA81C6F45AAB34B7B21 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0F1F0DA81C6F45AAB34B7B22 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ChitarraTune.xcassets; sourceTree = "<group>"; };
-		A1B2C3D4E5F601 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		/* removed */
 		AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -50,7 +50,7 @@
 		0F1F0DA81C6F45AAB34B7B02 = {
 			isa = PBXGroup;
 			children = (
-				A1B2C3D4E5F601 /* Assets.xcassets */,
+				/* Removed duplicate Assets.xcassets */
 				5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */,
 				0F1F0DA81C6F45AAB34B7B10 /* Apps */,
 				0F1F0DA81C6F45AAB34B7B14 /* Sources */,

@@ -31,6 +31,10 @@ Accordatore per chitarra (E2–E4) scritto in Swift/SwiftUI per macOS. Core DSP 
 
 Nota: il core DSP è in `ChitarraTuneCore` (Swift Package locale, vedi `Package.swift`).
 
+## Sito Web (GitHub Pages)
+- Cartella `chitarratune.github.io`: sito statico elegante, pronto per GitHub Pages.
+- Istruzioni dettagliate: `chitarratune.github.io/README.md`.
+
 ## Localizzazione
 - UI: chiavi in `Apps/Shared/Localization/*/Localizable.strings`
 - Permesso microfono: `Apps/macOS/*/InfoPlist.strings`

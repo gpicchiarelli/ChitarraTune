@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>ChitarraTune — Accordatore per macOS</title>
+  <meta name="description" content="ChitarraTune: accordatore elegante per chitarra su macOS. DSP in Swift, modalità Auto/Manuale, calibrazione A4, multi‑lingua.">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" href="assets/img/app-icon.svg">
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <img src="assets/img/app-icon.svg" alt="ChitarraTune" class="brand-icon" width="28" height="28">
+        <span class="brand-name">ChitarraTune</span>
+      </div>
+      <nav>
+        <a href="#features">Funzioni</a>
+        <a href="#download">Download</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#source" data-github="#">Codice</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <img src="assets/img/app-icon.svg" alt="Icona ChitarraTune" class="hero-icon" width="120" height="120">
+        <h1>Accordatore, in stile macOS.</h1>
+        <p class="subtitle">Elegante e preciso. Modalità Auto/Manuale, calibrazione A4 e accordature alternative.</p>
+        <div class="cta">
+          <a class="btn primary" id="download-btn" href="#" data-download="#">Scarica per macOS</a>
+          <span class="req">macOS 12 o superiore</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section section-alt">
+      <div class="container grid-3">
+        <div class="card">
+          <div class="card-ico">🎯</div>
+          <h3>Rilevamento preciso</h3>
+          <p>Algoritmo YIN ottimizzato in Swift con smoothing adattivo. Risponde ai pizzichi forti e si stabilizza in tempo reale.</p>
+        </div>
+        <div class="card">
+          <div class="card-ico">🎸</div>
+          <h3>Accordature</h3>
+          <p>Standard, Drop D, DADGAD, Open G/D e mezzo tono sotto. Auto o selezione corda manuale.</p>
+        </div>
+        <div class="card">
+          <div class="card-ico">🎚️</div>
+          <h3>Calibrazione A4</h3>
+          <p>Imposta A4 tra 415–466 Hz per adeguarti a ogni contesto musicale.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="download" class="section">
+      <div class="container download">
+        <h2>Scarica ChitarraTune</h2>
+        <p>Universale per macOS 12+. App sandboxed con accesso al microfono su richiesta.</p>
+        <a class="btn primary lg" id="download-btn-2" href="#" data-download="#">Scarica ultima versione</a>
+        <p class="muted">Oppure visita il <a id="github-link" href="#" data-github="#">repository su GitHub</a> per note di rilascio e codice sorgente.</p>
+      </div>
+    </section>
+
+    <section id="privacy" class="section section-alt">
+      <div class="container">
+        <h2>Privacy</h2>
+        <p>L’app elabora il segnale audio in locale. Non invia, traccia o raccoglie dati personali.</p>
+      </div>
+    </section>
+
+    <section id="source" class="section">
+      <div class="container">
+        <h2>Open Source</h2>
+        <p>ChitarraTune è open source (BSD‑3). Contribuisci, apri una issue o proponi nuove funzioni.</p>
+        <a class="btn" id="github-btn" href="#" data-github="#">Vai al repository</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>© <span id="year"></span> ChitarraTune</div>
+      <div class="footer-links">
+        <a href="#features">Funzioni</a>
+        <a href="#download">Download</a>
+        <a id="github-foot" href="#" data-github="#">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
+
