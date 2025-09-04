@@ -3,6 +3,8 @@
 <!-- Badges -->
 <p>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/ci.yml"><img alt="Build" src="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/codeql.yml/badge.svg"></a>
+  <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/swiftlint.yml"><img alt="SwiftLint" src="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/swiftlint.yml/badge.svg"></a>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/gpicchiarelli/ChitarraTune?include_prereleases&label=release"></a>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/gpicchiarelli/ChitarraTune/total?label=downloads"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/gpicchiarelli/ChitarraTune?color=blue"></a>
@@ -11,6 +13,9 @@
   <a href="https://github.com/gpicchiarelli/ChitarraTune/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/gpicchiarelli/ChitarraTune?style=social"></a>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/gpicchiarelli/ChitarraTune"></a>
   <img alt="Last commit" src="https://img.shields.io/github/last-commit/gpicchiarelli/ChitarraTune">
+  <a href="https://github.com/gpicchiarelli/ChitarraTune/pulls"><img alt="Open PRs" src="https://img.shields.io/github/issues-pr/gpicchiarelli/ChitarraTune"></a>
+  <img alt="Repo size" src="https://img.shields.io/github/repo-size/gpicchiarelli/ChitarraTune">
+  <img alt="Contributors" src="https://img.shields.io/github/contributors/gpicchiarelli/ChitarraTune">
 </p>
 
 Accordatore per chitarra per macOS, scritto in Swift/SwiftUI. DSP in puro Swift con algoritmo YIN (CMNDF), indicatori in tempo reale, modalità Auto/Manuale, accordature alternative e calibrazione A4. Localizzato in Italiano e Inglese.
@@ -77,6 +82,9 @@ L’app usa esclusivamente il microfono per calcolare la frequenza in locale. Ne
 
 ## Licenza
 BSD 3‑Clause — vedi `LICENSE`. La licenza è inoltre visibile dal menù Help dell’app e sul sito.
+
+## Marchi
+Apple, macOS, Xcode e i relativi loghi sono marchi di Apple Inc., registrati negli Stati Uniti e in altri Paesi e regioni.
 
 ## Documentazione
 - Documentazione estesa (classi/funzioni): vedi cartella `doc/`.
