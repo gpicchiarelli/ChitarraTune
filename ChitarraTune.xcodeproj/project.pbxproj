@@ -15,8 +15,9 @@
 		0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */; };
 		0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */; };
 		5220EBE32E69B0A70030368D /* ChitarraTune.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */; };
-		AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
-		FEEDFACEFEEDFACEFEEDFACE /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */; };
+			AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
+			FEEDFACEFEEDFACEFEEDFACE /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */; };
+ 			222222222222222222222222 /* VersionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111111 /* VersionInfo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,7 +36,8 @@
 		5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ChitarraTune.xcassets; sourceTree = "<group>"; };
 		/* removed */
 		AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
-		C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = Apps/Shared/Credits.rtf; sourceTree = SOURCE_ROOT; };
+			C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = Apps/Shared/Credits.rtf; sourceTree = SOURCE_ROOT; };
+			111111111111111111111111 /* VersionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apps/Shared/Generated/VersionInfo.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +87,7 @@
 				0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */,
 				0F1F0DA81C6F45AAB34B7B13 /* Localization */,
 				C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */,
+				111111111111111111111111 /* VersionInfo.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -205,6 +208,7 @@
 				0F1F0DA81C6F45AAB34B7B33 /* GuitarNotes.swift in Sources */,
 				0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */,
 				AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */,
+				222222222222222222222222 /* VersionInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
