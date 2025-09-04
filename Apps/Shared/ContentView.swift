@@ -176,7 +176,7 @@ private extension ContentView {
                     Label(String(localized: "controls.start"), systemImage: "play.fill")
                 }
             }
-            .buttonStyle(audio.isRunning ? .bordered : .borderedProminent)
+            .buttonStyle(BorderedButtonStyle())
             .controlSize(.large)
             .tint(audio.isRunning ? .red : .accentColor)
             .accessibilityIdentifier("monitoringButton")
@@ -184,7 +184,7 @@ private extension ContentView {
     }
 
     @ViewBuilder func modeSection() -> some View {
-        GroupBox(label: { Label(String(localized: "controls.mode"), systemImage: "slider.horizontal.3") }) {
+        GroupBox(label: Label(String(localized: "controls.mode"), systemImage: "slider.horizontal.3")) {
             VStack(alignment: .leading) {
                 Picker("controls.mode", selection: $isAuto) {
                     Label(String(localized: "mode.auto"), systemImage: "wand.and.stars").tag(true)
@@ -212,7 +212,7 @@ private extension ContentView {
     }
 
     @ViewBuilder func tuningPresetSection() -> some View {
-        GroupBox(label: { Label(String(localized: "controls.tuningPreset"), systemImage: "music.note.list") }) {
+        GroupBox(label: Label(String(localized: "controls.tuningPreset"), systemImage: "music.note.list")) {
             HStack {
                 Picker("", selection: Binding(
                     get: { audio.preset.id },
@@ -239,7 +239,7 @@ private extension ContentView {
     }
 
     @ViewBuilder func calibrationSection() -> some View {
-        GroupBox(label: { Label(String(localized: "controls.calibration"), systemImage: "gauge") }) {
+        GroupBox(label: Label(String(localized: "controls.calibration"), systemImage: "gauge")) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     Text("A4")
@@ -268,7 +268,7 @@ private extension ContentView {
     }
 
     @ViewBuilder func audioSection() -> some View {
-        GroupBox(label: { Label(String(localized: "controls.audio"), systemImage: "speaker.wave.2.fill") }) {
+        GroupBox(label: Label(String(localized: "controls.audio"), systemImage: "speaker.wave.2.fill")) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("controls.inputDevice")
