@@ -1,8 +1,5 @@
-/* Light-first Apple-like theme */
+/* Light Apple-like theme (no dark mode) */
 :root { --bg:#ffffff; --fg:#111315; --muted:#5a5f66; --card:#ffffff; --accent:#007aff; --accent2:#5ac8f6; --border:#e5e7eb; --shadow:0 18px 40px rgba(0,0,0,.06) }
-@media (prefers-color-scheme: dark) {
-  :root { --bg:#0b0c0d; --fg:#e9eaec; --muted:#a5a8ad; --card:#111316; --accent:#0a84ff; --accent2:#64d2ff; --border:rgba(127,127,127,.18); --shadow:0 20px 50px rgba(0,0,0,.35) }
-}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Segoe UI,Roboto,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;}
 .container{width:min(1080px,92%);margin:0 auto}
