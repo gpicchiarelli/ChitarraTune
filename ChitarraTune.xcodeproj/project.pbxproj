@@ -91,6 +91,7 @@
 				ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */,
 				0F1F0DA81C6F45AAB34B7B10 /* Apps */,
 				0F1F0DA81C6F45AAB34B7B14 /* Sources */,
+                EEEE0000000000000000000B /* ChitarraTuneUITests */,
 				0F1F0DA81C6F45AAB34B7B03 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -213,21 +214,21 @@
 			productReference = 0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */;
 			productType = "com.apple.product-type.application";
 		};
-        UITTARGET /* ChitarraTuneUITests */ = {
+        EEEE00000000000000000001 /* ChitarraTuneUITests */ = {
             isa = PBXNativeTarget;
-            buildConfigurationList = UITCONFIGLIST /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */;
+            buildConfigurationList = EEEE00000000000000000002 /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */;
             buildPhases = (
-                UITFRAMEWORKS /* Frameworks */,
-                UITSOURCES /* Sources */,
+                EEEE00000000000000000005 /* Frameworks */,
+                EEEE00000000000000000006 /* Sources */,
             );
             buildRules = (
             );
             dependencies = (
-                UITTARGETDEPEND /* PBXTargetDependency */,
+                EEEE0000000000000000000D /* PBXTargetDependency */,
             );
             name = ChitarraTuneUITests;
             productName = ChitarraTuneUITests;
-            productReference = UITPRODREF /* ChitarraTuneUITests.xctest */;
+            productReference = EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */;
             productType = "com.apple.product-type.bundle.ui-testing";
         };
 /* End PBXNativeTarget section */
