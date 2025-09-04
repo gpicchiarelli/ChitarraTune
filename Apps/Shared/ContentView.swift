@@ -58,7 +58,7 @@ struct ContentView: View {
             }
             .padding(12)
         }
-        .frame(minWidth: 640, minHeight: 560)
+        .frame(minWidth: 600, minHeight: 520)
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
                 Button {
@@ -78,6 +78,17 @@ struct ContentView: View {
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("modePicker")
+
+                if !isAuto {
+                    Picker("controls.string", selection: $manualIndex) {
+                        ForEach(Array(audio.preset.strings.enumerated()), id: \.offset) { idx, note in
+                            Text(note.label).tag(idx)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("stringPicker")
+                    .labelsHidden()
+                }
             }
         }
         .onChange(of: isAuto) { newValue in
@@ -136,6 +147,7 @@ private extension ContentView {
             .accessibilityIdentifier("appTitleLabel")
         if audio.isInTune {
             Label(String(localized: "status.inTune"), systemImage: "checkmark.circle.fill")
+                .font(.system(size: 26, weight: .bold))
                 .foregroundColor(.green)
         }
     }

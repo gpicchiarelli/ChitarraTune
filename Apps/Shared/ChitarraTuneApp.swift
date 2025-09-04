@@ -26,6 +26,8 @@ final class AboutHelper: NSObject {
 @main
 struct ChitarraTuneApp: App {
     @StateObject private var audioManager = AudioEngineManager()
+    // Ensure a single Preferences window instance
+    private static var preferencesPanel: NSPanel? = nil
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -186,13 +188,23 @@ struct ChitarraTuneApp: App {
 
     private func showPreferencesPanel() {
         // Build a simple preferences window hosting SwiftUI PreferencesView
-        let size = NSSize(width: 560, height: 420)
+        if let existing = ChitarraTuneApp.preferencesPanel {
+            NSApp.activate(ignoringOtherApps: true)
+            existing.makeKeyAndOrderFront(nil)
+            return
+        }
+        let size = NSSize(width: 520, height: 360)
         let hosting = NSHostingView(rootView: PreferencesView().environmentObject(audioManager))
         hosting.frame = NSRect(origin: .zero, size: size)
 
         let panel = NSPanel(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled, .closable], backing: .buffered, defer: false)
         panel.title = String(localized: "menu.settings")
+        panel.isReleasedWhenClosed = false
         panel.contentView = hosting
+        ChitarraTuneApp.preferencesPanel = panel
+        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: panel, queue: .main) { _ in
+            ChitarraTuneApp.preferencesPanel = nil
+        }
         NSApp.activate(ignoringOtherApps: true)
         panel.center()
         panel.makeKeyAndOrderFront(nil)
