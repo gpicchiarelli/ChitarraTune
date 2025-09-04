@@ -35,6 +35,9 @@
     set('license', `https://img.shields.io/github/license/${repo}?color=blue`);
     set('swift', 'https://img.shields.io/badge/Swift-5.9-orange?logo=swift');
     set('platform', 'https://img.shields.io/badge/platform-macOS-1f6feb?logo=apple');
+    set('stars', `https://img.shields.io/github/stars/${repo}?style=social`);
+    set('issues', `https://img.shields.io/github/issues/${repo}`);
+    set('last-commit', `https://img.shields.io/github/last-commit/${repo}`);
   }
 
   // Latest release tag + download link
@@ -49,78 +52,14 @@
     if (dl && rel.html_url) dl.setAttribute('href', rel.html_url);
   }).catch(()=>{});
 
-  // Bug page helpers: prefill issue link and copy buttons
+  // Bug page: ensure links point to templates
   const issueLinks = document.querySelectorAll('.issue-link');
   if (issueLinks.length) {
-    const tplIt = [
-      '### Descrizione',
-      '<!-- Riassumi il problema in 1-2 frasi -->',
-      '',
-      '### Passi per riprodurre',
-      '1. ',
-      '2. ',
-      '3. ',
-      '',
-      '### Risultato atteso',
-      '',
-      '### Risultato ottenuto',
-      '',
-      '### Dettagli',
-      '- Versione app: ',
-      '- Commit/Tag (se noto): ',
-      '- macOS: ',
-      '- Mac: ',
-      '- Dispositivo audio: ',
-      '- Modalità: Auto / Manuale',
-      '- Preset accordatura: ',
-      '- Calibrazione A4: ',
-      '',
-      '<!-- Allegati (opzionale): screenshot, clip audio brevi, ecc. -->'
-    ].join('\n');
-    const tplEn = [
-      '### Description',
-      '<!-- Summarize the issue in 1-2 sentences -->',
-      '',
-      '### Steps to reproduce',
-      '1. ',
-      '2. ',
-      '3. ',
-      '',
-      '### Expected behavior',
-      '',
-      '### Actual behavior',
-      '',
-      '### Details',
-      '- App version: ',
-      '- Commit/Tag (if known): ',
-      '- macOS: ',
-      '- Mac: ',
-      '- Audio device: ',
-      '- Mode: Auto / Manual',
-      '- Tuning preset: ',
-      '- A4 calibration: ',
-      '',
-      '<!-- Attachments (optional): screenshots, short audio clips, etc. -->'
-    ].join('\n');
-    const bodyIt = encodeURIComponent(tplIt);
-    const bodyEn = encodeURIComponent(tplEn);
-    const hrefIt = `https://github.com/${repo}/issues/new?title=${encodeURIComponent('Bug: ')}&body=${bodyIt}`;
-    const hrefEn = `https://github.com/${repo}/issues/new?title=${encodeURIComponent('Bug: ')}&body=${bodyEn}`;
+    const hrefIt = `https://github.com/${repo}/issues/new?template=bug_report_it.md&labels=bug&title=${encodeURIComponent('Bug: ')}`;
+    const hrefEn = `https://github.com/${repo}/issues/new?template=bug_report_en.md&labels=bug&title=${encodeURIComponent('Bug: ')}`;
     issueLinks.forEach(a => {
       const isEn = (a.getAttribute('lang') === 'en');
       a.setAttribute('href', isEn ? hrefEn : hrefIt);
     });
-
-    document.querySelectorAll('.copy-tpl').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-target');
-        const ta = document.getElementById(id);
-        if (!ta) return;
-        ta.select();
-        ta.setSelectionRange(0, ta.value.length);
-        try { document.execCommand('copy'); } catch {}
-      });
-    });
   }
 })();
-

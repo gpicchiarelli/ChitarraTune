@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
-  <a class="skip-link" href="#main">Salta al contenuto</a>
   <header class="nav" role="banner">
     <div class="container nav-inner">
       <div class="brand">
@@ -62,67 +61,12 @@
 
       <section style="margin-top:18px;">
         <h2><span lang="it">Apri una segnalazione su GitHub</span><span lang="en">Open an issue on GitHub</span></h2>
-        <p lang="it">Puoi usare il modello qui sotto: copialo oppure apri direttamente una issue con il testo già compilato.</p>
-        <p lang="en">Use the template below: copy it or open an issue prefilled with this content.</p>
-
-        <div>
-          <textarea id="tpl-it" class="codebox" lang="it" readonly>
-### Descrizione
-<!-- Riassumi il problema in 1-2 frasi -->
-
-### Passi per riprodurre
-1. 
-2. 
-3. 
-
-### Risultato atteso
-
-### Risultato ottenuto
-
-### Dettagli
-- Versione app: 
-- Commit/Tag (se noto): 
-- macOS: 
-- Mac: 
-- Dispositivo audio: 
-- Modalità: Auto / Manuale
-- Preset accordatura: 
-- Calibrazione A4: 
-
-<!-- Allegati (opzionale): screenshot, clip audio brevi, ecc. -->
-          </textarea>
-          <button class="btn small copy-tpl" data-target="tpl-it" lang="it">Copia modello</button>
-          <a class="btn primary issue-link" lang="it" href="#">Apri segnalazione su GitHub</a>
-        </div>
-
-        <div style="margin-top:14px;">
-          <textarea id="tpl-en" class="codebox" lang="en" readonly>
-### Description
-<!-- Summarize the issue in 1-2 sentences -->
-
-### Steps to reproduce
-1. 
-2. 
-3. 
-
-### Expected behavior
-
-### Actual behavior
-
-### Details
-- App version: 
-- Commit/Tag (if known): 
-- macOS: 
-- Mac: 
-- Audio device: 
-- Mode: Auto / Manual
-- Tuning preset: 
-- A4 calibration: 
-
-<!-- Attachments (optional): screenshots, short audio clips, etc. -->
-          </textarea>
-          <button class="btn small copy-tpl" data-target="tpl-en" lang="en">Copy template</button>
-          <a class="btn primary issue-link" lang="en" href="#">Open an issue on GitHub</a>
+        <p lang="it">Le segnalazioni vengono gestite su GitHub con modelli dedicati. Scegli la lingua e apri un’issue:</p>
+        <p lang="en">Bug reports are handled on GitHub with dedicated templates. Pick a language and open an issue:</p>
+        <div class="cta" style="margin-top:10px;">
+          <a class="btn primary issue-link" lang="it" href="https://github.com/gpicchiarelli/ChitarraTune/issues/new?template=bug_report_it.md&labels=bug&title=Bug%3A+">Apri segnalazione (IT)</a>
+          <a class="btn primary issue-link" lang="en" href="https://github.com/gpicchiarelli/ChitarraTune/issues/new?template=bug_report_en.md&labels=bug&title=Bug%3A+">Open issue (EN)</a>
+          <a class="btn" href="https://github.com/gpicchiarelli/ChitarraTune/issues/new/choose">Choose template</a>
         </div>
       </section>
 
@@ -146,4 +90,3 @@
   <script defer src="assets/js/main.js"></script>
 </body>
 </html>
-

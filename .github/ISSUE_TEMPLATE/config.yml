@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Latest Release
+    url: https://github.com/gpicchiarelli/ChitarraTune/releases/latest
+    about: Scarica l’ultima versione stabile di ChitarraTune
+  - name: Website
+    url: https://gpicchiarelli.github.io/ChitarraTune/
+    about: Sito ufficiale di ChitarraTune
