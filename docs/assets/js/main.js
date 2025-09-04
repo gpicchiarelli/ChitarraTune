@@ -30,6 +30,8 @@
   };
   if (badgeBox) {
     set('build', `https://github.com/${repo}/actions/workflows/ci.yml/badge.svg`);
+    set('codeql', `https://github.com/${repo}/actions/workflows/codeql.yml/badge.svg`);
+    set('swiftlint', `https://github.com/${repo}/actions/workflows/swiftlint.yml/badge.svg`);
     set('release', `https://img.shields.io/github/v/release/${repo}?include_prereleases&label=release`);
     set('downloads', `https://img.shields.io/github/downloads/${repo}/total?label=downloads`);
     set('license', `https://img.shields.io/github/license/${repo}?color=blue`);
@@ -37,6 +39,9 @@
     set('platform', 'https://img.shields.io/badge/platform-macOS-1f6feb?logo=apple');
     set('stars', `https://img.shields.io/github/stars/${repo}?style=social`);
     set('issues', `https://img.shields.io/github/issues/${repo}`);
+    set('prs', `https://img.shields.io/github/issues-pr/${repo}`);
+    set('contributors', `https://img.shields.io/github/contributors/${repo}`);
+    set('size', `https://img.shields.io/github/repo-size/${repo}`);
     set('last-commit', `https://img.shields.io/github/last-commit/${repo}`);
   }
 
