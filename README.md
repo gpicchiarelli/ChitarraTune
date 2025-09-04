@@ -46,3 +46,12 @@ L’app usa esclusivamente il microfono per calcolare la frequenza in locale. Ne
 
 ## Licenza
 BSD 3‑clause — vedi `LICENSE`.
+
+## Documentazione
+- Documentazione estesa (classi/funzioni): vedi cartella `doc/`.
+  - Panoramica: `doc/README.md`
+  - Architettura: `doc/architecture.md`
+  - Costruzione: `doc/build.md`
+  - Localizzazione: `doc/localization.md`
+  - Core DSP: `doc/core/*`
+  - App: `doc/app/*`
