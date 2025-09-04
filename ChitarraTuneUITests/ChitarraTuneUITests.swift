@@ -1,8 +1,7 @@
 import XCTest
 
 final class ChitarraTuneUITests: XCTestCase {
-    override class func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
         continueAfterFailure = false
     }
 
@@ -22,4 +21,3 @@ final class ChitarraTuneUITests: XCTestCase {
         XCTAssertTrue(modeIT.exists || modeEN.exists, "Mode label not found")
     }
 }
-

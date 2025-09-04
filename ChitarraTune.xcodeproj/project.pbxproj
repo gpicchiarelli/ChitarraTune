@@ -188,10 +188,11 @@
             outputFileListPaths = (
             );
             outputPaths = (
+                "$(DERIVED_FILE_DIR)/version_from_git.stamp",
             );
             runOnlyForDeploymentPostprocessing = 0;
             shellPath = /bin/bash;
-            shellScript = "set -euo pipefail\nOUT=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\nif [ -f \"$OUT\" ]; then\n  TAG=\"$(git describe --tags --abbrev=0 2>/dev/null || echo)\"\n  SHA=\"$(git rev-parse --short HEAD 2>/dev/null || echo)\"\n  SHORT=\"$TAG\"\n  if [ -z \"$SHORT\" ]; then SHORT=\"$(/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"$OUT\" 2>/dev/null || echo)\"; fi\n  BUILD=\"$SHA\"\n  if [ -z \"$BUILD\" ]; then BUILD=\"$(/usr/libexec/PlistBuddy -c \"Print :CFBundleVersion\" \"$OUT\" 2>/dev/null || echo)\"; fi\n  /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $SHORT\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string $SHORT\" \"$OUT\"\n  /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $BUILD\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleVersion string $BUILD\" \"$OUT\"\nfi\n";
+            shellScript = "set -euo pipefail\n# Skip in CI to avoid sandbox/timing issues; rely on VersionInfo.swift\nif [ \"${CI:-}\" = \"true\" ] || [ \"${GITHUB_ACTIONS:-}\" = \"true\" ]; then\n  exit 0\nfi\nOUT=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n# Only proceed if Info.plist exists and is writable\nif [ -f \"$OUT\" ] && [ -w \"$OUT\" ]; then\n  TAG=\"$(git describe --tags --abbrev=0 2>/dev/null || true)\"\n  SHA=\"$(git rev-parse --short HEAD 2>/dev/null || true)\"\n  SHORT=\"$TAG\"\n  if [ -z \"$SHORT\" ]; then SHORT=\"$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \"$OUT\" 2>/dev/null || true)\"; fi\n  BUILD=\"$SHA\"\n  if [ -z \"$BUILD\" ]; then BUILD=\"$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' \"$OUT\" 2>/dev/null || true)\"; fi\n  if [ -n \"$SHORT\" ]; then /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString '$SHORT'\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string '$SHORT'\" \"$OUT\"; fi\n  if [ -n \"$BUILD\" ]; then /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion '$BUILD'\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleVersion string '$BUILD'\" \"$OUT\"; fi\n  # Stamp file to satisfy dependency analyzer\n  STAMP=\"$DERIVED_FILE_DIR/version_from_git.stamp\"\n  mkdir -p \"$(dirname \"$STAMP\")\" && : > \"$STAMP\"\nfi\n";
         };
 /* End PBXShellScriptBuildPhase section */
 
