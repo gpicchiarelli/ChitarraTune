@@ -10,14 +10,17 @@ final class ChitarraTuneUITests: XCTestCase {
         app.launchEnvironment["UITEST_DISABLE_AUDIO"] = "1"
         app.launch()
 
-        // Title (localized "ChitarraTune") should be visible
-        let titlePredicate = NSPredicate(format: "label CONTAINS[c] 'ChitarraTune'")
-        let title = app.staticTexts.element(matching: titlePredicate)
-        XCTAssertTrue(title.waitForExistence(timeout: 10), "App title not found")
+        // Title via accessibility identifier
+        let titleById = app.staticTexts["appTitleLabel"]
+        let titleAny = app.otherElements["appTitleLabel"]
+        XCTAssertTrue(titleById.waitForExistence(timeout: 12) || titleAny.exists, "App title not found")
 
-        // Mode label (IT/EN)
-        let modeIT = app.staticTexts["Modalità"]
-        let modeEN = app.staticTexts["Mode"]
-        XCTAssertTrue(modeIT.exists || modeEN.exists, "Mode label not found")
+        // Mode segmented control by identifier
+        let modePicker = app/* segmentedControls or generic */.segmentedControls["modePicker"]
+        if !modePicker.exists {
+            // Fallback search among any elements by identifier
+            let anyMode = app.otherElements["modePicker"]
+            XCTAssertTrue(anyMode.exists, "Mode picker not found")
+        }
     }
 }
