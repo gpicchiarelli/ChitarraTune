@@ -10,6 +10,17 @@
   };
   applyLink('[data-github]', 'data-github');
   applyLink('[data-download]', 'data-download');
+  // If placeholders are still '#', set sensible defaults
+  const ghLink = document.querySelector('[data-github]');
+  if (ghLink && ghLink.getAttribute('href') === '#') {
+    ghLink.setAttribute('href', 'https://github.com/gpicchiarelli/ChitarraTune');
+    ghLink.setAttribute('data-github', 'https://github.com/gpicchiarelli/ChitarraTune');
+  }
+  const dlLink = document.querySelector('[data-download]');
+  if (dlLink && dlLink.getAttribute('href') === '#') {
+    dlLink.setAttribute('href', 'https://github.com/gpicchiarelli/ChitarraTune/releases/latest');
+    dlLink.setAttribute('data-download', 'https://github.com/gpicchiarelli/ChitarraTune/releases/latest');
+  }
 
   // Badges (shields.io/GitHub)
   const badgeBox = document.getElementById('badges');

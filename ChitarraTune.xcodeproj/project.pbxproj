@@ -35,7 +35,7 @@
 		5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ChitarraTune.xcassets; sourceTree = "<group>"; };
 		/* removed */
 		AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
-		C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
+		C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = Apps/Shared/Credits.rtf; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
