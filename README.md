@@ -82,5 +82,5 @@ BSD 3‑Clause — vedi `LICENSE`. La licenza è inoltre visibile dal menù Help
   - Branding: `doc/branding.md`
 
 ## Badge e CI
-- Il workflow di build è in `.github/workflows/ci.yml` (macOS runner, Xcode 15).
- - Il workflow di release è in `.github/workflows/release.yml` (crea zip della .app su `git tag v*`).
+- Workflow build: `.github/workflows/ci.yml` (runner macOS-14, `setup-xcode@v1` con Xcode 15.x).
+- Workflow release: `.github/workflows/release.yml` (crea zip della .app su `git tag v*`).

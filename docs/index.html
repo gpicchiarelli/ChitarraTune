@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
   <link rel="canonical" href="https://gpicchiarelli.github.io/ChitarraTune/">
   <title>ChitarraTune — Accordatore per macOS</title>
   <meta name="description" content="ChitarraTune: accordatore per chitarra su macOS. DSP in Swift, modalità Auto/Manuale, calibrazione A4, multi‑lingua.">
@@ -13,6 +13,9 @@
   <meta property="og:image" content="https://gpicchiarelli.github.io/ChitarraTune/assets/img/icon_512x512.png">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://gpicchiarelli.github.io/ChitarraTune/">
+  <link rel="preconnect" href="https://github.com" crossorigin>
+  <link rel="preconnect" href="https://img.shields.io" crossorigin>
+  <link rel="preconnect" href="https://api.github.com" crossorigin>
   <link rel="stylesheet" href="assets/css/main.css">
   <!-- Favicons / Icons -->
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/icon_16x16.png">
@@ -24,7 +27,8 @@
   
 </head>
 <body>
-  <header class="nav">
+  <a class="skip-link" href="#main">Salta al contenuto</a>
+  <header class="nav" role="banner">
     <div class="container nav-inner">
       <div class="brand">
         <img src="assets/img/icon_32x32.png" alt="ChitarraTune" class="brand-icon" width="32" height="32">
@@ -37,19 +41,19 @@
     </div>
   </header>
 
-  <main>
+  <main id="main">
     <section class="hero one">
       <div class="container hero-inner">
         <img src="assets/img/icon_512x512.png" alt="Icona ChitarraTune" class="hero-icon" width="128" height="128">
         <h1>Accordatore per macOS</h1>
         <p class="subtitle">Rilevamento in tempo reale. Auto/Manuale • Calibrazione A4 • Accordature.</p>
         <div class="badges" id="badges" data-repo="gpicchiarelli/ChitarraTune">
-          <img data-badge="build" alt="Build status" src="#">
-          <img data-badge="release" alt="Release" src="#">
-          <img data-badge="downloads" alt="Downloads" src="#">
-          <img data-badge="license" alt="License" src="#">
-          <img data-badge="swift" alt="Swift" src="#">
-          <img data-badge="platform" alt="Platform" src="#">
+          <img loading="lazy" data-badge="build" alt="Build status" src="#">
+          <img loading="lazy" data-badge="release" alt="Release" src="#">
+          <img loading="lazy" data-badge="downloads" alt="Downloads" src="#">
+          <img loading="lazy" data-badge="license" alt="License" src="#">
+          <img loading="lazy" data-badge="swift" alt="Swift" src="#">
+          <img loading="lazy" data-badge="platform" alt="Platform" src="#">
         </div>
         <div class="cta">
           <a class="btn primary lg" id="download-btn" href="https://github.com/gpicchiarelli/ChitarraTune/releases/latest">Scarica ultima versione</a>
@@ -69,6 +73,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js"></script>
+  <script defer src="assets/js/main.js"></script>
 </body>
 </html>

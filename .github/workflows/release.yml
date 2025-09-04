@@ -5,13 +5,18 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 15
-        run: sudo xcode-select -s "/Applications/Xcode_15.0.1.app/Contents/Developer" || true
+      - name: Set up Xcode 15
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.x'
       - name: Generate VersionInfo.swift from Git
         run: |
           set -euo pipefail
