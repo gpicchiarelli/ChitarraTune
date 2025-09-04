@@ -77,6 +77,7 @@
 				0F1F0DA81C6F45AAB34B7B17 /* ContentView.swift */,
 				0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */,
 				0F1F0DA81C6F45AAB34B7B13 /* Localization */,
+				A1B2C3D4E5F601 /* Assets.xcassets */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -107,6 +108,7 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		A1B2C3D4E5F601 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0F1F0DA81C6F45AAB34B7B15 /* ChitarraTuneCore */ = {
 			isa = PBXGroup;
 			children = (
@@ -327,6 +329,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Apps/macOS/Info.plist;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -351,6 +354,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Apps/macOS/Info.plist;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
