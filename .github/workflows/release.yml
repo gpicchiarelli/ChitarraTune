@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 15
+        run: sudo xcode-select -s "/Applications/Xcode_15.0.1.app/Contents/Developer" || true
+      - name: Build Release
+        run: |
+          set -euo pipefail
+          xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Release -derivedDataPath build -destination 'platform=macOS' build
+          APP="build/Build/Products/Release/ChitarraTune.app"
+          test -d "$APP"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" ChitarraTune.app.zip
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ChitarraTune.app.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
