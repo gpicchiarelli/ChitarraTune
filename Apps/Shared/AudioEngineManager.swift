@@ -16,8 +16,10 @@ final class AudioEngineManager: ObservableObject {
     @Published var isSignalWeak: Bool = false
     @Published var currentInputName: String = ""
 
-    enum Mode: Equatable { case auto, manual(GuitarString) }
+    enum Mode: Equatable { case auto, manual(Int) } // index into preset strings
     @Published var mode: Mode = .auto
+    @Published var preset: TuningPreset = DefaultTuningPresets.first! // default Standard
+    @Published var availablePresets: [TuningPreset] = DefaultTuningPresets
 
     private let engine = AVAudioEngine()
     private var detector: PitchDetector?
@@ -137,13 +139,13 @@ final class AudioEngineManager: ObservableObject {
         if rms < noiseGateRMS { return }
 
         if let pitch = detector.estimateFrequency(samples: window) {
-            let forced: GuitarString? = {
+            let forcedIndex: Int? = {
                 switch mode {
                 case .auto: return nil
-                case .manual(let s): return s
+                case .manual(let idx): return idx
                 }
             }()
-            if let estimate = estimateGuitarTuning(samples: window, sampleRate: detector.sampleRate, referenceA: referenceA, forcedString: forced) {
+            if let estimate = estimatePresetTuning(samples: window, sampleRate: detector.sampleRate, referenceA: referenceA, preset: preset, forcedIndex: forcedIndex) {
                 // Smoothing on cents
                 if latestEstimate == nil { smoothedCents = estimate.cents }
                 smoothedCents = smoothingAlpha * estimate.cents + (1 - smoothingAlpha) * smoothedCents
@@ -151,8 +153,9 @@ final class AudioEngineManager: ObservableObject {
                 let smoothEstimate = TuningEstimate(
                     frequency: estimate.frequency,
                     clarity: estimate.clarity,
-                    nearestString: estimate.nearestString,
-                    cents: smoothedCents
+                    stringLabel: estimate.stringLabel,
+                    cents: smoothedCents,
+                    stringIndex: estimate.stringIndex
                 )
 
                 // Stability detection

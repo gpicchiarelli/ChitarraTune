@@ -30,14 +30,16 @@ public enum GuitarString: CaseIterable, Sendable {
 public struct TuningEstimate: Sendable {
     public let frequency: Double
     public let clarity: Double
-    public let nearestString: GuitarString
+    public let stringLabel: String
     public let cents: Double
+    public let stringIndex: Int?
 
-    public init(frequency: Double, clarity: Double, nearestString: GuitarString, cents: Double) {
+    public init(frequency: Double, clarity: Double, stringLabel: String, cents: Double, stringIndex: Int?) {
         self.frequency = frequency
         self.clarity = clarity
-        self.nearestString = nearestString
+        self.stringLabel = stringLabel
         self.cents = cents
+        self.stringIndex = stringIndex
     }
 }
 
