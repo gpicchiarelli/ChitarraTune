@@ -329,7 +329,7 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-        UITDEBUG /* Debug */ = {
+        EEEE00000000000000000003 /* Debug */ = {
             isa = XCBuildConfiguration;
             buildSettings = {
                 CODE_SIGN_STYLE = Automatic;
@@ -351,7 +351,7 @@
             };
             name = Debug;
         };
-        UITRELEASE /* Release */ = {
+        EEEE00000000000000000004 /* Release */ = {
             isa = XCBuildConfiguration;
             buildSettings = {
                 CODE_SIGN_STYLE = Automatic;
