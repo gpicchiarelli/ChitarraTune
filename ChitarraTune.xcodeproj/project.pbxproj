@@ -14,6 +14,11 @@
 		0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */; };
 		0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */; };
 		0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */; };
+		5220EBE12E69AFD20030368D /* chitarratune.png in Resources */ = {isa = PBXBuildFile; fileRef = 5220EBE02E69AFD20030368D /* chitarratune.png */; };
+		5220EBE32E69B0A70030368D /* ChitarraTune.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */; };
+		5220EBE72E69B1620030368D /* ChitarraTune.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 5220EBE62E69B1620030368D /* ChitarraTune.iconset */; };
+		5220EBE82E69B1620030368D /* ChitarraTune.icns in Resources */ = {isa = PBXBuildFile; fileRef = 5220EBE52E69B1620030368D /* ChitarraTune.icns */; };
+		5220EBE92E69B1620030368D /* chitarratune.png in Resources */ = {isa = PBXBuildFile; fileRef = 5220EBE42E69B1620030368D /* chitarratune.png */; };
 		AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +35,12 @@
 		0F1F0DA81C6F45AAB34B7B1F /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		0F1F0DA81C6F45AAB34B7B21 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0F1F0DA81C6F45AAB34B7B22 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		5220EBE02E69AFD20030368D /* chitarratune.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = chitarratune.png; sourceTree = "<group>"; };
+		5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ChitarraTune.xcassets; sourceTree = "<group>"; };
+		5220EBE42E69B1620030368D /* chitarratune.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = chitarratune.png; sourceTree = "<group>"; };
+		5220EBE52E69B1620030368D /* ChitarraTune.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ChitarraTune.icns; sourceTree = "<group>"; };
+		5220EBE62E69B1620030368D /* ChitarraTune.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = ChitarraTune.iconset; sourceTree = "<group>"; };
+		A1B2C3D4E5F601 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -47,9 +58,11 @@
 		0F1F0DA81C6F45AAB34B7B02 = {
 			isa = PBXGroup;
 			children = (
+				5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */,
 				0F1F0DA81C6F45AAB34B7B10 /* Apps */,
 				0F1F0DA81C6F45AAB34B7B14 /* Sources */,
 				0F1F0DA81C6F45AAB34B7B03 /* Products */,
+				5220EBE02E69AFD20030368D /* chitarratune.png */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,10 +121,12 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
-		A1B2C3D4E5F601 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0F1F0DA81C6F45AAB34B7B15 /* ChitarraTuneCore */ = {
 			isa = PBXGroup;
 			children = (
+				5220EBE42E69B1620030368D /* chitarratune.png */,
+				5220EBE52E69B1620030368D /* ChitarraTune.icns */,
+				5220EBE62E69B1620030368D /* ChitarraTune.iconset */,
 				0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */,
 				0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */,
 				AABBCCDD0011223344556677 /* TuningPresets.swift */,
@@ -179,8 +194,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5220EBE72E69B1620030368D /* ChitarraTune.iconset in Resources */,
+				5220EBE82E69B1620030368D /* ChitarraTune.icns in Resources */,
+				5220EBE92E69B1620030368D /* chitarratune.png in Resources */,
 				0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */,
+				5220EBE12E69AFD20030368D /* chitarratune.png in Resources */,
 				0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */,
+				5220EBE32E69B0A70030368D /* ChitarraTune.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -322,6 +342,7 @@
 		0F1F0DA81C6F45AAB34B7B0C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Apps/macOS/ChitarraTune.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -329,7 +350,8 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Apps/macOS/Info.plist;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_KEY_CFBundleDisplayName = ChitarraTune;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -347,6 +369,7 @@
 		0F1F0DA81C6F45AAB34B7B0D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Apps/macOS/ChitarraTune.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -354,7 +377,8 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Apps/macOS/Info.plist;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_KEY_CFBundleDisplayName = ChitarraTune;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
