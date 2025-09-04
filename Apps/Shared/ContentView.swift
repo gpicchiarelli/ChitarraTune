@@ -41,6 +41,7 @@ struct ContentView: View {
         VStack(spacing: 24) {
             Text("app.title")
                 .font(.title2).bold()
+                .accessibilityIdentifier("appTitleLabel")
 
             if audio.isInTune {
                 Text("status.inTune")
@@ -101,6 +102,7 @@ struct ContentView: View {
                             Text("mode.manual").tag(false)
                         }
                         .pickerStyle(.segmented)
+                        .accessibilityIdentifier("modePicker")
                         if !isAuto {
                             HStack {
                                 Text("controls.string")
