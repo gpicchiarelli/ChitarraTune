@@ -74,6 +74,11 @@ Note
 
 Per aggiungere una lingua, crea una nuova cartella `xx.lproj` in entrambe le posizioni e traduci le chiavi.
 
+## Test
+- Core (SwiftPM): `swift test --parallel`
+- CI: esegue automaticamente i test SwiftPM (vedi workflow CI). 
+- Nota: i test coprono rilevamento pitch (YIN), mapping corde/preset e normalizzazione ottava in modalità forzata.
+
 ## Sicurezza
 Il target macOS è sandboxed e abilita l’ingresso audio tramite entitlements (`Apps/macOS/ChitarraTune.entitlements`). Alla prima esecuzione verrà richiesta l’autorizzazione al microfono.
 

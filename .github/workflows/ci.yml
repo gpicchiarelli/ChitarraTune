@@ -35,6 +35,11 @@ jobs:
           EOF
       - name: Resolve Swift Packages
         run: xcodebuild -resolvePackageDependencies -project ChitarraTune.xcodeproj
+      - name: SwiftPM tests (ChitarraTuneCore)
+        run: |
+          set -euo pipefail
+          swift --version
+          swift test --parallel --configuration debug
       - name: Build (Debug)
         run: |
           set -euo pipefail

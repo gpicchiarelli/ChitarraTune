@@ -14,6 +14,11 @@ let package = Package(
         .target(
             name: "ChitarraTuneCore",
             path: "Sources/ChitarraTuneCore"
+        ),
+        .testTarget(
+            name: "ChitarraTuneCoreTests",
+            dependencies: ["ChitarraTuneCore"],
+            path: "Tests/ChitarraTuneCoreTests"
         )
     ]
 )
