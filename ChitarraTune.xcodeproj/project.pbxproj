@@ -131,24 +131,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		BEEFCAFE0011223344556677 /* Generate VersionInfo */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Generate VersionInfo";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "set -euo pipefail\nOUT=\\\"$SRCROOT/Apps/Shared/Generated/VersionInfo.swift\\\"\nmkdir -p \\\"$(dirname \\\"$OUT\\\")\\\"\nTAG=\\\"$(git describe --tags --abbrev=0 2>/dev/null || echo)\\\"\nSHA=\\\"$(git rev-parse --short HEAD 2>/dev/null || echo)\\\"\nDESC=\\\"$(git describe --tags --dirty --always 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo)\\\"\nDATE=\\\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\\"\ncat > \\\"$OUT\\\" <<EOF\nimport Foundation\npublic enum BuildInfo {\n    public static let gitTag: String = \\\"$TAG\\\"\n    public static let gitCommit: String = \\\"$SHA\\\"\n    public static let gitDescribe: String = \\\"$DESC\\\"\n    public static let buildDate: String = \\\"$DATE\\\"\n}\nEOF\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -156,7 +138,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0F1F0DA81C6F45AAB34B7B0B /* Build configuration list for PBXNativeTarget "ChitarraTune" */;
 			buildPhases = (
-				BEEFCAFE0011223344556677 /* Generate VersionInfo */,
 				0F1F0DA81C6F45AAB34B7B05 /* Sources */,
 				0F1F0DA81C6F45AAB34B7B06 /* Frameworks */,
 				0F1F0DA81C6F45AAB34B7B07 /* Resources */,

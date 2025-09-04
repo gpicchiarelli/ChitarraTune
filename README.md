@@ -23,7 +23,7 @@ Caratteristiche principali
 - Sicurezza e privacy: sandbox, richiesta microfono, elaborazione interamente locale.
 - Licenza: BSD 3‑Clause.
 
-Sito: https://gpicchiarelli.github.io/chitarratune
+Sito: https://gpicchiarelli.github.io/ChitarraTune/
 
 ## Requisiti
 - Xcode 15 o successivo
@@ -50,7 +50,7 @@ Note
 
 ## Sito Web (GitHub Pages)
 - Cartella `docs/`: sito statico mostrato su GitHub Pages (impostazione “Pages → Build from /docs”).
-- URL: https://gpicchiarelli.github.io/chitarratune
+- URL: https://gpicchiarelli.github.io/ChitarraTune/
 - Branding: `doc/branding.md`
 
 ## Localizzazione
