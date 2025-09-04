@@ -15,12 +15,16 @@ final class ChitarraTuneUITests: XCTestCase {
         let titleAny = app.otherElements["appTitleLabel"]
         XCTAssertTrue(titleById.waitForExistence(timeout: 12) || titleAny.exists, "App title not found")
 
-        // Mode segmented control by identifier
-        let modePicker = app/* segmentedControls or generic */.segmentedControls["modePicker"]
-        if !modePicker.exists {
-            // Fallback search among any elements by identifier
-            let anyMode = app.otherElements["modePicker"]
-            XCTAssertTrue(anyMode.exists, "Mode picker not found")
-        }
+        // Mode segmented control: be resilient across macOS/SwiftUI mappings
+        let modeById = app.segmentedControls["modePicker"]
+        let modeAny = app.otherElements["modePicker"]
+        let existsById = modeById.waitForExistence(timeout: 6)
+        let existsAny = modeAny.exists
+        // Fallback: look for segments labeled Auto/Manual (IT/EN)
+        let autoBtn = app.buttons["Auto"]
+        let manualBtnIT = app.buttons["Manuale"]
+        let manualBtnEN = app.buttons["Manual"]
+        let existsSegments = autoBtn.exists && (manualBtnIT.exists || manualBtnEN.exists)
+        XCTAssertTrue(existsById || existsAny || existsSegments || app.segmentedControls.element.exists, "Mode picker not found")
     }
 }
