@@ -25,7 +25,14 @@ struct ContentView: View {
                 .padding()
             }
         }
-        .onAppear { audio.start() }
+        .onAppear {
+            let env = ProcessInfo.processInfo.environment
+            if env["UITEST_DISABLE_AUDIO"] == "1" {
+                // Skip starting audio engine during UI tests to avoid mic prompts
+            } else {
+                audio.start()
+            }
+        }
         .onDisappear { audio.stop() }
     }
 
