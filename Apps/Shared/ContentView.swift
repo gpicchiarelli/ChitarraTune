@@ -175,8 +175,11 @@ private extension ContentView {
             .font(.title2).bold()
             .accessibilityIdentifier("appTitleLabel", systemImage: "checkmark.circle.fill")
         */
-        Image(systemName: "guitars").font(.system(size: 80))  
-            .font(.largeTitle)
+        Image(systemName: "guitars")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 120, height: 120)
+            .foregroundColor(.orange)
         if audio.isInTune {
             Label(String(localized: "status.inTune"), systemImage: "checkmark.circle.fill")
                 .font(.system(size: 34, weight: .bold))
