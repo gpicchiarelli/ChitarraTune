@@ -105,11 +105,13 @@ struct ContentView: View {
                             HStack {
                                 Text("controls.string")
                                 Spacer()
-                                Picker("controls.string", selection: $manualIndex) {
+                                Picker("", selection: $manualIndex) {
                                     ForEach(Array(audio.preset.strings.enumerated()), id: \.offset) { idx, note in
                                         Text(note.label).tag(idx)
                                     }
                                 }
+                                .labelsHidden()
+                                .accessibilityLabel(Text("controls.string"))
                                 .pickerStyle(.segmented)
                                 .disabled(audio.preset.strings.isEmpty)
                             }
@@ -119,7 +121,7 @@ struct ContentView: View {
 
                 GroupBox(String(localized: "controls.tuningPreset")) {
                     HStack {
-                        Picker("controls.tuningPreset", selection: Binding(
+                        Picker("", selection: Binding(
                             get: { audio.preset.id },
                             set: { newID in
                                 if let newPreset = audio.availablePresets.first(where: { $0.id == newID }) {
@@ -133,6 +135,8 @@ struct ContentView: View {
                                 Text(NSLocalizedString(p.nameKey, comment: "")).tag(p.id)
                             }
                         }
+                        .labelsHidden()
+                        .accessibilityLabel(Text("controls.tuningPreset"))
                         .pickerStyle(.menu)
                         Spacer()
                         Text(NSLocalizedString(audio.preset.nameKey, comment: ""))
@@ -169,12 +173,14 @@ struct ContentView: View {
                             Spacer()
                             Button(String(localized: "controls.refreshDevices")) { audio.refreshInputDevices() }
                         }
-                        Picker("controls.inputDevice", selection: $selectedInputUID) {
+                        Picker("", selection: $selectedInputUID) {
                             Text("input.systemDefault").tag("")
                             ForEach(audio.availableInputDevices, id: \.id) { dev in
                                 Text(dev.name).tag(dev.id)
                             }
                         }
+                        .labelsHidden()
+                        .accessibilityLabel(Text("controls.inputDevice"))
                         .pickerStyle(.menu)
                         HStack {
                             Text("input.current").foregroundColor(.secondary)
