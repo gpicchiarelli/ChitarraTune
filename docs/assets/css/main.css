@@ -22,8 +22,11 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,B
 .badges img{height:20px;border-radius:6px}
 .cta{display:flex;align-items:center;gap:16px;justify-content:center;flex-wrap:wrap}
 .btn{display:inline-block;padding:10px 16px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--fg);text-decoration:none;box-shadow:var(--shadow)}
+.btn{transition:transform .12s ease, background-color .2s ease, border-color .2s ease, filter .2s ease}
 .btn:hover{transform:translateY(-1px)}
+.btn:focus-visible{outline:2px solid color-mix(in srgb, var(--accent) 40%, transparent); outline-offset:2px}
 .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));border:none;color:#fff}
+.btn.primary:hover{filter:brightness(1.03)}
 .btn.lg{font-size:18px;padding:14px 22px;border-radius:14px}
 .micro{color:var(--muted);font-size:13px;margin-top:14px}
 .footer{border-top:1px solid var(--border);padding:12px 0}
