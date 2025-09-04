@@ -47,6 +47,8 @@ Sito: https://gpicchiarelli.github.io/ChitarraTune/
 Note
 - Il core DSP è in `ChitarraTuneCore` (Swift Package locale, vedi `Package.swift`).
 - Le App Icons si generano con `scripts/generate_appicons.sh` partendo da un PNG sorgente (vedi `doc/appicon.md`).
+ - Versione: il target aggiorna `CFBundleShortVersionString` (tag git) e `CFBundleVersion` (SHA breve) in fase di build; About mostra anche “Versione: tag (commit)” e include un bottone “Copia versione”.
+ - Licenza in‑app: la finestra “Licenza (BSD‑3)” legge `LICENSE` dal bundle (UTF‑8) ed evita caratteri strani.
 
 ## Sito Web (GitHub Pages)
 - Cartella `docs/`: sito statico mostrato su GitHub Pages (impostazione “Pages → Build from /docs”).
@@ -81,3 +83,4 @@ BSD 3‑Clause — vedi `LICENSE`. La licenza è inoltre visibile dal menù Help
 
 ## Badge e CI
 - Il workflow di build è in `.github/workflows/ci.yml` (macOS runner, Xcode 15).
+ - Il workflow di release è in `.github/workflows/release.yml` (crea zip della .app su `git tag v*`).
