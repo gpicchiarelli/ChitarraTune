@@ -26,12 +26,13 @@ final class AudioEngineManager: ObservableObject {
     private var tapInstalled: Bool = false
 
     private var sampleBuffer: [Float] = []
-    private let analysisWindow: Int = 4096
+    private let analysisWindow: Int = 2048
     private var smoothedCents: Double = 0
-    private let smoothingAlpha: Double = 0.25
+    private let smoothingBase: Double = 0.25
+    private let smoothingMax: Double = 0.7
     private var stableCount: Int = 0
     private let stableThreshold: Int = 6
-    private let noiseGateRMS: Double = 0.005
+    private let noiseGateRMS: Double = 0.004
 
     struct AudioInputDevice: Identifiable, Equatable {
         let id: String      // UID
@@ -67,7 +68,7 @@ final class AudioEngineManager: ObservableObject {
 
             sampleBuffer.removeAll(keepingCapacity: true)
 
-            input.installTap(onBus: 0, bufferSize: 2048, format: format) { [weak self] buffer, _ in
+            input.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
                 guard let self = self else { return }
                 guard let channelData = buffer.floatChannelData else { return }
                 let frameLength = Int(buffer.frameLength)
@@ -146,9 +147,15 @@ final class AudioEngineManager: ObservableObject {
                 }
             }()
             if let estimate = estimatePresetTuning(samples: window, sampleRate: detector.sampleRate, referenceA: referenceA, preset: preset, forcedIndex: forcedIndex) {
-                // Smoothing on cents
-                if latestEstimate == nil { smoothedCents = estimate.cents }
-                smoothedCents = smoothingAlpha * estimate.cents + (1 - smoothingAlpha) * smoothedCents
+                // Outlier rejection
+                if estimate.clarity < 0.2 || abs(estimate.cents) > 300 { return }
+                // Smoothing on cents (clarity-adaptive)
+                let alpha = smoothingBase + (smoothingMax - smoothingBase) * max(0.0, min(1.0, estimate.clarity))
+                if latestEstimate == nil || abs(estimate.cents - smoothedCents) > 80 {
+                    smoothedCents = estimate.cents
+                } else {
+                    smoothedCents = alpha * estimate.cents + (1 - alpha) * smoothedCents
+                }
 
                 let smoothEstimate = TuningEstimate(
                     frequency: estimate.frequency,

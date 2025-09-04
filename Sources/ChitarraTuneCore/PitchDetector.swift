@@ -14,81 +14,100 @@ public struct PitchDetector: Sendable {
         self.sampleRate = sampleRate
     }
 
-    // Estimate fundamental frequency using a simple autocorrelation with parabolic peak interpolation
+    // Estimate fundamental frequency using YIN (CMNDF) with parabolic refinement
     public func estimateFrequency(samples input: [Float]) -> PitchResult? {
         let n = input.count
         guard n >= 1024 else { return nil }
 
-        // Copy and preprocess: remove DC, apply Hann window
-        var samples = input
-        let mean = samples.reduce(0, +) / Float(n)
-        if mean != 0 {
-            for i in 0..<n { samples[i] -= mean }
-        }
-        // Hann window
+        // Preprocess: remove DC, apply Hann window
+        var x = input
+        var mean: Float = 0
+        for i in 0..<n { mean += x[i] }
+        mean /= Float(n)
+        if mean != 0 { for i in 0..<n { x[i] -= mean } }
         for i in 0..<n {
             let w = 0.5 * (1.0 - cos(2.0 * Double.pi * Double(i) / Double(n - 1)))
-            samples[i] = Float(Double(samples[i]) * w)
+            x[i] = Float(Double(x[i]) * w)
         }
 
-        // Autocorrelation for lags in plausible range
-        let minLag = max(1, Int(sampleRate / maxFrequency))
-        let maxLag = min(n - 1, Int(sampleRate / minFrequency))
+        let minLag = max(2, Int(sampleRate / maxFrequency))
+        let maxLag = min(n / 2, Int(sampleRate / minFrequency))
         guard maxLag > minLag + 2 else { return nil }
 
-        // Compute R[0] for normalization
-        var r0: Double = 0
-        for i in 0..<n {
-            let s = Double(samples[i])
-            r0 += s * s
-        }
-        guard r0 > 1e-12 else { return nil }
-
-        var bestLag: Int = minLag
-        var bestValue: Double = -Double.infinity
-        var acf = [Double](repeating: 0, count: maxLag - minLag + 1)
-
-        for lag in minLag...maxLag {
-            var sum: Double = 0
-            // dot product of x[0..N-lag-1] with x[lag..N-1]
-            let upper = n - lag
+        // Difference function d(tau)
+        var d = [Float](repeating: 0, count: maxLag + 1)
+        for tau in 1...maxLag {
+            var sum: Float = 0
+            let upper = n - tau
             var i = 0
             while i < upper {
-                sum += Double(samples[i]) * Double(samples[i + lag])
+                let diff = x[i] - x[i + tau]
+                sum += diff * diff
                 i += 1
             }
-            let norm = sum / r0
-            let idx = lag - minLag
-            acf[idx] = norm
-            if norm > bestValue {
-                bestValue = norm
-                bestLag = lag
+            d[tau] = sum
+        }
+
+        // Cumulative mean normalized difference function (CMNDF)
+        var cmnd = [Float](repeating: 1, count: maxLag + 1)
+        var runningSum: Float = 0
+        for tau in 1...maxLag {
+            runningSum += d[tau]
+            if runningSum != 0 {
+                cmnd[tau] = d[tau] * Float(tau) / runningSum
+            } else {
+                cmnd[tau] = 1
             }
         }
 
-        // Reject weak peaks
-        let clarity = max(0.0, min(1.0, bestValue))
-        if clarity < 0.2 { // too noisy/unstable
-            return nil
+        // Absolute threshold search
+        let threshold: Float = 0.12
+        var tauEstimate = -1
+        var tau = minLag
+        while tau <= maxLag {
+            if cmnd[tau] < threshold {
+                // Local minimum search
+                while tau + 1 <= maxLag && cmnd[tau + 1] < cmnd[tau] { tau += 1 }
+                tauEstimate = tau
+                break
+            }
+            tau += 1
+        }
+        if tauEstimate == -1 {
+            // Fallback to global minimum in range
+            var minVal: Float = 1
+            var minIdx: Int = minLag
+            for i in minLag...maxLag {
+                if cmnd[i] < minVal { minVal = cmnd[i]; minIdx = i }
+            }
+            tauEstimate = minIdx
         }
 
-        // Parabolic interpolation around best lag
-        let peakIndex = bestLag - minLag
-        var refinedLag = Double(bestLag)
-        if peakIndex > 0 && peakIndex < acf.count - 1 {
-            let alpha = acf[peakIndex - 1]
-            let beta = acf[peakIndex]
-            let gamma = acf[peakIndex + 1]
-            let denom = (alpha - 2.0 * beta + gamma)
+        // Parabolic interpolation around minimum
+        var refinedLag = Float(tauEstimate)
+        if tauEstimate > 1 && tauEstimate < maxLag {
+            let s0 = cmnd[tauEstimate - 1]
+            let s1 = cmnd[tauEstimate]
+            let s2 = cmnd[tauEstimate + 1]
+            let denom = (2 * s1 - s0 - s2)
             if abs(denom) > 1e-12 {
-                let p = 0.5 * (alpha - gamma) / denom
-                refinedLag = Double(minLag + peakIndex) + p
+                let delta = 0.5 * (s0 - s2) / denom
+                refinedLag += delta
             }
         }
 
         guard refinedLag > 0 else { return nil }
-        let frequency = sampleRate / refinedLag
+        let frequency = sampleRate / Double(refinedLag)
         guard frequency.isFinite, frequency > 10, frequency < 2000 else { return nil }
+
+        // Clarity: invert CMNDF minimum (0 -> poor, 1 -> perfect)
+        var minCmnd = cmnd[tauEstimate]
+        if tauEstimate > 1 && tauEstimate < maxLag {
+            minCmnd = min(minCmnd, cmnd[tauEstimate - 1])
+            minCmnd = min(minCmnd, cmnd[tauEstimate + 1])
+        }
+        let clarity = max(0, min(1, 1 - Double(minCmnd)))
+        if clarity < 0.15 { return nil }
         return PitchResult(frequency: frequency, clarity: clarity)
     }
 }
@@ -104,10 +123,15 @@ public func estimatePresetTuning(
     let detector = PitchDetector(sampleRate: sampleRate)
     guard let res = detector.estimateFrequency(samples: samples) else { return nil }
     if let idx = forcedIndex, idx >= 0, idx < preset.strings.count {
+        // Normalize by octaves near target to mitigate octave errors under strong plucks
         let targetF = frequency(for: preset.strings[idx].midi, referenceA: referenceA)
-        let cents = 1200.0 * log2(res.frequency / targetF)
+        var f = res.frequency
+        var ratio = f / targetF
+        while ratio > 1.9 { f /= 2; ratio /= 2 }
+        while ratio < 0.55 { f *= 2; ratio *= 2 }
+        let cents = 1200.0 * log2(f / targetF)
         return TuningEstimate(
-            frequency: res.frequency,
+            frequency: f,
             clarity: res.clarity,
             stringLabel: preset.strings[idx].label,
             cents: cents,
