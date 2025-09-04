@@ -3,10 +3,11 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var audio = AudioEngineManager()
     @State private var isAuto: Bool = true
-    @State private var manualString: GuitarString = .e2
+    @State private var manualIndex: Int = 0
     @AppStorage("A4") private var storedA4: Double = 440
     @AppStorage("isAutoMode") private var storedIsAuto: Bool = true
-    @AppStorage("manualStringName") private var storedManualStringName: String = "E2"
+    @AppStorage("manualStringIndex") private var storedManualStringIndex: Int = 0
+    @AppStorage("tuningPresetID") private var storedPresetID: String = "standard"
     @AppStorage("preferredInputUID") private var storedPreferredInputUID: String = ""
     @State private var selectedInputUID: String = ""
 
@@ -39,7 +40,12 @@ struct ContentView: View {
             }
 
             // Show selected string immediately in Manual mode; otherwise show detected
-            Text(isAuto ? (audio.latestEstimate?.nearestString.name ?? "—") : manualString.name)
+            let currentLabel: String = {
+                if isAuto { return audio.latestEstimate?.stringLabel ?? "—" }
+                let idx = min(max(0, manualIndex), max(0, audio.preset.strings.count-1))
+                return audio.preset.strings.isEmpty ? "—" : audio.preset.strings[idx].label
+            }()
+            Text(currentLabel)
                 .font(.system(size: 72, weight: .bold, design: .rounded))
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
@@ -71,72 +77,113 @@ struct ContentView: View {
 
             Divider()
 
-            // Controls
-            VStack(alignment: .leading, spacing: 12) {
+            // Controls (macOS-style sections)
+            VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Button(audio.isRunning ? String(localized: "controls.stop") : String(localized: "controls.start")) {
                         audio.isRunning ? audio.stop() : audio.start()
                     }
                 }
-
-                Text("controls.mode").font(.headline)
-                Picker("controls.mode", selection: $isAuto) {
-                    Text("mode.auto").tag(true)
-                    Text("mode.manual").tag(false)
-                }
-                .pickerStyle(.segmented)
-
-                if !isAuto {
-                    Text("controls.string").font(.headline)
-                    Picker("controls.string", selection: $manualString) {
-                        ForEach(GuitarString.allCases, id: \.self) { s in
-                            Text(s.name).tag(s)
+                GroupBox(String(localized: "controls.mode")) {
+                    VStack(alignment: .leading) {
+                        Picker("controls.mode", selection: $isAuto) {
+                            Text("mode.auto").tag(true)
+                            Text("mode.manual").tag(false)
+                        }
+                        .pickerStyle(.segmented)
+                        if !isAuto {
+                            HStack {
+                                Text("controls.string")
+                                Spacer()
+                                Picker("controls.string", selection: $manualIndex) {
+                                    ForEach(Array(audio.preset.strings.enumerated()), id: \.offset) { idx, note in
+                                        Text(note.label).tag(idx)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .disabled(audio.preset.strings.isEmpty)
+                            }
                         }
                     }
-                    .pickerStyle(.segmented)
                 }
 
-                HStack(spacing: 8) {
-                    Text("A4")
-                    Slider(value: $audio.referenceA, in: 415...466, step: 1)
-                    Text(audio.referenceA, format: .number.precision(.fractionLength(0)))
-                        .frame(width: 50, alignment: .trailing)
-                    Text("units.hz")
+                GroupBox(String(localized: "controls.tuningPreset")) {
+                    HStack {
+                        Picker("controls.tuningPreset", selection: Binding(
+                            get: { audio.preset.id },
+                            set: { newID in
+                                if let newPreset = audio.availablePresets.first(where: { $0.id == newID }) {
+                                    audio.preset = newPreset
+                                    if manualIndex >= newPreset.strings.count { manualIndex = 0 }
+                                    storedPresetID = newID
+                                }
+                            }
+                        )) {
+                            ForEach(audio.availablePresets, id: \.id) { p in
+                                Text(NSLocalizedString(p.nameKey, comment: "")).tag(p.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        Spacer()
+                        Text(NSLocalizedString(audio.preset.nameKey, comment: ""))
+                            .foregroundColor(.secondary)
+                    }
                 }
 
-                // Input device selection
-                HStack {
-                    Text("controls.inputDevice").font(.headline)
-                    Spacer()
-                    Button(String(localized: "controls.refreshDevices")) {
-                        audio.refreshInputDevices()
+                GroupBox(String(localized: "controls.calibration")) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Text("A4")
+                            Slider(value: $audio.referenceA, in: 415...466, step: 1)
+                            Text(audio.referenceA, format: .number.precision(.fractionLength(0)))
+                                .frame(width: 50, alignment: .trailing)
+                            Text("units.hz")
+                        }
+                        HStack(spacing: 12) {
+                            Text("controls.fine")
+                            Stepper("", value: Binding(
+                                get: { Int((audio.referenceA * 10).rounded()) },
+                                set: { audio.referenceA = Double($0) / 10.0 }
+                            ), in: 4150...4660)
+                            Text(audio.referenceA, format: .number.precision(.fractionLength(1)))
+                                .frame(width: 60, alignment: .trailing)
+                            Button(String(localized: "controls.reset")) { audio.referenceA = 440 }
+                        }
                     }
                 }
-                Picker("controls.inputDevice", selection: $selectedInputUID) {
-                    Text("input.systemDefault").tag("")
-                    ForEach(audio.availableInputDevices, id: \.id) { dev in
-                        Text(dev.name).tag(dev.id)
+
+                GroupBox(String(localized: "controls.audio")) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("controls.inputDevice")
+                            Spacer()
+                            Button(String(localized: "controls.refreshDevices")) { audio.refreshInputDevices() }
+                        }
+                        Picker("controls.inputDevice", selection: $selectedInputUID) {
+                            Text("input.systemDefault").tag("")
+                            ForEach(audio.availableInputDevices, id: \.id) { dev in
+                                Text(dev.name).tag(dev.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        HStack {
+                            Text("input.current").foregroundColor(.secondary)
+                            Spacer()
+                            Text(audio.currentInputName.isEmpty ? String(localized: "input.systemDefault") : audio.currentInputName)
+                                .foregroundColor(.secondary)
+                        }
                     }
-                }
-                .pickerStyle(.menu)
-                // Current device subtitle
-                HStack {
-                    Text("input.current")
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text(audio.currentInputName.isEmpty ? String(localized: "input.systemDefault") : audio.currentInputName)
-                        .foregroundColor(.secondary)
                 }
             }
         }
         .padding()
         .onChange(of: isAuto) { newValue in
-            audio.mode = newValue ? .auto : .manual(manualString)
+            audio.mode = newValue ? .auto : .manual(manualIndex)
             storedIsAuto = newValue
         }
-        .onChange(of: manualString) { newValue in
+        .onChange(of: manualIndex) { newValue in
             if !isAuto { audio.mode = .manual(newValue) }
-            storedManualStringName = newValue.name
+            storedManualStringIndex = newValue
         }
         .onChange(of: audio.referenceA) { newValue in storedA4 = newValue }
         .onChange(of: selectedInputUID) { newValue in
@@ -158,13 +205,15 @@ struct ContentView: View {
                 isAuto = storedIsAuto
             case .manual(let s):
                 isAuto = storedIsAuto
-                manualString = s
+                manualIndex = s
             }
             audio.referenceA = storedA4
-            if let restored = GuitarString.allCases.first(where: { $0.name == storedManualStringName }) {
-                manualString = restored
-                if !isAuto { audio.mode = .manual(restored) }
+            // Restore preset and manual index
+            if let restored = audio.availablePresets.first(where: { $0.id == storedPresetID }) {
+                audio.preset = restored
             }
+            manualIndex = storedManualStringIndex
+            if !isAuto { audio.mode = .manual(manualIndex) }
             audio.refreshInputDevices()
             selectedInputUID = storedPreferredInputUID
             if selectedInputUID.isEmpty {

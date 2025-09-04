@@ -18,3 +18,14 @@
 "input.systemDefault" = "System Default";
 "signal.weak" = "Low signal";
 "input.current" = "In use:";
+"controls.tuningPreset" = "Tuning";
+"tuning.standard" = "Standard (EADGBE)";
+"tuning.dropD" = "Drop D";
+"tuning.dadgad" = "DADGAD";
+"tuning.openG" = "Open G";
+"tuning.openD" = "Open D";
+"tuning.halfDown" = "Half-step down";
+"controls.calibration" = "Calibration";
+"controls.reset" = "Reset";
+"controls.fine" = "Fine";
+"controls.audio" = "Audio";

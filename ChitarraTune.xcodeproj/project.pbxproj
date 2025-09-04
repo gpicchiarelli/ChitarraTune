@@ -11,6 +11,7 @@
   0F1F0DA81C6F45AAB34B7B32 /* AudioEngineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */; };
   0F1F0DA81C6F45AAB34B7B33 /* GuitarNotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */; };
   0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */; };
+  AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
   0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */; };
   0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
@@ -22,6 +23,7 @@
   0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngineManager.swift; sourceTree = "<group>"; };
   0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuitarNotes.swift; sourceTree = "<group>"; };
   0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
+  AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
   0F1F0DA81C6F45AAB34B7B1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
   0F1F0DA81C6F45AAB34B7B1C /* ChitarraTune.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChitarraTune.entitlements; sourceTree = "<group>"; };
   0F1F0DA81C6F45AAB34B7B1E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -73,7 +75,8 @@
 
   0F1F0DA81C6F45AAB34B7B15 /* ChitarraTuneCore */ = {isa = PBXGroup; children = (
       0F1F0DA81C6F45AAB34B7B19 /* GuitarNotes.swift */, 
-      0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */
+      0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */,
+      AABBCCDD0011223344556677 /* TuningPresets.swift */
     ); path = ChitarraTuneCore; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
@@ -102,7 +105,8 @@
       0F1F0DA81C6F45AAB34B7B31 /* ContentView.swift in Sources */, 
       0F1F0DA81C6F45AAB34B7B32 /* AudioEngineManager.swift in Sources */, 
       0F1F0DA81C6F45AAB34B7B33 /* GuitarNotes.swift in Sources */, 
-      0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */
+      0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */,
+      AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */
     ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
@@ -201,4 +205,3 @@
   };
   rootObject = 0F1F0DA81C6F45AAB34B7B01 /* Project object */;
 }
-
