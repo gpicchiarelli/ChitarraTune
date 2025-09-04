@@ -14,14 +14,24 @@
 		0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1A /* PitchDetector.swift */; };
 		0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */; };
 		0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1F0DA81C6F45AAB34B7B20 /* InfoPlist.strings */; };
+		222222222222222222222222 /* Apps/Shared/Generated/VersionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111111 /* Apps/Shared/Generated/VersionInfo.swift */; };
 		5220EBE32E69B0A70030368D /* ChitarraTune.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */; };
-			AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
-			FEEDFACEFEEDFACEFEEDFACE /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */; };
-			222222222222222222222222 /* VersionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111111 /* VersionInfo.swift */; };
-			ABCDEF00ABCDEF00ABCDEF00 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */; };
-        EEEE00000000000000000009 /* ChitarraTuneUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEE00000000000000000007 /* ChitarraTuneUITests.swift */; };
-        PPPP00000000000000000002 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = PPPP00000000000000000001 /* PreferencesView.swift */; };
+		AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
+		ABCDEF00ABCDEF00ABCDEF00 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */; };
+		EEEE00000000000000000009 /* ChitarraTuneUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEE00000000000000000007 /* ChitarraTuneUITests.swift */; };
+		FEEDFACEFEEDFACEFEEDFACE /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */; };
+		PPPP00000000000000000002 /* Apps/Shared/PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = PPPP00000000000000000001 /* Apps/Shared/PreferencesView.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		EEEE0000000000000000000C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0F1F0DA81C6F45AAB34B7B01 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0F1F0DA81C6F45AAB34B7B04;
+			remoteInfo = ChitarraTune;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChitarraTune.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -36,36 +46,16 @@
 		0F1F0DA81C6F45AAB34B7B1F /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		0F1F0DA81C6F45AAB34B7B21 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0F1F0DA81C6F45AAB34B7B22 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		111111111111111111111111 /* Apps/Shared/Generated/VersionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apps/Shared/Generated/VersionInfo.swift; sourceTree = SOURCE_ROOT; };
 		5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ChitarraTune.xcassets; sourceTree = "<group>"; };
-		/* removed */
 		AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
-			C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = Apps/Shared/Credits.rtf; sourceTree = SOURCE_ROOT; };
-				111111111111111111111111 /* VersionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apps/Shared/Generated/VersionInfo.swift; sourceTree = SOURCE_ROOT; };
-				ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
-        EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChitarraTuneUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-        EEEE00000000000000000007 /* ChitarraTuneUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChitarraTuneUITests.swift; sourceTree = "<group>"; };
-        EEEE00000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-        PPPP00000000000000000001 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apps/Shared/PreferencesView.swift; sourceTree = SOURCE_ROOT; };
+		ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = Apps/Shared/Credits.rtf; sourceTree = SOURCE_ROOT; };
+		EEEE00000000000000000007 /* ChitarraTuneUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChitarraTuneUITests.swift; sourceTree = "<group>"; };
+		EEEE00000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChitarraTuneUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		PPPP00000000000000000001 /* Apps/Shared/PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apps/Shared/PreferencesView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
-
-/* Begin PBXContainerItemProxy section */
-        EEEE0000000000000000000C /* PBXContainerItemProxy */ = {
-            isa = PBXContainerItemProxy;
-            containerPortal = 0F1F0DA81C6F45AAB34B7B01 /* Project object */;
-            proxyType = 1;
-            remoteGlobalIDString = 0F1F0DA81C6F45AAB34B7B04;
-            remoteInfo = ChitarraTune;
-        };
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXTargetDependency section */
-        EEEE0000000000000000000D /* PBXTargetDependency */ = {
-            isa = PBXTargetDependency;
-            name = ChitarraTune;
-            target = 0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */;
-            targetProxy = EEEE0000000000000000000C /* PBXContainerItemProxy */;
-        };
-/* End PBXTargetDependency section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		0F1F0DA81C6F45AAB34B7B06 /* Frameworks */ = {
@@ -75,25 +65,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-        EEEE00000000000000000005 /* Frameworks */ = {
-            isa = PBXFrameworksBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
+		EEEE00000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0F1F0DA81C6F45AAB34B7B02 = {
 			isa = PBXGroup;
 			children = (
-				/* Removed duplicate Assets.xcassets */
 				5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */,
 				ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */,
 				0F1F0DA81C6F45AAB34B7B10 /* Apps */,
 				0F1F0DA81C6F45AAB34B7B14 /* Sources */,
-                EEEE0000000000000000000B /* ChitarraTuneUITests */,
+				EEEE0000000000000000000B /* ChitarraTuneUITests */,
 				0F1F0DA81C6F45AAB34B7B03 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -102,7 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */,
-                EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */,
+				EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -124,8 +113,8 @@
 				0F1F0DA81C6F45AAB34B7B18 /* AudioEngineManager.swift */,
 				0F1F0DA81C6F45AAB34B7B13 /* Localization */,
 				C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */,
-				111111111111111111111111 /* VersionInfo.swift */,
-                PPPP00000000000000000001 /* PreferencesView.swift */,
+				111111111111111111111111 /* Apps/Shared/Generated/VersionInfo.swift */,
+				PPPP00000000000000000001 /* Apps/Shared/PreferencesView.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -166,49 +155,27 @@
 			path = ChitarraTuneCore;
 			sourceTree = "<group>";
 		};
-        EEEE0000000000000000000B /* ChitarraTuneUITests */ = {
-            isa = PBXGroup;
-            children = (
-                EEEE00000000000000000007 /* ChitarraTuneUITests.swift */,
-                EEEE00000000000000000008 /* Info.plist */,
-            );
-            path = ChitarraTuneUITests;
-            sourceTree = SOURCE_ROOT;
-        };
+		EEEE0000000000000000000B /* ChitarraTuneUITests */ = {
+			isa = PBXGroup;
+			children = (
+				EEEE00000000000000000007 /* ChitarraTuneUITests.swift */,
+				EEEE00000000000000000008 /* Info.plist */,
+			);
+			path = ChitarraTuneUITests;
+			sourceTree = SOURCE_ROOT;
+		};
 /* End PBXGroup section */
-
-/* Begin PBXShellScriptBuildPhase section */
-        777777777777777777777777 /* Set Version From Git */ = {
-            isa = PBXShellScriptBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-            );
-            inputFileListPaths = (
-            );
-            inputPaths = (
-            );
-            name = "Set Version From Git";
-            outputFileListPaths = (
-            );
-            outputPaths = (
-                "$(DERIVED_FILE_DIR)/version_from_git.stamp",
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-            shellPath = /bin/bash;
-            shellScript = "set -euo pipefail\n# Skip in CI to avoid sandbox/timing issues; rely on VersionInfo.swift\nif [ \"${CI:-}\" = \"true\" ] || [ \"${GITHUB_ACTIONS:-}\" = \"true\" ]; then\n  exit 0\nfi\nOUT=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n# Only proceed if Info.plist exists and is writable\nif [ -f \"$OUT\" ] && [ -w \"$OUT\" ]; then\n  TAG=\"$(git describe --tags --abbrev=0 2>/dev/null || true)\"\n  SHA=\"$(git rev-parse --short HEAD 2>/dev/null || true)\"\n  SHORT=\"$TAG\"\n  if [ -z \"$SHORT\" ]; then SHORT=\"$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \"$OUT\" 2>/dev/null || true)\"; fi\n  BUILD=\"$SHA\"\n  if [ -z \"$BUILD\" ]; then BUILD=\"$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' \"$OUT\" 2>/dev/null || true)\"; fi\n  if [ -n \"$SHORT\" ]; then /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString '$SHORT'\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string '$SHORT'\" \"$OUT\"; fi\n  if [ -n \"$BUILD\" ]; then /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion '$BUILD'\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleVersion string '$BUILD'\" \"$OUT\"; fi\n  # Stamp file to satisfy dependency analyzer\n  STAMP=\"$DERIVED_FILE_DIR/version_from_git.stamp\"\n  mkdir -p \"$(dirname \"$STAMP\")\" && : > \"$STAMP\"\nfi\n";
-        };
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0F1F0DA81C6F45AAB34B7B0B /* Build configuration list for PBXNativeTarget "ChitarraTune" */;
-            buildPhases = (
-                0F1F0DA81C6F45AAB34B7B05 /* Sources */,
-                0F1F0DA81C6F45AAB34B7B06 /* Frameworks */,
-                0F1F0DA81C6F45AAB34B7B07 /* Resources */,
-                777777777777777777777777 /* Set Version From Git */,
-            );
+			buildPhases = (
+				0F1F0DA81C6F45AAB34B7B05 /* Sources */,
+				0F1F0DA81C6F45AAB34B7B06 /* Frameworks */,
+				0F1F0DA81C6F45AAB34B7B07 /* Resources */,
+				777777777777777777777777 /* Set Version From Git */,
+			);
 			buildRules = (
 			);
 			dependencies = (
@@ -218,23 +185,23 @@
 			productReference = 0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */;
 			productType = "com.apple.product-type.application";
 		};
-        EEEE00000000000000000001 /* ChitarraTuneUITests */ = {
-            isa = PBXNativeTarget;
-            buildConfigurationList = EEEE00000000000000000002 /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */;
-            buildPhases = (
-                EEEE00000000000000000005 /* Frameworks */,
-                EEEE00000000000000000006 /* Sources */,
-            );
-            buildRules = (
-            );
-            dependencies = (
-                EEEE0000000000000000000D /* PBXTargetDependency */,
-            );
-            name = ChitarraTuneUITests;
-            productName = ChitarraTuneUITests;
-            productReference = EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */;
-            productType = "com.apple.product-type.bundle.ui-testing";
-        };
+		EEEE00000000000000000001 /* ChitarraTuneUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EEEE00000000000000000002 /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */;
+			buildPhases = (
+				EEEE00000000000000000005 /* Frameworks */,
+				EEEE00000000000000000006 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EEEE0000000000000000000D /* PBXTargetDependency */,
+			);
+			name = ChitarraTuneUITests;
+			productName = ChitarraTuneUITests;
+			productReference = EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -266,7 +233,7 @@
 			projectRoot = "";
 			targets = (
 				0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */,
-                EEEE00000000000000000001 /* ChitarraTuneUITests */,
+				EEEE00000000000000000001 /* ChitarraTuneUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -286,6 +253,28 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		777777777777777777777777 /* Set Version From Git */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Set Version From Git";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/version_from_git.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "set -euo pipefail\n# Skip in CI to avoid sandbox/timing issues; rely on VersionInfo.swift\nif [ \"${CI:-}\" = \"true\" ] || [ \"${GITHUB_ACTIONS:-}\" = \"true\" ]; then\n  exit 0\nfi\nOUT=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n# Only proceed if Info.plist exists and is writable\nif [ -f \"$OUT\" ] && [ -w \"$OUT\" ]; then\n  TAG=\"$(git describe --tags --abbrev=0 2>/dev/null || true)\"\n  SHA=\"$(git rev-parse --short HEAD 2>/dev/null || true)\"\n  SHORT=\"$TAG\"\n  if [ -z \"$SHORT\" ]; then SHORT=\"$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \"$OUT\" 2>/dev/null || true)\"; fi\n  BUILD=\"$SHA\"\n  if [ -z \"$BUILD\" ]; then BUILD=\"$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' \"$OUT\" 2>/dev/null || true)\"; fi\n  if [ -n \"$SHORT\" ]; then /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString '$SHORT'\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string '$SHORT'\" \"$OUT\"; fi\n  if [ -n \"$BUILD\" ]; then /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion '$BUILD'\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleVersion string '$BUILD'\" \"$OUT\"; fi\n  # Stamp file to satisfy dependency analyzer\n  STAMP=\"$DERIVED_FILE_DIR/version_from_git.stamp\"\n  mkdir -p \"$(dirname \"$STAMP\")\" && : > \"$STAMP\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		0F1F0DA81C6F45AAB34B7B05 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -297,20 +286,29 @@
 				0F1F0DA81C6F45AAB34B7B33 /* GuitarNotes.swift in Sources */,
 				0F1F0DA81C6F45AAB34B7B34 /* PitchDetector.swift in Sources */,
 				AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */,
-				222222222222222222222222 /* VersionInfo.swift in Sources */,
-                PPPP00000000000000000002 /* PreferencesView.swift in Sources */,
+				222222222222222222222222 /* Apps/Shared/Generated/VersionInfo.swift in Sources */,
+				PPPP00000000000000000002 /* Apps/Shared/PreferencesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-        EEEE00000000000000000006 /* Sources */ = {
-            isa = PBXSourcesBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-                EEEE00000000000000000009 /* ChitarraTuneUITests.swift in Sources */,
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
+		EEEE00000000000000000006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EEEE00000000000000000009 /* ChitarraTuneUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		EEEE0000000000000000000D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ChitarraTune;
+			target = 0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */;
+			targetProxy = EEEE0000000000000000000C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		0F1F0DA81C6F45AAB34B7B1D /* Localizable.strings */ = {
@@ -334,54 +332,11 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-        EEEE00000000000000000003 /* Debug */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                DEVELOPMENT_TEAM = "";
-                GENERATE_INFOPLIST_FILE = NO;
-                INFOPLIST_FILE = ChitarraTuneUITests/Info.plist;
-                LD_RUNPATH_SEARCH_PATHS = (
-                    "$(inherited)",
-                    "@executable_path/../Frameworks",
-                    "@loader_path/../Frameworks",
-                );
-                MACOSX_DEPLOYMENT_TARGET = 12.0;
-                PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTuneUITests;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SDKROOT = macosx;
-                SWIFT_VERSION = 5.0;
-                TEST_TARGET_NAME = ChitarraTune;
-            };
-            name = Debug;
-        };
-        EEEE00000000000000000004 /* Release */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                DEVELOPMENT_TEAM = "";
-                GENERATE_INFOPLIST_FILE = NO;
-                INFOPLIST_FILE = ChitarraTuneUITests/Info.plist;
-                LD_RUNPATH_SEARCH_PATHS = (
-                    "$(inherited)",
-                    "@executable_path/../Frameworks",
-                    "@loader_path/../Frameworks",
-                );
-                MACOSX_DEPLOYMENT_TARGET = 12.0;
-                PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTuneUITests;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SDKROOT = macosx;
-                SWIFT_VERSION = 5.0;
-                TEST_TARGET_NAME = ChitarraTune;
-            };
-            name = Release;
-        };
 		0F1F0DA81C6F45AAB34B7B09 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -430,6 +385,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -527,6 +483,50 @@
 			};
 			name = Release;
 		};
+		EEEE00000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ChitarraTuneUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTuneUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = ChitarraTune;
+			};
+			name = Debug;
+		};
+		EEEE00000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ChitarraTuneUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTuneUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = ChitarraTune;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -548,15 +548,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-        EEEE00000000000000000002 /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */ = {
-            isa = XCConfigurationList;
-            buildConfigurations = (
-                EEEE00000000000000000003 /* Debug */,
-                EEEE00000000000000000004 /* Release */,
-            );
-            defaultConfigurationIsVisible = 0;
-            defaultConfigurationName = Release;
-        };
+		EEEE00000000000000000002 /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EEEE00000000000000000003 /* Debug */,
+				EEEE00000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 	};
 	rootObject = 0F1F0DA81C6F45AAB34B7B01 /* Project object */;

@@ -100,5 +100,11 @@ struct PreferencesView: View {
         .padding(12)
         .frame(minWidth: 520, minHeight: 360)
         .onAppear { audio.refreshInputDevices() }
+        .onChange(of: storedPresetID) { newID in
+            if let newPreset = presets.first(where: { $0.id == newID }) {
+                audio.preset = newPreset
+                if storedManualStringIndex >= newPreset.strings.count { storedManualStringIndex = 0 }
+            }
+        }
     }
 }

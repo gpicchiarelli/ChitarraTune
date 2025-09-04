@@ -28,10 +28,18 @@ struct ChitarraTuneApp: App {
     @StateObject private var audioManager = AudioEngineManager()
     // Ensure a single Preferences window instance
     private static var preferencesPanel: NSPanel? = nil
+    @Environment(\.scenePhase) private var scenePhase
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(audioManager)
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in
+                    audioManager.stop()
+                }
+                .onChange(of: scenePhase) { phase in
+                    // Be conservative: stop when app becomes inactive/background
+                    if phase != .active { audioManager.stop() }
+                }
         }
         .commands {
             CommandGroup(replacing: .appInfo) {

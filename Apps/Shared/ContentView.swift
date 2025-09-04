@@ -19,6 +19,22 @@ struct ContentView: View {
     }
     private var centsValue: Double { audio.latestEstimate?.cents ?? 0 }
     private var frequencyValue: Double { audio.latestEstimate?.frequency ?? 0 }
+    private var targetFrequency: Double {
+        guard !audio.preset.strings.isEmpty else { return 0 }
+        if isAuto {
+            if let idx = audio.latestEstimate?.stringIndex, idx >= 0, idx < audio.preset.strings.count {
+                return frequency(for: audio.preset.strings[idx].midi, referenceA: audio.referenceA)
+            }
+            if let label = audio.latestEstimate?.stringLabel,
+               let idx = audio.preset.strings.firstIndex(where: { $0.label == label }) {
+                return frequency(for: audio.preset.strings[idx].midi, referenceA: audio.referenceA)
+            }
+        } else {
+            let idx = min(max(0, manualIndex), max(0, audio.preset.strings.count-1))
+            return frequency(for: audio.preset.strings[idx].midi, referenceA: audio.referenceA)
+        }
+        return 0
+    }
 
     var body: some View {
         Group {
@@ -47,18 +63,17 @@ struct ContentView: View {
 
     private var tunerView: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 12) {
                 headerSection()
                 titleSection()
                 tuningBarSection()
                 readoutSection()
+                statusStripSection()
                 weakSignalNotice()
-                Divider()
-                controlsSection()
             }
             .padding(12)
         }
-        .frame(minWidth: 600, minHeight: 520)
+        .frame(minWidth: 540, minHeight: 420)
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
                 Button {
@@ -81,7 +96,8 @@ struct ContentView: View {
 
                 if !isAuto {
                     Picker("controls.string", selection: $manualIndex) {
-                        ForEach(Array(audio.preset.strings.enumerated()), id: \.offset) { idx, note in
+                        ForEach(0..<(audio.preset.strings.count), id: \.self) { idx in
+                            let note = audio.preset.strings[idx]
                             Text(note.label).tag(idx)
                         }
                     }
@@ -100,6 +116,13 @@ struct ContentView: View {
             storedManualStringIndex = newValue
         }
         .onChange(of: audio.referenceA) { newValue in storedA4 = newValue }
+        .onChange(of: storedPresetID) { newID in
+            applyPresetID(newID)
+        }
+        .onChange(of: audio.preset.id) { _ in
+            // Ensure manual index is valid for the newly selected preset
+            if manualIndex >= audio.preset.strings.count { manualIndex = 0 }
+        }
         .onChange(of: selectedInputUID) { newValue in
             if newValue.isEmpty {
                 audio.setSystemDefaultInputDevice()
@@ -141,22 +164,35 @@ struct ContentView: View {
 
 // MARK: - Sections (split to help type checker)
 private extension ContentView {
+    func applyPresetID(_ id: String) {
+        if let newPreset = audio.availablePresets.first(where: { $0.id == id }) {
+            audio.preset = newPreset
+            if manualIndex >= newPreset.strings.count { manualIndex = 0 }
+        }
+    }
     @ViewBuilder func headerSection() -> some View {
         Text("app.title")
             .font(.title2).bold()
             .accessibilityIdentifier("appTitleLabel")
         if audio.isInTune {
             Label(String(localized: "status.inTune"), systemImage: "checkmark.circle.fill")
-                .font(.system(size: 26, weight: .bold))
+                .font(.system(size: 34, weight: .bold))
                 .foregroundColor(.green)
         }
     }
 
     @ViewBuilder func titleSection() -> some View {
         Text(currentStringLabel)
-            .font(.system(size: 72, weight: .bold, design: .rounded))
+            .font(.system(size: 56, weight: .bold, design: .rounded))
             .minimumScaleFactor(0.5)
             .lineLimit(1)
+        if targetFrequency > 0 {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(targetFrequency, format: .number.precision(.fractionLength(2)))
+                    .font(.system(size: 44, weight: .semibold, design: .rounded))
+                Text("Hz").font(.title3).foregroundColor(.secondary)
+            }
+        }
     }
 
     @ViewBuilder func tuningBarSection() -> some View {
@@ -166,6 +202,9 @@ private extension ContentView {
 
     @ViewBuilder func readoutSection() -> some View {
         HStack(spacing: 16) {
+            let absC = abs(centsValue)
+            let tint: Color = absC < 5 ? .green : (absC < 15 ? .yellow : .red)
+            Image(systemName: "circle.fill").foregroundColor(tint).font(.caption)
             Text(frequencyValue, format: .number.precision(.fractionLength(2)))
             Text("units.hz")
             if let c = audio.latestEstimate?.cents {
@@ -174,6 +213,29 @@ private extension ContentView {
             }
         }
         .font(.headline)
+        .foregroundColor(.secondary)
+    }
+
+    @ViewBuilder func statusStripSection() -> some View {
+        HStack(spacing: 10) {
+            Label(NSLocalizedString(audio.preset.nameKey, comment: ""), systemImage: "music.note.list")
+            Divider()
+            Label("A4 \(Int(audio.referenceA)) Hz", systemImage: "gauge")
+            Divider()
+            Label(audio.currentInputName.isEmpty ? String(localized: "input.systemDefault") : audio.currentInputName, systemImage: "mic")
+            if let c = audio.latestEstimate?.cents {
+                let absC = abs(c)
+                let tint: Color = absC < 5 ? .green : (absC < 15 ? .yellow : .red)
+                Text(String(format: "%+.1f", c))
+                    .font(.caption2)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(tint.opacity(0.15)))
+                    .foregroundColor(tint)
+                    .accessibilityLabel("cents")
+            }
+        }
+        .font(.footnote)
         .foregroundColor(.secondary)
     }
 
@@ -228,7 +290,8 @@ private extension ContentView {
                         Text("controls.string")
                         Spacer()
                         Picker("", selection: $manualIndex) {
-                            ForEach(Array(audio.preset.strings.enumerated()), id: \.offset) { idx, note in
+                            ForEach(0..<(audio.preset.strings.count), id: \.self) { idx in
+                                let note = audio.preset.strings[idx]
                                 Text(note.label).tag(idx)
                             }
                         }
