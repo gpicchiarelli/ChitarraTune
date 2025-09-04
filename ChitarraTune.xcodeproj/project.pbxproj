@@ -543,11 +543,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-        UITCONFIGLIST /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */ = {
+        EEEE00000000000000000002 /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */ = {
             isa = XCConfigurationList;
             buildConfigurations = (
-                UITDEBUG /* Debug */,
-                UITRELEASE /* Release */,
+                EEEE00000000000000000003 /* Debug */,
+                EEEE00000000000000000004 /* Release */,
             );
             defaultConfigurationIsVisible = 0;
             defaultConfigurationName = Release;
