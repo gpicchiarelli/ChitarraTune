@@ -35,11 +35,32 @@ jobs:
           EOF
       - name: Resolve Swift Packages
         run: xcodebuild -resolvePackageDependencies -project ChitarraTune.xcodeproj
-      - name: SwiftPM tests (ChitarraTuneCore)
+      - name: SwiftPM tests (Core + Web)
         run: |
           set -euo pipefail
           swift --version
-          swift test --parallel --configuration debug
+          swift test --parallel --configuration debug --enable-code-coverage
+      - name: SwiftPM coverage report
+        run: |
+          set -euo pipefail
+          PROFDATA=$(find .build -name default.profdata | head -n 1 || true)
+          if [ -n "$PROFDATA" ]; then
+            # Find test bundles built by SwiftPM
+            BINS=$(find .build -type f -path "*/debug/*tests.xctest/Contents/MacOS/*" -print | tr '\n' ' ')
+            if [ -n "$BINS" ]; then
+              xcrun llvm-cov report $BINS -instr-profile "$PROFDATA" | tee coverage.txt
+              # Extract TOTAL line percentage if present and print to summary
+              PCT=$(awk '/TOTAL/ {print $(NF-1)}' coverage.txt | tail -n1)
+              echo "SwiftPM Coverage: ${PCT:-N/A}" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: swiftpm-coverage
+          path: |
+            coverage.txt
+            .build/**/default.profdata
       - name: Build (Debug)
         run: |
           set -euo pipefail
