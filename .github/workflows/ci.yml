@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 15
+        run: sudo xcode-select -s "/Applications/Xcode_15.0.1.app/Contents/Developer" || true
+      - name: Resolve Swift Packages
+        run: xcodebuild -resolvePackageDependencies -project ChitarraTune.xcodeproj
+      - name: Build (Debug)
+        run: xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Debug -destination 'platform=macOS' build | xcpretty
+        shell: bash
+      - name: Archive (Release)
+        run: xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Release -destination 'platform=macOS' build | xcpretty
+        shell: bash

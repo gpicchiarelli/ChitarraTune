@@ -1,5 +1,23 @@
 # ChitarraTune
 
+<!-- Badges: sostituisci USER/REPO con il tuo namespace GitHub -->
+<p>
+  <a href="https://github.com/USER/REPO/actions/workflows/ci.yml">
+    <img alt="Build" src="https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg">
+  </a>
+  <a href="https://github.com/USER/REPO/releases/latest">
+    <img alt="Release" src="https://img.shields.io/github/v/release/USER/REPO?include_prereleases&label=release">
+  </a>
+  <a href="https://github.com/USER/REPO/releases">
+    <img alt="Downloads" src="https://img.shields.io/github/downloads/USER/REPO/total?label=downloads">
+  </a>
+  <a href="LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/USER/REPO?color=blue">
+  </a>
+  <img alt="Swift" src="https://img.shields.io/badge/Swift-5.9-orange?logo=swift">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-1f6feb?logo=apple">
+</p>
+
 Accordatore per chitarra (E2–E4) scritto in Swift/SwiftUI per macOS. Core DSP in puro Swift con autocorrelazione; interfaccia semplice con ago e indicazione dei cents. Localizzato in Italiano e Inglese. Modalità Auto/Manuale e calibrazione A4.
 
 - Solo chitarra: corde E2, A2, D3, G3, B3, E4
