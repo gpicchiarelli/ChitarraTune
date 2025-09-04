@@ -46,12 +46,28 @@ struct ChitarraTuneApp: App {
     }
 
     private func showLicensePanel() {
-        guard let url = Bundle.main.url(forResource: "Credits", withExtension: "rtf"),
-              let credits = try? NSAttributedString(url: url, options: [:], documentAttributes: nil) else {
-            showAboutPanel(); return
-        }
+        // Prefer plain LICENSE text to avoid encoding artifacts; fallback to Credits.rtf
+        let licenseAttrString: NSAttributedString? = {
+            if let licURL = Bundle.main.url(forResource: "LICENSE", withExtension: nil),
+               let text = try? String(contentsOf: licURL, encoding: .utf8) {
+                let para = NSMutableParagraphStyle(); para.lineBreakMode = .byWordWrapping; para.paragraphSpacing = 4
+                let attrs: [NSAttributedString.Key: Any] = [
+                    .font: NSFont.monospacedSystemFont(ofSize: 12, weight: .regular),
+                    .foregroundColor: NSColor.labelColor,
+                    .paragraphStyle: para
+                ]
+                return NSAttributedString(string: text, attributes: attrs)
+            }
+            if let url = Bundle.main.url(forResource: "Credits", withExtension: "rtf"),
+               let rtf = try? NSAttributedString(url: url, options: [:], documentAttributes: nil) {
+                return rtf
+            }
+            return nil
+        }()
 
-        let size = NSSize(width: 600, height: 520)
+        guard let content = licenseAttrString else { showAboutPanel(); return }
+
+        let size = NSSize(width: 640, height: 540)
         let scroll = NSScrollView(frame: NSRect(origin: .zero, size: size))
         scroll.hasVerticalScroller = true
         scroll.drawsBackground = false
@@ -61,8 +77,8 @@ struct ChitarraTuneApp: App {
         textView.isEditable = false
         textView.isSelectable = true
         textView.drawsBackground = false
-        textView.textContainerInset = NSSize(width: 8, height: 12)
-        textView.textStorage?.setAttributedString(credits)
+        textView.textContainerInset = NSSize(width: 10, height: 14)
+        textView.textStorage?.setAttributedString(content)
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
         textView.autoresizingMask = [.width]
@@ -72,11 +88,39 @@ struct ChitarraTuneApp: App {
         }
         scroll.documentView = textView
 
-        let panel = NSPanel(contentRect: scroll.frame, styleMask: [.titled, .closable], backing: .buffered, defer: false)
+        // Header with app icon and website link
+        let icon = NSApplication.shared.applicationIconImage
+        let imageView = NSImageView(image: icon ?? NSImage())
+        imageView.imageScaling = .scaleProportionallyUpOrDown
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.widthAnchor.constraint(equalToConstant: 48).isActive = true
+        imageView.heightAnchor.constraint(equalToConstant: 48).isActive = true
+
+        let linkButton = NSButton(title: "Sito Web", target: self, action: #selector(openWebsite))
+        linkButton.bezelStyle = .link
+
+        let header = NSStackView(views: [imageView, linkButton])
+        header.orientation = .horizontal
+        header.alignment = .centerY
+        header.spacing = 12
+
+        let vStack = NSStackView(views: [header, scroll])
+        vStack.orientation = .vertical
+        vStack.alignment = .leading
+        vStack.spacing = 12
+        vStack.edgeInsets = NSEdgeInsets(top: 14, left: 14, bottom: 14, right: 14)
+
+        let panel = NSPanel(contentRect: NSRect(origin: .zero, size: NSSize(width: size.width + 28, height: size.height + 90)), styleMask: [.titled, .closable], backing: .buffered, defer: false)
         panel.title = "Licenza (BSD-3)"
-        panel.contentView = scroll
+        panel.contentView = vStack
         NSApp.activate(ignoringOtherApps: true)
         panel.center()
         panel.makeKeyAndOrderFront(nil)
+    }
+
+    @objc private func openWebsite() {
+        if let url = URL(string: "https://gpicchiarelli.github.io/ChitarraTune/") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }
