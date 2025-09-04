@@ -1,6 +1,16 @@
 import SwiftUI
 import AppKit
 
+// Helper target for NSButton link action
+private let appLinkOpener = AppLinkOpener()
+final class AppLinkOpener: NSObject {
+    @objc func openWebsite(_ sender: Any?) {
+        if let url = URL(string: "https://gpicchiarelli.github.io/ChitarraTune/") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+}
+
 @main
 struct ChitarraTuneApp: App {
     var body: some Scene {
@@ -37,10 +47,17 @@ struct ChitarraTuneApp: App {
             .applicationVersion: display,
         ]
         options[.applicationIcon] = NSApplication.shared.applicationIconImage
+        // Compose credits with version + optional RTF
+        let headerAttrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 12),
+            .foregroundColor: NSColor.labelColor
+        ]
+        let header = NSMutableAttributedString(string: "Versione: \(display)\nSito: https://gpicchiarelli.github.io/ChitarraTune/\n\n", attributes: headerAttrs)
         if let url = Bundle.main.url(forResource: "Credits", withExtension: "rtf"),
            let credits = try? NSAttributedString(url: url, options: [:], documentAttributes: nil) {
-            options[.credits] = credits
+            header.append(credits)
         }
+        options[.credits] = header
         NSApplication.shared.orderFrontStandardAboutPanel(options: options)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -96,8 +113,10 @@ struct ChitarraTuneApp: App {
         imageView.widthAnchor.constraint(equalToConstant: 48).isActive = true
         imageView.heightAnchor.constraint(equalToConstant: 48).isActive = true
 
-        let linkButton = NSButton(title: "Sito Web", target: self, action: #selector(openWebsite))
-        linkButton.bezelStyle = .link
+        let linkButton = NSButton(title: "Sito Web", target: appLinkOpener, action: #selector(AppLinkOpener.openWebsite(_:)))
+        linkButton.isBordered = false
+        linkButton.contentTintColor = .linkColor
+        linkButton.attributedTitle = NSAttributedString(string: "Sito Web", attributes: [.underlineStyle: NSUnderlineStyle.single.rawValue])
 
         let header = NSStackView(views: [imageView, linkButton])
         header.orientation = .horizontal
@@ -118,9 +137,5 @@ struct ChitarraTuneApp: App {
         panel.makeKeyAndOrderFront(nil)
     }
 
-    @objc private func openWebsite() {
-        if let url = URL(string: "https://gpicchiarelli.github.io/ChitarraTune/") {
-            NSWorkspace.shared.open(url)
-        }
-    }
+    // (link handled by AppLinkOpener)
 }

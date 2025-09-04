@@ -17,7 +17,8 @@
 		5220EBE32E69B0A70030368D /* ChitarraTune.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */; };
 			AABBCCDD0011223344556678 /* TuningPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBCCDD0011223344556677 /* TuningPresets.swift */; };
 			FEEDFACEFEEDFACEFEEDFACE /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */; };
- 			222222222222222222222222 /* VersionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111111 /* VersionInfo.swift */; };
+			222222222222222222222222 /* VersionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111111 /* VersionInfo.swift */; };
+			ABCDEF00ABCDEF00ABCDEF00 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,7 +38,8 @@
 		/* removed */
 		AABBCCDD0011223344556677 /* TuningPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningPresets.swift; sourceTree = "<group>"; };
 			C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = Apps/Shared/Credits.rtf; sourceTree = SOURCE_ROOT; };
-			111111111111111111111111 /* VersionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apps/Shared/Generated/VersionInfo.swift; sourceTree = SOURCE_ROOT; };
+				111111111111111111111111 /* VersionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apps/Shared/Generated/VersionInfo.swift; sourceTree = SOURCE_ROOT; };
+				ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 			children = (
 				/* Removed duplicate Assets.xcassets */
 				5220EBE22E69B0A70030368D /* ChitarraTune.xcassets */,
+				ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */,
 				0F1F0DA81C6F45AAB34B7B10 /* Apps */,
 				0F1F0DA81C6F45AAB34B7B14 /* Sources */,
 				0F1F0DA81C6F45AAB34B7B03 /* Products */,
@@ -191,6 +194,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ABCDEF00ABCDEF00ABCDEF00 /* LICENSE in Resources */,
 				FEEDFACEFEEDFACEFEEDFACE /* Credits.rtf in Resources */,
 				0F1F0DA81C6F45AAB34B7B35 /* Localizable.strings in Resources */,
 				0F1F0DA81C6F45AAB34B7B36 /* InfoPlist.strings in Resources */,
