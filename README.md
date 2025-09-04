@@ -2,31 +2,28 @@
 
 <!-- Badges: sostituisci USER/REPO con il tuo namespace GitHub -->
 <p>
-  <a href="https://github.com/USER/REPO/actions/workflows/ci.yml">
-    <img alt="Build" src="https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg">
-  </a>
-  <a href="https://github.com/USER/REPO/releases/latest">
-    <img alt="Release" src="https://img.shields.io/github/v/release/USER/REPO?include_prereleases&label=release">
-  </a>
-  <a href="https://github.com/USER/REPO/releases">
-    <img alt="Downloads" src="https://img.shields.io/github/downloads/USER/REPO/total?label=downloads">
-  </a>
-  <a href="LICENSE">
-    <img alt="License" src="https://img.shields.io/github/license/USER/REPO?color=blue">
-  </a>
+  <a href="https://github.com/USER/REPO/actions/workflows/ci.yml"><img alt="Build" src="https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/USER/REPO/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/USER/REPO?include_prereleases&label=release"></a>
+  <a href="https://github.com/USER/REPO/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/USER/REPO/total?label=downloads"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/USER/REPO?color=blue"></a>
   <img alt="Swift" src="https://img.shields.io/badge/Swift-5.9-orange?logo=swift">
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-1f6feb?logo=apple">
 </p>
 
-Accordatore per chitarra (E2–E4) scritto in Swift/SwiftUI per macOS. Core DSP in puro Swift con autocorrelazione; interfaccia semplice con ago e indicazione dei cents. Localizzato in Italiano e Inglese. Modalità Auto/Manuale e calibrazione A4.
+Accordatore per chitarra per macOS, scritto in Swift/SwiftUI. DSP in puro Swift con algoritmo YIN (CMNDF), interfaccia pulita in stile macOS e indicatori in tempo reale. Localizzato in Italiano e Inglese, con modalità Auto/Manuale, accordature alternative e calibrazione A4.
 
-- Solo chitarra: corde E2, A2, D3, G3, B3, E4
-- Algoritmo: autocorrelazione con interpolazione parabolica
-- SwiftUI + AVAudioEngine (macOS)
-- Modalità: Auto (riconoscimento corda) o Manuale (selezione corda)
-- Calibrazione A4: 415–466 Hz
-- Smoothing e stabilità: indicatore “Accordata!” entro ±5 cents (stabile)
-- Licenza: BSD 3-clause (Picchiarelli Giacomo)
+Caratteristiche principali
+- Pitch detection: YIN con raffinamento parabolico, finestra 2048, aggiornamenti frequenti (tap 1024), smoothing adattivo.
+- Accordature: Standard, Drop D, DADGAD, Open G, Open D, Mezzo tono sotto (Half‑step down).
+- Modalità: Auto (riconoscimento corda) o Manuale (selezione corda del preset).
+- Visualizzazione: barra orizzontale con zona verde ±5 cents, colori dinamici (verde/giallo/rosso).
+- Calibrazione A4: 415–466 Hz.
+- Dispositivi input: selezione microfoni/interfacce (es. iRig) con persistenza e refresh.
+- Localizzazione: Italiano e Inglese.
+- Sicurezza e privacy: sandbox, richiesta microfono, elaborazione interamente locale.
+- Licenza: BSD 3‑Clause.
+
+Sito: https://chitarratune.github.io
 
 ## Requisiti
 - Xcode 15 o successivo
@@ -47,11 +44,15 @@ Accordatore per chitarra (E2–E4) scritto in Swift/SwiftUI per macOS. Core DSP 
 2. Seleziona lo schema `ChitarraTune`
 3. Esegui su macOS
 
-Nota: il core DSP è in `ChitarraTuneCore` (Swift Package locale, vedi `Package.swift`).
+Note
+- Il core DSP è in `ChitarraTuneCore` (Swift Package locale, vedi `Package.swift`).
+- Le App Icons si generano con `scripts/generate_appicons.sh` partendo da un PNG sorgente (vedi `doc/appicon.md`).
 
 ## Sito Web (GitHub Pages)
 - Cartella `chitarratune.github.io`: sito statico elegante, pronto per GitHub Pages.
 - Istruzioni dettagliate: `chitarratune.github.io/README.md`.
+ - Branding: `chitarratune.github.io/branding.html`
+ - Licenza pubblica: `chitarratune.github.io/license.html`
 
 ## Localizzazione
 - UI: chiavi in `Apps/Shared/Localization/*/Localizable.strings`
@@ -67,7 +68,7 @@ Il target macOS è sandboxed e abilita l’ingresso audio tramite entitlements (
 L’app usa esclusivamente il microfono per calcolare la frequenza in locale. Nessun dato viene trasmesso né raccolto.
 
 ## Licenza
-BSD 3‑clause — vedi `LICENSE`.
+BSD 3‑Clause — vedi `LICENSE`. La licenza è inoltre visibile dal menù Help dell’app e sul sito.
 
 ## Documentazione
 - Documentazione estesa (classi/funzioni): vedi cartella `doc/`.
@@ -77,3 +78,8 @@ BSD 3‑clause — vedi `LICENSE`.
   - Localizzazione: `doc/localization.md`
   - Core DSP: `doc/core/*`
   - App: `doc/app/*`
+  - Branding: `doc/branding.md`
+
+## Badge e CI
+- I badge in testa al file usano `USER/REPO` come placeholder: sostituiscili con il tuo namespace GitHub.
+- Il workflow di build è in `.github/workflows/ci.yml` (macOS runner, Xcode 15).
