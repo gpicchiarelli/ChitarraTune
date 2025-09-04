@@ -19,6 +19,7 @@
 			FEEDFACEFEEDFACEFEEDFACE /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */; };
 			222222222222222222222222 /* VersionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111111 /* VersionInfo.swift */; };
 			ABCDEF00ABCDEF00ABCDEF00 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */; };
+        EEEE00000000000000000009 /* ChitarraTuneUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEE00000000000000000007 /* ChitarraTuneUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,7 +41,29 @@
 			C0DEC0DEC0DEC0DEC0DEC0DE /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = Apps/Shared/Credits.rtf; sourceTree = SOURCE_ROOT; };
 				111111111111111111111111 /* VersionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apps/Shared/Generated/VersionInfo.swift; sourceTree = SOURCE_ROOT; };
 				ABCDEF11ABCDEF11ABCDEF11 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+        EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChitarraTuneUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+        EEEE00000000000000000007 /* ChitarraTuneUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChitarraTuneUITests.swift; sourceTree = "<group>"; };
+        EEEE00000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+        EEEE0000000000000000000C /* PBXContainerItemProxy */ = {
+            isa = PBXContainerItemProxy;
+            containerPortal = 0F1F0DA81C6F45AAB34B7B01 /* Project object */;
+            proxyType = 1;
+            remoteGlobalIDString = 0F1F0DA81C6F45AAB34B7B04;
+            remoteInfo = ChitarraTune;
+        };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+        EEEE0000000000000000000D /* PBXTargetDependency */ = {
+            isa = PBXTargetDependency;
+            name = ChitarraTune;
+            target = 0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */;
+            targetProxy = EEEE0000000000000000000C /* PBXContainerItemProxy */;
+        };
+/* End PBXTargetDependency section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		0F1F0DA81C6F45AAB34B7B06 /* Frameworks */ = {
@@ -50,6 +73,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+        EEEE00000000000000000005 /* Frameworks */ = {
+            isa = PBXFrameworksBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -69,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */,
+                EEEE0000000000000000000A /* ChitarraTuneUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,6 +162,15 @@
 			path = ChitarraTuneCore;
 			sourceTree = "<group>";
 		};
+        EEEE0000000000000000000B /* ChitarraTuneUITests */ = {
+            isa = PBXGroup;
+            children = (
+                EEEE00000000000000000007 /* ChitarraTuneUITests.swift */,
+                EEEE00000000000000000008 /* Info.plist */,
+            );
+            path = ChitarraTuneUITests;
+            sourceTree = SOURCE_ROOT;
+        };
 /* End PBXGroup section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -173,6 +213,23 @@
 			productReference = 0F1F0DA81C6F45AAB34B7B0E /* ChitarraTune.app */;
 			productType = "com.apple.product-type.application";
 		};
+        UITTARGET /* ChitarraTuneUITests */ = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = UITCONFIGLIST /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */;
+            buildPhases = (
+                UITFRAMEWORKS /* Frameworks */,
+                UITSOURCES /* Sources */,
+            );
+            buildRules = (
+            );
+            dependencies = (
+                UITTARGETDEPEND /* PBXTargetDependency */,
+            );
+            name = ChitarraTuneUITests;
+            productName = ChitarraTuneUITests;
+            productReference = UITPRODREF /* ChitarraTuneUITests.xctest */;
+            productType = "com.apple.product-type.bundle.ui-testing";
+        };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -204,6 +261,7 @@
 			projectRoot = "";
 			targets = (
 				0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */,
+                UITTARGET /* ChitarraTuneUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -238,6 +296,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+        UITSOURCES /* Sources */ = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+                UITSWIFTFILEBUILD /* ChitarraTuneUITests.swift in Sources */,
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
@@ -262,6 +328,50 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+        UITDEBUG /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = "";
+                GENERATE_INFOPLIST_FILE = NO;
+                INFOPLIST_FILE = ChitarraTuneUITests/Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/../Frameworks",
+                    "@loader_path/../Frameworks",
+                );
+                MACOSX_DEPLOYMENT_TARGET = 12.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTuneUITests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = macosx;
+                SWIFT_VERSION = 5.0;
+                TEST_TARGET_NAME = ChitarraTune;
+            };
+            name = Debug;
+        };
+        UITRELEASE /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = "";
+                GENERATE_INFOPLIST_FILE = NO;
+                INFOPLIST_FILE = ChitarraTuneUITests/Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/../Frameworks",
+                    "@loader_path/../Frameworks",
+                );
+                MACOSX_DEPLOYMENT_TARGET = 12.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.picchiarelli.ChitarraTuneUITests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = macosx;
+                SWIFT_VERSION = 5.0;
+                TEST_TARGET_NAME = ChitarraTune;
+            };
+            name = Release;
+        };
 		0F1F0DA81C6F45AAB34B7B09 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -432,6 +542,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+        UITCONFIGLIST /* Build configuration list for PBXNativeTarget "ChitarraTuneUITests" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                UITDEBUG /* Debug */,
+                UITRELEASE /* Release */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
 /* End XCConfigurationList section */
 	};
 	rootObject = 0F1F0DA81C6F45AAB34B7B01 /* Project object */;
