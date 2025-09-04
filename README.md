@@ -10,13 +10,13 @@
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-1f6feb?logo=apple">
 </p>
 
-Accordatore per chitarra per macOS, scritto in Swift/SwiftUI. DSP in puro Swift con algoritmo YIN (CMNDF), interfaccia pulita in stile macOS e indicatori in tempo reale. Localizzato in Italiano e Inglese, con modalità Auto/Manuale, accordature alternative e calibrazione A4.
+Accordatore per chitarra per macOS, scritto in Swift/SwiftUI. DSP in puro Swift con algoritmo YIN (CMNDF), indicatori in tempo reale, modalità Auto/Manuale, accordature alternative e calibrazione A4. Localizzato in Italiano e Inglese.
 
 Caratteristiche principali
 - Pitch detection: YIN con raffinamento parabolico, finestra 2048, aggiornamenti frequenti (tap 1024), smoothing adattivo.
 - Accordature: Standard, Drop D, DADGAD, Open G, Open D, Mezzo tono sotto (Half‑step down).
 - Modalità: Auto (riconoscimento corda) o Manuale (selezione corda del preset).
-- Visualizzazione: barra orizzontale con zona verde ±5 cents, colori dinamici (verde/giallo/rosso).
+- Visualizzazione: barra orizzontale con zona centrale ±5 cents e colori (verde/giallo/rosso).
 - Calibrazione A4: 415–466 Hz.
 - Dispositivi input: selezione microfoni/interfacce (es. iRig) con persistenza e refresh.
 - Localizzazione: Italiano e Inglese.
@@ -49,7 +49,7 @@ Note
 - Le App Icons si generano con `scripts/generate_appicons.sh` partendo da un PNG sorgente (vedi `doc/appicon.md`).
 
 ## Sito Web (GitHub Pages)
-- Cartella `chitarratune.github.io`: sito statico elegante, pronto per GitHub Pages.
+- Cartella `chitarratune.github.io`: sito statico pronto per GitHub Pages.
 - Istruzioni dettagliate: `chitarratune.github.io/README.md`.
  - Branding: `doc/branding.md`
  - Licenza pubblica: `chitarratune.github.io/license.html`

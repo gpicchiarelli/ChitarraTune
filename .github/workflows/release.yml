@@ -12,6 +12,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Select Xcode 15
         run: sudo xcode-select -s "/Applications/Xcode_15.0.1.app/Contents/Developer" || true
+      - name: Generate VersionInfo.swift from Git
+        run: |
+          set -euo pipefail
+          OUT="Apps/Shared/Generated/VersionInfo.swift"
+          mkdir -p "$(dirname "$OUT")"
+          TAG="$(git describe --tags --abbrev=0 2>/dev/null || echo)"
+          SHA="$(git rev-parse --short HEAD 2>/dev/null || echo)"
+          DESC="$(git describe --tags --dirty --always 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo)"
+          DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          cat > "$OUT" <<EOF
+          import Foundation
+          public enum BuildInfo {
+              public static let gitTag: String = "${TAG}"
+              public static let gitCommit: String = "${SHA}"
+              public static let gitDescribe: String = "${DESC}"
+              public static let buildDate: String = "${DATE}"
+          }
+          EOF
       - name: Build Release
         run: |
           set -euo pipefail
