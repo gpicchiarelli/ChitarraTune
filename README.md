@@ -77,7 +77,8 @@ Per aggiungere una lingua, crea una nuova cartella `xx.lproj` in entrambe le pos
 ## Test
 - Core (SwiftPM): `swift test --parallel --enable-code-coverage`
 - Web (docs): test basilari sulla presenza di elementi chiave e link GitHub
-- CI: esegue automaticamente i test SwiftPM e genera un report di coverage (upload come artifact)
+- UI macOS (XCUITest): eseguiti via `xcodebuild test` sulla scheme condivisa `ChitarraTune` (variabile `UITEST_DISABLE_AUDIO=1` per evitare prompt microfono)
+- CI: esegue automaticamente i test SwiftPM e XCUITest e genera un report di coverage (upload come artifact)
 - Copertura: sommario in Actions → job CI (GITHUB_STEP_SUMMARY)
 
 ## Sicurezza
