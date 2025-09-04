@@ -13,3 +13,8 @@
 "units.cents" = "cents";
 "controls.start" = "Start";
 "controls.stop" = "Stop";
+"controls.inputDevice" = "Audio input";
+"controls.refreshDevices" = "Refresh";
+"input.systemDefault" = "System Default";
+"signal.weak" = "Low signal";
+"input.current" = "In use:";

@@ -13,3 +13,8 @@
 "units.cents" = "cents";
 "controls.start" = "Avvia";
 "controls.stop" = "Ferma";
+"controls.inputDevice" = "Ingresso audio";
+"controls.refreshDevices" = "Aggiorna";
+"input.systemDefault" = "Predefinito di sistema";
+"signal.weak" = "Segnale debole";
+"input.current" = "In uso:";

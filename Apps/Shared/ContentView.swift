@@ -7,6 +7,8 @@ struct ContentView: View {
     @AppStorage("A4") private var storedA4: Double = 440
     @AppStorage("isAutoMode") private var storedIsAuto: Bool = true
     @AppStorage("manualStringName") private var storedManualStringName: String = "E2"
+    @AppStorage("preferredInputUID") private var storedPreferredInputUID: String = ""
+    @State private var selectedInputUID: String = ""
 
     var body: some View {
         Group {
@@ -58,6 +60,15 @@ struct ContentView: View {
             .font(.headline)
             .foregroundColor(.secondary)
 
+            if audio.isSignalWeak {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                    Text("signal.weak")
+                        .foregroundColor(.secondary)
+                }
+            }
+
             Divider()
 
             // Controls
@@ -92,6 +103,30 @@ struct ContentView: View {
                         .frame(width: 50, alignment: .trailing)
                     Text("units.hz")
                 }
+
+                // Input device selection
+                HStack {
+                    Text("controls.inputDevice").font(.headline)
+                    Spacer()
+                    Button(String(localized: "controls.refreshDevices")) {
+                        audio.refreshInputDevices()
+                    }
+                }
+                Picker("controls.inputDevice", selection: $selectedInputUID) {
+                    Text("input.systemDefault").tag("")
+                    ForEach(audio.availableInputDevices, id: \.id) { dev in
+                        Text(dev.name).tag(dev.id)
+                    }
+                }
+                .pickerStyle(.menu)
+                // Current device subtitle
+                HStack {
+                    Text("input.current")
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(audio.currentInputName.isEmpty ? String(localized: "input.systemDefault") : audio.currentInputName)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .padding()
@@ -104,6 +139,19 @@ struct ContentView: View {
             storedManualStringName = newValue.name
         }
         .onChange(of: audio.referenceA) { newValue in storedA4 = newValue }
+        .onChange(of: selectedInputUID) { newValue in
+            if newValue.isEmpty {
+                audio.setSystemDefaultInputDevice()
+            } else {
+                audio.setPreferredInputDevice(uid: newValue)
+            }
+            storedPreferredInputUID = newValue
+        }
+        .onChange(of: audio.availableInputDevices) { _ in
+            if !selectedInputUID.isEmpty {
+                audio.setPreferredInputDevice(uid: selectedInputUID)
+            }
+        }
         .onAppear {
             switch audio.mode {
             case .auto:
@@ -116,6 +164,13 @@ struct ContentView: View {
             if let restored = GuitarString.allCases.first(where: { $0.name == storedManualStringName }) {
                 manualString = restored
                 if !isAuto { audio.mode = .manual(restored) }
+            }
+            audio.refreshInputDevices()
+            selectedInputUID = storedPreferredInputUID
+            if selectedInputUID.isEmpty {
+                // use system default implicitly
+            } else {
+                audio.setPreferredInputDevice(uid: selectedInputUID)
             }
         }
     }

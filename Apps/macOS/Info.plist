@@ -14,8 +14,12 @@
     <string>0.1.0</string>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>it</string>
+        <string>en</string>
+    </array>
     <key>NSMicrophoneUsageDescription</key>
     <string>L'app richiede il microfono per rilevare l'intonazione della chitarra.</string>
 </dict>
 </plist>
-
