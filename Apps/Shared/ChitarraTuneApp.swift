@@ -33,6 +33,10 @@ struct ChitarraTuneApp: App {
             CommandGroup(replacing: .appInfo) {
                 Button("Informazioni su ChitarraTune") { showAboutPanel() }
             }
+            CommandGroup(replacing: .appSettings) {
+                Button(String(localized: "menu.settings")) { showPreferencesPanel() }
+                    .keyboardShortcut(",", modifiers: .command)
+            }
             CommandGroup(replacing: .help) {
                 if let url = URL(string: "https://gpicchiarelli.github.io/ChitarraTune/") {
                     Link("Sito Web", destination: url)
@@ -177,4 +181,18 @@ struct ChitarraTuneApp: App {
     }
 
     // (link handled by AppLinkOpener)
+
+    private func showPreferencesPanel() {
+        // Build a simple preferences window hosting SwiftUI PreferencesView
+        let size = NSSize(width: 640, height: 520)
+        let hosting = NSHostingView(rootView: PreferencesView())
+        hosting.frame = NSRect(origin: .zero, size: size)
+
+        let panel = NSPanel(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled, .closable], backing: .buffered, defer: false)
+        panel.title = String(localized: "menu.settings")
+        panel.contentView = hosting
+        NSApp.activate(ignoringOtherApps: true)
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+    }
 }

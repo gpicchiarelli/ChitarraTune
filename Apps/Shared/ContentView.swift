@@ -59,6 +59,27 @@ struct ContentView: View {
             .padding()
         }
         .frame(minWidth: 720, minHeight: 720)
+        .toolbar {
+            ToolbarItemGroup(placement: .automatic) {
+                Button {
+                    audio.isRunning ? audio.stop() : audio.start()
+                } label: {
+                    if audio.isRunning {
+                        Label(String(localized: "controls.stop"), systemImage: "stop.fill")
+                    } else {
+                        Label(String(localized: "controls.start"), systemImage: "play.fill")
+                    }
+                }
+                .accessibilityIdentifier("monitoringButton")
+
+                Picker("controls.mode", selection: $isAuto) {
+                    Text("mode.auto").tag(true)
+                    Text("mode.manual").tag(false)
+                }
+                .pickerStyle(.segmented)
+                .accessibilityIdentifier("modePicker")
+            }
+        }
         .onChange(of: isAuto) { newValue in
             audio.mode = newValue ? .auto : .manual(manualIndex)
             storedIsAuto = newValue
@@ -157,11 +178,9 @@ private extension ContentView {
 
     @ViewBuilder func controlsSection() -> some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Primary controls are in the toolbar to adhere to HIG
+            // Leave only a minimal monitoring row here (optional)
             monitoringRow()
-            modeSection()
-            tuningPresetSection()
-            calibrationSection()
-            audioSection()
         }
     }
 
