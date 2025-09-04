@@ -262,7 +262,7 @@
 			projectRoot = "";
 			targets = (
 				0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */,
-                UITTARGET /* ChitarraTuneUITests */,
+                EEEE00000000000000000001 /* ChitarraTuneUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -297,11 +297,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-        UITSOURCES /* Sources */ = {
+        EEEE00000000000000000006 /* Sources */ = {
             isa = PBXSourcesBuildPhase;
             buildActionMask = 2147483647;
             files = (
-                UITSWIFTFILEBUILD /* ChitarraTuneUITests.swift in Sources */,
+                EEEE00000000000000000009 /* ChitarraTuneUITests.swift in Sources */,
             );
             runOnlyForDeploymentPostprocessing = 0;
         };

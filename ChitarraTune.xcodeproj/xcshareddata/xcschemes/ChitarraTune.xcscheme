@@ -40,8 +40,8 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "UITTARGET"
-               BuildableName = "ChitarraTuneUITests"
+               BlueprintIdentifier = "EEEE00000000000000000001"
+               BuildableName = "ChitarraTuneUITests.xctest"
                BlueprintName = "ChitarraTuneUITests"
                ReferencedContainer = "container:ChitarraTune.xcodeproj">
             </BuildableReference>
