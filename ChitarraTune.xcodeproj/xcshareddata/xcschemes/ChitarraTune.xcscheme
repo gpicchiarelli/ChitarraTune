@@ -28,6 +28,15 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       codeCoverageEnabled = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "0F1F0DA81C6F45AAB34B7B04"
+            BuildableName = "ChitarraTune.app"
+            BlueprintName = "ChitarraTune"
+            ReferencedContainer = "container:ChitarraTune.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "UITEST_DISABLE_AUDIO"
