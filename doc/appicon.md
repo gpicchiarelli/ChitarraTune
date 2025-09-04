@@ -31,3 +31,6 @@ Come generare (da un PNG sorgente quadrato ad alta risoluzione, es. 1024×1024):
 Dopo aver copiato i file nella cartella `AppIcon.appiconset`, Xcode compilerà automaticamente l’icona. Il progetto è già configurato con `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon`.
 
 Nota: Inserisci l’immagine fornita come sorgente (`icon.png`) e genera i vari tagli con i comandi sopra.
+
+In alternativa, usa lo script incluso:
+- `bash scripts/generate_appicons.sh chitarratune.png`
