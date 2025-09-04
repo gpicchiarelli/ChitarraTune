@@ -134,17 +134,36 @@
 /* End PBXGroup section */
 
 /* Begin PBXShellScriptBuildPhase section */
+        777777777777777777777777 /* Set Version From Git */ = {
+            isa = PBXShellScriptBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            inputFileListPaths = (
+            );
+            inputPaths = (
+            );
+            name = "Set Version From Git";
+            outputFileListPaths = (
+            );
+            outputPaths = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+            shellPath = /bin/bash;
+            shellScript = "set -euo pipefail\nOUT=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\nif [ -f \"$OUT\" ]; then\n  TAG=\"$(git describe --tags --abbrev=0 2>/dev/null || echo)\"\n  SHA=\"$(git rev-parse --short HEAD 2>/dev/null || echo)\"\n  SHORT=\"$TAG\"\n  if [ -z \"$SHORT\" ]; then SHORT=\"$(/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"$OUT\" 2>/dev/null || echo)\"; fi\n  BUILD=\"$SHA\"\n  if [ -z \"$BUILD\" ]; then BUILD=\"$(/usr/libexec/PlistBuddy -c \"Print :CFBundleVersion\" \"$OUT\" 2>/dev/null || echo)\"; fi\n  /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $SHORT\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string $SHORT\" \"$OUT\"\n  /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $BUILD\" \"$OUT\" || /usr/libexec/PlistBuddy -c \"Add :CFBundleVersion string $BUILD\" \"$OUT\"\nfi\n";
+        };
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		0F1F0DA81C6F45AAB34B7B04 /* ChitarraTune */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0F1F0DA81C6F45AAB34B7B0B /* Build configuration list for PBXNativeTarget "ChitarraTune" */;
-			buildPhases = (
-				0F1F0DA81C6F45AAB34B7B05 /* Sources */,
-				0F1F0DA81C6F45AAB34B7B06 /* Frameworks */,
-				0F1F0DA81C6F45AAB34B7B07 /* Resources */,
-			);
+            buildPhases = (
+                0F1F0DA81C6F45AAB34B7B05 /* Sources */,
+                0F1F0DA81C6F45AAB34B7B06 /* Frameworks */,
+                0F1F0DA81C6F45AAB34B7B07 /* Resources */,
+                777777777777777777777777 /* Set Version From Git */,
+            );
 			buildRules = (
 			);
 			dependencies = (
