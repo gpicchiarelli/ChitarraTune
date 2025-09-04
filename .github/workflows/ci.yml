@@ -64,7 +64,7 @@ jobs:
       - name: Build (Debug)
         run: |
           set -euo pipefail
-          xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Debug -destination 'platform=macOS' -enableCodeCoverage YES CODE_SIGNING_ALLOWED=NO build
+          xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
       - name: UI Tests (Xcode)
         run: |
           set -euo pipefail
@@ -72,4 +72,4 @@ jobs:
       - name: Build (Release)
         run: |
           set -euo pipefail
-          xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Release -destination 'platform=macOS' -enableCodeCoverage YES build
+          xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Release -destination 'platform=macOS' build
