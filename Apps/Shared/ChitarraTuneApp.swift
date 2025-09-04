@@ -25,9 +25,11 @@ final class AboutHelper: NSObject {
 
 @main
 struct ChitarraTuneApp: App {
+    @StateObject private var audioManager = AudioEngineManager()
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(audioManager)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -184,8 +186,8 @@ struct ChitarraTuneApp: App {
 
     private func showPreferencesPanel() {
         // Build a simple preferences window hosting SwiftUI PreferencesView
-        let size = NSSize(width: 640, height: 520)
-        let hosting = NSHostingView(rootView: PreferencesView())
+        let size = NSSize(width: 560, height: 420)
+        let hosting = NSHostingView(rootView: PreferencesView().environmentObject(audioManager))
         hosting.frame = NSRect(origin: .zero, size: size)
 
         let panel = NSPanel(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled, .closable], backing: .buffered, defer: false)

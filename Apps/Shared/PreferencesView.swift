@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PreferencesView: View {
+    @EnvironmentObject private var audio: AudioEngineManager
     @AppStorage("tuningPresetID") private var storedPresetID: String = "standard"
     @AppStorage("A4") private var storedA4: Double = 440
     @AppStorage("preferredInputUID") private var storedPreferredInputUID: String = ""
@@ -11,9 +12,9 @@ struct PreferencesView: View {
     private let presets = DefaultTuningPresets
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(String(localized: "menu.settings"))
-                .font(.title2).bold()
+                .font(.headline)
 
             GroupBox(label: Label(String(localized: "controls.tuningPreset"), systemImage: "music.note.list")) {
                 HStack {
@@ -57,21 +58,47 @@ struct PreferencesView: View {
             }
 
             GroupBox(label: Label(String(localized: "controls.audio"), systemImage: "speaker.wave.2.fill")) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
                         Text(String(localized: "controls.inputDevice"))
                         Spacer()
-                        // Nota: la lista dispositivi è gestita dal runtime dell'app; qui impostiamo solo l'UID preferito
+                        Button {
+                            audio.refreshInputDevices()
+                        } label: {
+                            Label(String(localized: "controls.refreshDevices"), systemImage: "arrow.clockwise")
+                        }
+                        .buttonStyle(BorderedButtonStyle())
                     }
-                    Text(String(localized: "input.current"))
-                        .foregroundColor(.secondary)
+                    Picker("", selection: Binding(
+                        get: { audio.selectedInputUID ?? "" },
+                        set: { newValue in
+                            if newValue.isEmpty {
+                                audio.setSystemDefaultInputDevice()
+                            } else {
+                                audio.setPreferredInputDevice(uid: newValue)
+                            }
+                            storedPreferredInputUID = newValue
+                        }
+                    )) {
+                        Text("input.systemDefault").tag("")
+                        ForEach(audio.availableInputDevices, id: \.id) { dev in
+                            Text(dev.name).tag(dev.id)
+                        }
+                    }
+                    .labelsHidden()
+                    HStack {
+                        Text(String(localized: "input.current")).foregroundColor(.secondary)
+                        Spacer()
+                        Text(audio.currentInputName.isEmpty ? String(localized: "input.systemDefault") : audio.currentInputName)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
 
             Spacer()
         }
-        .padding(16)
-        .frame(minWidth: 560, minHeight: 420)
+        .padding(12)
+        .frame(minWidth: 520, minHeight: 360)
+        .onAppear { audio.refreshInputDevices() }
     }
 }
-

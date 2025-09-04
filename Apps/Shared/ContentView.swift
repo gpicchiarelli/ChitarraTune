@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var audio = AudioEngineManager()
+    @EnvironmentObject private var audio: AudioEngineManager
     @State private var isAuto: Bool = true
     @State private var manualIndex: Int = 0
     @AppStorage("A4") private var storedA4: Double = 440
@@ -47,7 +47,7 @@ struct ContentView: View {
 
     private var tunerView: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: 16) {
                 headerSection()
                 titleSection()
                 tuningBarSection()
@@ -56,9 +56,9 @@ struct ContentView: View {
                 Divider()
                 controlsSection()
             }
-            .padding()
+            .padding(12)
         }
-        .frame(minWidth: 720, minHeight: 720)
+        .frame(minWidth: 640, minHeight: 560)
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
                 Button {
@@ -149,7 +149,7 @@ private extension ContentView {
 
     @ViewBuilder func tuningBarSection() -> some View {
         TuningBarView(cents: centsValue)
-            .frame(height: 120)
+            .frame(height: 96)
     }
 
     @ViewBuilder func readoutSection() -> some View {
