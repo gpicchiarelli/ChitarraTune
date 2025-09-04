@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0a84ff">
+  <title>ChitarraTune — Segnala un bug / Report a bug</title>
+  <link rel="canonical" href="https://gpicchiarelli.github.io/ChitarraTune/bug.html">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/icon_32x32.png">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Salta al contenuto</a>
+  <header class="nav" role="banner">
+    <div class="container nav-inner">
+      <div class="brand">
+        <img src="assets/img/icon_32x32.png" alt="ChitarraTune" class="brand-icon" width="32" height="32">
+        <span class="brand-name">ChitarraTune</span>
+      </div>
+      <nav>
+        <a href="./"><span lang="it">Home</span><span lang="en">Home</span></a>
+        <a href="license.html"><span lang="it">Licenza</span><span lang="en">License</span></a>
+        <a href="https://github.com/gpicchiarelli/ChitarraTune">GitHub</a>
+        <select id="lang-select" class="lang-select" aria-label="Language">
+          <option value="it">IT</option>
+          <option value="en">EN</option>
+        </select>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="section">
+    <div class="container" style="padding:28px 0 40px; max-width:840px;">
+      <h1><span lang="it">Segnala un bug</span><span lang="en">Report a bug</span></h1>
+      <p class="subtitle" lang="it">Grazie per l’aiuto a migliorare ChitarraTune. Seguono alcuni consigli per aprire una segnalazione efficace.</p>
+      <p class="subtitle" lang="en">Thanks for helping improve ChitarraTune. Here are a few tips to file an effective report.</p>
+
+      <section style="margin-top:24px;">
+        <h2><span lang="it">Prima di aprire</span><span lang="en">Before you file</span></h2>
+        <ul>
+          <li lang="it">Aggiorna all’ultima <a href="https://github.com/gpicchiarelli/ChitarraTune/releases/latest">release</a> e riprova.</li>
+          <li lang="it">Cerca <a href="https://github.com/gpicchiarelli/ChitarraTune/issues">issue esistenti</a> simili.</li>
+          <li lang="it">Annota i passaggi per riprodurre il problema e l’hardware usato (microfono/interfaccia).</li>
+          <li lang="en">Update to the latest <a href="https://github.com/gpicchiarelli/ChitarraTune/releases/latest">release</a> and try again.</li>
+          <li lang="en">Search for similar <a href="https://github.com/gpicchiarelli/ChitarraTune/issues">existing issues</a>.</li>
+          <li lang="en">Write down exact reproduction steps and your audio hardware (mic/interface).</li>
+        </ul>
+      </section>
+
+      <section style="margin-top:18px;">
+        <h2><span lang="it">Informazioni utili da includere</span><span lang="en">Useful information to include</span></h2>
+        <ul>
+          <li lang="it">Versione app (dal pannello “Informazioni” o dal sito) e commit/tag, macOS (es. 14.5), Mac modello.</li>
+          <li lang="it">Preset accordatura, calibrazione A4, modalità (Auto/Manuale), dispositivo audio selezionato.</li>
+          <li lang="it">Passi per riprodurre, risultato atteso vs ottenuto, eventuali screenshot.</li>
+          <li lang="en">App version (About panel or website) and commit/tag, macOS (e.g. 14.5), Mac model.</li>
+          <li lang="en">Tuning preset, A4 calibration, mode (Auto/Manual), selected audio device.</li>
+          <li lang="en">Steps to reproduce, expected vs actual result, screenshots if any.</li>
+        </ul>
+      </section>
+
+      <section style="margin-top:18px;">
+        <h2><span lang="it">Apri una segnalazione su GitHub</span><span lang="en">Open an issue on GitHub</span></h2>
+        <p lang="it">Puoi usare il modello qui sotto: copialo oppure apri direttamente una issue con il testo già compilato.</p>
+        <p lang="en">Use the template below: copy it or open an issue prefilled with this content.</p>
+
+        <div>
+          <textarea id="tpl-it" class="codebox" lang="it" readonly>
+### Descrizione
+<!-- Riassumi il problema in 1-2 frasi -->
+
+### Passi per riprodurre
+1. 
+2. 
+3. 
+
+### Risultato atteso
+
+### Risultato ottenuto
+
+### Dettagli
+- Versione app: 
+- Commit/Tag (se noto): 
+- macOS: 
+- Mac: 
+- Dispositivo audio: 
+- Modalità: Auto / Manuale
+- Preset accordatura: 
+- Calibrazione A4: 
+
+<!-- Allegati (opzionale): screenshot, clip audio brevi, ecc. -->
+          </textarea>
+          <button class="btn small copy-tpl" data-target="tpl-it" lang="it">Copia modello</button>
+          <a class="btn primary issue-link" lang="it" href="#">Apri segnalazione su GitHub</a>
+        </div>
+
+        <div style="margin-top:14px;">
+          <textarea id="tpl-en" class="codebox" lang="en" readonly>
+### Description
+<!-- Summarize the issue in 1-2 sentences -->
+
+### Steps to reproduce
+1. 
+2. 
+3. 
+
+### Expected behavior
+
+### Actual behavior
+
+### Details
+- App version: 
+- Commit/Tag (if known): 
+- macOS: 
+- Mac: 
+- Audio device: 
+- Mode: Auto / Manual
+- Tuning preset: 
+- A4 calibration: 
+
+<!-- Attachments (optional): screenshots, short audio clips, etc. -->
+          </textarea>
+          <button class="btn small copy-tpl" data-target="tpl-en" lang="en">Copy template</button>
+          <a class="btn primary issue-link" lang="en" href="#">Open an issue on GitHub</a>
+        </div>
+      </section>
+
+      <section style="margin-top:18px;">
+        <h2><span lang="it">Privacy</span><span lang="en">Privacy</span></h2>
+        <p lang="it">Non includere informazioni personali o dati sensibili. L’app elabora l’audio in locale; allega solo ciò che desideri condividere pubblicamente.</p>
+        <p lang="en">Do not include personal or sensitive data. The app processes audio locally; only attach content you’re comfortable sharing publicly.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>© <span id="year"></span> ChitarraTune — <a href="license.html"><span lang="it">Licenza</span><span lang="en">License</span></a></div>
+      <div class="footer-links">
+        <a href="https://github.com/gpicchiarelli/ChitarraTune">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script defer src="assets/js/main.js"></script>
+</body>
+</html>
+

@@ -5,6 +5,7 @@
 }
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Segoe UI,Roboto,Helvetica,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;}
+.lang-select{margin-left:12px;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--fg)}
 .container{width:min(1080px,92%);margin:0 auto}
 .nav{position:sticky;top:0;backdrop-filter:saturate(120%) blur(12px);background:color-mix(in hsl,var(--bg) 85%, transparent);border-bottom:1px solid var(--border);z-index:10}
 .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
@@ -31,3 +32,9 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,B
 /* Accessibility: skip link */
 .skip-link{position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden}
 .skip-link:focus{left:12px;top:12px;width:auto;height:auto;background:var(--card);color:var(--fg);padding:8px 12px;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow);z-index:1000}
+/* i18n: hide opposite language */
+html[data-lang='it'] [lang='en']{display:none!important}
+html[data-lang='en'] [lang='it']{display:none!important}
+/* Codebox + small buttons */
+.codebox{width:100%;min-height:260px;background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.btn.small{padding:8px 12px;font-size:14px;border-radius:10px}

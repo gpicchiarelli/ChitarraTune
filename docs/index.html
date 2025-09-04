@@ -35,8 +35,13 @@
         <span class="brand-name">ChitarraTune</span>
       </div>
       <nav>
+        <a href="bug.html"><span lang="it">Segnala bug</span><span lang="en">Report a bug</span></a>
+        <a href="license.html"><span lang="it">Licenza</span><span lang="en">License</span></a>
         <a href="https://github.com/gpicchiarelli/ChitarraTune">GitHub</a>
-        <a href="license.html">Licenza</a>
+        <select id="lang-select" class="lang-select" aria-label="Language">
+          <option value="it">IT</option>
+          <option value="en">EN</option>
+        </select>
       </nav>
     </div>
   </header>
@@ -45,8 +50,10 @@
     <section class="hero one">
       <div class="container hero-inner">
         <img src="assets/img/icon_512x512.png" alt="Icona ChitarraTune" class="hero-icon" width="128" height="128">
-        <h1>Accordatore open-source per chitarra. Sviluppato per macOS.</h1>
-        <p class="subtitle">Rilevamento in tempo reale. Auto/Manuale • Calibrazione A4 • Accordature.</p>
+        <h1 lang="it">Accordatore open-source per chitarra. Sviluppato per macOS.</h1>
+        <h1 lang="en">Open‑source guitar tuner. Built for macOS.</h1>
+        <p class="subtitle" lang="it">Rilevamento in tempo reale. Auto/Manuale • Calibrazione A4 • Accordature.</p>
+        <p class="subtitle" lang="en">Real‑time detection. Auto/Manual • A4 calibration • Tunings.</p>
         <div class="badges" id="badges" data-repo="gpicchiarelli/ChitarraTune">
           <img loading="lazy" data-badge="build" alt="Build status" src="#">
           <img loading="lazy" data-badge="release" alt="Release" src="#">
@@ -59,7 +66,8 @@
           <a class="btn primary lg" id="download-btn" href="https://github.com/gpicchiarelli/ChitarraTune/releases/latest">Scarica ultima versione</a>
           <a class="btn" href="https://github.com/gpicchiarelli/ChitarraTune">Codice sorgente</a>
         </div>
-        <p class="micro"><span id="ver">Versione</span> • Licenza BSD‑3 • macOS 12+ • Elaborazione locale</p>
+        <p class="micro" lang="it"><span id="ver-it">Versione</span> • Licenza BSD‑3 • macOS 12+ • Elaborazione locale</p>
+        <p class="micro" lang="en"><span id="ver-en">Version</span> • BSD‑3 License • macOS 12+ • Local processing</p>
       </div>
     </section>
   </main>
