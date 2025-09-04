@@ -14,7 +14,7 @@ final class AudioEngineManager: ObservableObject {
 
     private let engine = AVAudioEngine()
     private var detector: PitchDetector?
-    private var cancellables: Set<AnyCancellable> = []
+    private var tapInstalled: Bool = false
 
     private var sampleBuffer: [Float] = []
     private let analysisWindow: Int = 4096
@@ -25,6 +25,8 @@ final class AudioEngineManager: ObservableObject {
     private let noiseGateRMS: Double = 0.005
 
     func start() {
+        // Avoid re-installing tap / restarting if already running
+        if isRunning || tapInstalled { return }
         // Check permission
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
         if status == .denied || status == .restricted {
@@ -59,6 +61,7 @@ final class AudioEngineManager: ObservableObject {
                 let samples = Array(UnsafeBufferPointer(start: ptr, count: frameLength))
                 self.append(samples: samples, sampleRate: sr)
             }
+            tapInstalled = true
 
             try engine.start()
             DispatchQueue.main.async {
@@ -66,6 +69,11 @@ final class AudioEngineManager: ObservableObject {
                 self.inputAvailable = true
             }
         } catch {
+            // If engine failed to start and a tap was installed, remove it safely
+            if tapInstalled {
+                engine.inputNode.removeTap(onBus: 0)
+                tapInstalled = false
+            }
             DispatchQueue.main.async { [weak self] in
                 self?.isRunning = false
                 self?.inputAvailable = false
@@ -74,7 +82,10 @@ final class AudioEngineManager: ObservableObject {
     }
 
     func stop() {
-        engine.inputNode.removeTap(onBus: 0)
+        if tapInstalled {
+            engine.inputNode.removeTap(onBus: 0)
+            tapInstalled = false
+        }
         engine.stop()
         DispatchQueue.main.async {
             self.isRunning = false

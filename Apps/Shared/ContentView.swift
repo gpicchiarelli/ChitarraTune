@@ -36,7 +36,8 @@ struct ContentView: View {
                     .foregroundColor(.green)
             }
 
-            Text(audio.latestEstimate?.nearestString.name ?? "—")
+            // Show selected string immediately in Manual mode; otherwise show detected
+            Text(isAuto ? (audio.latestEstimate?.nearestString.name ?? "—") : manualString.name)
                 .font(.system(size: 72, weight: .bold, design: .rounded))
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)

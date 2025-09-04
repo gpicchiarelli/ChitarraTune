@@ -20,21 +20,16 @@ Accordatore per chitarra (E2–E4) scritto in Swift/SwiftUI per macOS. Core DSP 
 - `Apps/Shared`: UI SwiftUI (App, ContentView, AudioEngineManager)
 - `Apps/Shared/Localization`: Localizable.strings IT/EN
 - `Apps/macOS`: Info.plist + InfoPlist.strings IT/EN
-- `project.yml`: definizione XcodeGen (target macOS)
- - `Apps/macOS/ChitarraTune.entitlements`: sandbox + microfono
+- `Apps/macOS/ChitarraTune.entitlements`: sandbox + microfono
+- `ChitarraTune.xcodeproj`: progetto Xcode macOS
 
 ## Costruzione
-### Opzione A) XcodeGen (consigliata)
-1. Installa XcodeGen: `brew install xcodegen`
-2. Genera il progetto: `xcodegen`
-3. Apri `ChitarraTune.xcodeproj` e seleziona lo schema `ChitarraTune`
-4. Esegui su Mac
+### Con Xcode (consigliato)
+1. Apri `ChitarraTune.xcodeproj` con Xcode 15+
+2. Seleziona lo schema `ChitarraTune`
+3. Esegui su macOS
 
-### Opzione B) Manuale da Xcode
-1. Crea un nuovo progetto macOS > App (SwiftUI)
-2. Aggiungi come Swift Package locale la cartella del repo (prod. `ChitarraTuneCore`)
-3. Aggiungi al target i file in `Apps/Shared` (App, ContentView, AudioEngineManager) e `Apps/Shared/Localization`
-4. Imposta `Info.plist` e aggiungi `InfoPlist.strings` localizzati (vedi `Apps/macOS/*`)
+Nota: il core DSP è in `ChitarraTuneCore` (Swift Package locale, vedi `Package.swift`).
 
 ## Localizzazione
 - UI: chiavi in `Apps/Shared/Localization/*/Localizable.strings`
