@@ -44,7 +44,7 @@ struct ContentView: View {
                 .accessibilityIdentifier("appTitleLabel")
 
             if audio.isInTune {
-                Text("status.inTune")
+                Label(String(localized: "status.inTune"), systemImage: "checkmark.circle.fill")
                     .foregroundColor(.green)
             }
 
@@ -89,17 +89,27 @@ struct ContentView: View {
             // Controls (macOS-style sections)
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Button(audio.isRunning ? String(localized: "controls.stop") : String(localized: "controls.start")) {
+                    Button {
                         audio.isRunning ? audio.stop() : audio.start()
+                    } label: {
+                        if audio.isRunning {
+                            Label(String(localized: "controls.stop"), systemImage: "stop.fill")
+                        } else {
+                            Label(String(localized: "controls.start"), systemImage: "play.fill")
+                        }
                     }
+                    .buttonStyle(audio.isRunning ? .bordered : .borderedProminent)
+                    .controlSize(.large)
+                    .tint(audio.isRunning ? .red : .accentColor)
+                    .accessibilityIdentifier("monitoringButton")
                 }
 
                 
-                GroupBox(String(localized: "controls.mode")) {
+                GroupBox(label: { Label(String(localized: "controls.mode"), systemImage: "slider.horizontal.3") }) {
                     VStack(alignment: .leading) {
                         Picker("controls.mode", selection: $isAuto) {
-                            Text("mode.auto").tag(true)
-                            Text("mode.manual").tag(false)
+                            Label(String(localized: "mode.auto"), systemImage: "wand.and.stars").tag(true)
+                            Label(String(localized: "mode.manual"), systemImage: "hand.point.up.left").tag(false)
                         }
                         .pickerStyle(.segmented)
                         .accessibilityIdentifier("modePicker")
@@ -121,7 +131,7 @@ struct ContentView: View {
                     }
                 }
 
-                GroupBox(String(localized: "controls.tuningPreset")) {
+                GroupBox(label: { Label(String(localized: "controls.tuningPreset"), systemImage: "music.note.list") }) {
                     HStack {
                         Picker("", selection: Binding(
                             get: { audio.preset.id },
@@ -146,7 +156,7 @@ struct ContentView: View {
                     }
                 }
 
-                GroupBox(String(localized: "controls.calibration")) {
+                GroupBox(label: { Label(String(localized: "controls.calibration"), systemImage: "gauge") }) {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(spacing: 8) {
                             Text("A4")
@@ -163,17 +173,27 @@ struct ContentView: View {
                             ), in: 4150...4660)
                             Text(audio.referenceA, format: .number.precision(.fractionLength(1)))
                                 .frame(width: 60, alignment: .trailing)
-                            Button(String(localized: "controls.reset")) { audio.referenceA = 440 }
+                            Button {
+                                audio.referenceA = 440
+                            } label: {
+                                Label(String(localized: "controls.reset"), systemImage: "arrow.counterclockwise")
+                            }
+                            .buttonStyle(.bordered)
                         }
                     }
                 }
 
-                GroupBox(String(localized: "controls.audio")) {
+                GroupBox(label: { Label(String(localized: "controls.audio"), systemImage: "speaker.wave.2.fill") }) {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Text("controls.inputDevice")
                             Spacer()
-                            Button(String(localized: "controls.refreshDevices")) { audio.refreshInputDevices() }
+                            Button {
+                                audio.refreshInputDevices()
+                            } label: {
+                                Label(String(localized: "controls.refreshDevices"), systemImage: "arrow.clockwise")
+                            }
+                            .buttonStyle(.bordered)
                         }
                         Picker("", selection: $selectedInputUID) {
                             Text("input.systemDefault").tag("")
