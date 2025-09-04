@@ -50,19 +50,33 @@ struct ChitarraTuneApp: App {
               let credits = try? NSAttributedString(url: url, options: [:], documentAttributes: nil) else {
             showAboutPanel(); return
         }
-        let textView = NSTextView()
-        textView.isEditable = false
-        textView.textStorage?.setAttributedString(credits)
-        textView.drawsBackground = false
 
-        let scroll = NSScrollView(frame: NSRect(x: 0, y: 0, width: 560, height: 420))
-        scroll.documentView = textView
+        let size = NSSize(width: 600, height: 520)
+        let scroll = NSScrollView(frame: NSRect(origin: .zero, size: size))
         scroll.hasVerticalScroller = true
+        scroll.drawsBackground = false
+        scroll.borderType = .noBorder
+
+        let textView = NSTextView(frame: NSRect(origin: .zero, size: scroll.contentSize))
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.drawsBackground = false
+        textView.textContainerInset = NSSize(width: 8, height: 12)
+        textView.textStorage?.setAttributedString(credits)
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.autoresizingMask = [.width]
+        if let tc = textView.textContainer {
+            tc.containerSize = NSSize(width: scroll.contentSize.width, height: .greatestFiniteMagnitude)
+            tc.widthTracksTextView = true
+        }
+        scroll.documentView = textView
 
         let panel = NSPanel(contentRect: scroll.frame, styleMask: [.titled, .closable], backing: .buffered, defer: false)
         panel.title = "Licenza (BSD-3)"
         panel.contentView = scroll
         NSApp.activate(ignoringOtherApps: true)
+        panel.center()
         panel.makeKeyAndOrderFront(nil)
     }
 }
