@@ -1,0 +1,20 @@
+disabled_rules:
+  - trailing_whitespace
+  - vertical_whitespace
+  - orphaned_doc_comment
+  - identifier_name
+  - type_name
+  - function_parameter_count
+  - cyclomatic_complexity
+  - file_length
+  - type_body_length
+  - function_body_length
+  - line_length
+
+opt_in_rules: []
+
+included:
+  - Apps
+  - Sources
+
+reporter: github-actions-logging
