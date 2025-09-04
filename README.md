@@ -8,6 +8,9 @@
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/gpicchiarelli/ChitarraTune?color=blue"></a>
   <img alt="Swift" src="https://img.shields.io/badge/Swift-5.9-orange?logo=swift">
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-1f6feb?logo=apple">
+  <a href="https://github.com/gpicchiarelli/ChitarraTune/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/gpicchiarelli/ChitarraTune?style=social"></a>
+  <a href="https://github.com/gpicchiarelli/ChitarraTune/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/gpicchiarelli/ChitarraTune"></a>
+  <img alt="Last commit" src="https://img.shields.io/github/last-commit/gpicchiarelli/ChitarraTune">
 </p>
 
 Accordatore per chitarra per macOS, scritto in Swift/SwiftUI. DSP in puro Swift con algoritmo YIN (CMNDF), indicatori in tempo reale, modalità Auto/Manuale, accordature alternative e calibrazione A4. Localizzato in Italiano e Inglese.
@@ -24,6 +27,10 @@ Caratteristiche principali
 - Licenza: BSD 3‑Clause.
 
 Sito: https://gpicchiarelli.github.io/ChitarraTune/
+
+## Segnalazione bug
+- Apri un’issue su GitHub usando i template: https://github.com/gpicchiarelli/ChitarraTune/issues/new/choose
+- Pagina di supporto (IT/EN): https://gpicchiarelli.github.io/ChitarraTune/bug.html
 
 ## Requisiti
 - Xcode 15 o successivo
