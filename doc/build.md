@@ -22,6 +22,7 @@ Note
 
 ## Packaging (locale)
 - Esegui `scripts/package_app.sh vX.Y.Z` per ottenere `ChitarraTune-<version>-macOS.zip` e relativo `.sha256`. Lo script lancia i test e fallisce se non passano.
+ - Se presente un’identità “Apple Development” nel Portachiavi, lo script prova a firmare localmente (altrimenti ad‑hoc). La build NON è notarizzata.
 
 ## Firma e notarizzazione (CI)
 Per ottenere un pacchetto firmato e notarizzato tramite GitHub Actions:

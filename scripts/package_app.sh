@@ -53,6 +53,21 @@ PLIST="$APP/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $SHORT_VER" "$PLIST" || /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string $SHORT_VER" "$PLIST"
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $COMMIT_SHORT" "$PLIST" || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $COMMIT_SHORT" "$PLIST"
 
+# Try to sign locally for convenience (non-notarized)
+if security find-identity -p codesigning -v >/dev/null 2>&1; then
+  DEV_ID=$(security find-identity -p codesigning -v | awk -F '"' '/Apple Development/ {print $2; exit}')
+  if [[ -n "$DEV_ID" ]]; then
+    echo "Signing with Apple Development: $DEV_ID"
+    codesign --force --deep --timestamp --options runtime \
+             --entitlements Apps/macOS/ChitarraTune.entitlements \
+             -s "$DEV_ID" "$APP" || true
+  else
+    echo "No Apple Development identity found; using ad-hoc signing"
+    codesign --force --deep -s - "$APP" || true
+  fi
+  codesign --verify --deep --strict --verbose=2 "$APP" || true
+fi
+
 # Zip and checksum
 ZIP_NAME="ChitarraTune-${SHORT_VER}-macOS.zip"
 ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP_NAME"
@@ -60,4 +75,3 @@ shasum -a 256 "$ZIP_NAME" > "$ZIP_NAME.sha256"
 
 echo "Packaged: $ZIP_NAME"
 echo "Checksum: $(cat "$ZIP_NAME.sha256")"
-

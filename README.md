@@ -36,6 +36,16 @@ Website · Sito: https://gpicchiarelli.github.io/ChitarraTune/
 ## Build
 1) Open `ChitarraTune.xcodeproj` in Xcode 15+ and run the `ChitarraTune` scheme on macOS.
 
+Local build (Personal Team)
+- In Xcode: Target `ChitarraTune` → Signing & Capabilities
+  - Enable “Automatically manage signing”
+  - Select your Personal Team (Apple ID)
+  - Xcode will use “Sign to Run Locally” / “Apple Development”
+- Run in Debug or Build in Release; first launch may require Right‑click → Open.
+
+Build from CLI (no signing)
+- Compile only: `xcodebuild -project ChitarraTune.xcodeproj -scheme ChitarraTune -configuration Release -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build`
+
 Notes · Note
 - Core DSP lives in `ChitarraTuneCore` (local Swift Package).
 - App icons: `scripts/generate_appicons.sh` (see `doc/appicon.md`).
@@ -53,6 +63,7 @@ Notes · Note
 - The Release workflow runs tests, builds a Release `.app`, stamps version from the tag/commit, zips it, and attaches it to the GitHub Release.
 - Output file: `ChitarraTune-<version>-macOS.zip` with a `.sha256` checksum.
 - Local packaging: run `scripts/package_app.sh v1.2.3` to reproduce the same artifact locally (tests must pass).
+  - The script attempts local signing (Apple Development if available; fallback to ad‑hoc), then zips and creates `.sha256`.
 
 ### macOS Gatekeeper / Notarization
 - Unsigned builds trigger “Apple cannot check for malicious software”. You can bypass once with Right‑click → Open.
