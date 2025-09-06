@@ -4,6 +4,17 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 1.2.3)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -20,11 +31,14 @@ jobs:
 
       # Generate BuildInfo used by About panel; driven by the tag
       - name: Generate VersionInfo.swift from Git
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           OUT="Apps/Shared/Generated/VersionInfo.swift"
           mkdir -p "$(dirname "$OUT")"
-          TAG_REF="${GITHUB_REF_NAME}"
+          TAG_REF="${GITHUB_REF_NAME:-}"
+          if [ -z "${TAG_REF}" ] && [ -n "${INPUT_VERSION:-}" ]; then TAG_REF="v${INPUT_VERSION}"; fi
           TAG="${TAG_REF}"
           SHA="$(git rev-parse --short HEAD 2>/dev/null || echo)"
           DESC="$(git describe --tags --dirty --always 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo)"
@@ -53,13 +67,16 @@ jobs:
 
       - name: Build Release
         id: build
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Release -derivedDataPath build -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
           APP="build/Build/Products/Release/ChitarraTune.app"
           test -d "$APP"
           # Stamp Info.plist inside the built .app with tag and commit
-          TAG_REF="${GITHUB_REF_NAME}"
+          TAG_REF="${GITHUB_REF_NAME:-}"
+          if [ -z "${TAG_REF}" ] && [ -n "${INPUT_VERSION:-}" ]; then TAG_REF="v${INPUT_VERSION}"; fi
           SHORT_VER="${TAG_REF#v}"
           SHA="$(git rev-parse --short HEAD)"
           PLIST="$APP/Contents/Info.plist"
@@ -74,6 +91,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: ${{ github.ref_name != '' && github.ref_name || format('v{0}', inputs.version) }}
+          tag_name: ${{ github.ref_name != '' && github.ref_name || format('v{0}', inputs.version) }}
+          generate_release_notes: true
+          prerelease: ${{ inputs.prerelease }}
           files: |
             ${{ steps.build.outputs.zip_name }}
             ${{ steps.build.outputs.zip_name }}.sha256
