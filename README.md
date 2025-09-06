@@ -54,6 +54,16 @@ Notes · Note
 - Output file: `ChitarraTune-<version>-macOS.zip` with a `.sha256` checksum.
 - Local packaging: run `scripts/package_app.sh v1.2.3` to reproduce the same artifact locally (tests must pass).
 
+### macOS Gatekeeper / Notarization
+- Unsigned builds trigger “Apple cannot check for malicious software”. You can bypass once with Right‑click → Open.
+- To publish signed and notarized releases, add these GitHub Secrets and re‑run the Release workflow:
+  - `MACOS_CERT_P12`: base64 of your Developer ID Application certificate (.p12)
+  - `MACOS_CERT_PASSWORD`: password for the .p12
+  - `CODESIGN_IDENTITY` (optional): full identity string, e.g. `Developer ID Application: Your Name (TEAMID)`
+  - `MACOS_TEAM_ID` (optional): your Team ID
+  - `NOTARY_API_KEY_ID`, `NOTARY_API_ISSUER_ID`, `NOTARY_API_KEY_P8`: App Store Connect API key (p8 base64)
+- When these are set, the Release workflow signs (hardened runtime), submits for notarization, staples the ticket, and then zips the .app.
+
 ## Privacy · Privacy
 Uses the microphone only to compute pitch locally. No data leaves the device.
 

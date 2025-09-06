@@ -22,3 +22,19 @@ Note
 
 ## Packaging (locale)
 - Esegui `scripts/package_app.sh vX.Y.Z` per ottenere `ChitarraTune-<version>-macOS.zip` e relativo `.sha256`. Lo script lancia i test e fallisce se non passano.
+
+## Firma e notarizzazione (CI)
+Per ottenere un pacchetto firmato e notarizzato tramite GitHub Actions:
+- Crea un certificato "Developer ID Application" e esportalo in `.p12`.
+- Crea una chiave API in App Store Connect (Issuer ID, Key ID e file `.p8`).
+- Aggiungi i seguenti Secret nel repo:
+  - `MACOS_CERT_P12`: contenuto base64 del `.p12` (es. `base64 -i cert.p12 | pbcopy`)
+  - `MACOS_CERT_PASSWORD`: password del `.p12`
+  - `NOTARY_API_KEY_ID`, `NOTARY_API_ISSUER_ID`, `NOTARY_API_KEY_P8` (contenuto base64 del `.p8`)
+  - facoltativi: `CODESIGN_IDENTITY` (es. `Developer ID Application: Nome Cognome (TEAMID)`), `MACOS_TEAM_ID`
+- Avvia una Release (tag `vX.Y.Z` o "Run workflow" da Actions con input versione). Il workflow:
+  1) Compila Release
+  2) Firma con Hardened Runtime
+  3) Invia a notarizzazione (`notarytool`) e attende
+  4) Esegue stapling
+  5) Crea lo zip e checksum
