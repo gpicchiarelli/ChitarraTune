@@ -171,10 +171,10 @@ private extension ContentView {
         }
     }
     @ViewBuilder func headerSection() -> some View {
-       /* Text("app.title")
+        // App title for UI tests and accessibility
+        Text("app.title")
             .font(.title2).bold()
-            .accessibilityIdentifier("appTitleLabel", systemImage: "checkmark.circle.fill")
-        */
+            .accessibilityIdentifier("appTitleLabel")
         Image(systemName: "guitars")
             .resizable()
             .scaledToFit()
