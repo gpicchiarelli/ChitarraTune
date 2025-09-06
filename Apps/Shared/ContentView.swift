@@ -50,30 +50,8 @@ struct ContentView: View {
                 .padding()
             }
         }
-        .onAppear {
-            let env = ProcessInfo.processInfo.environment
-            if env["UITEST_DISABLE_AUDIO"] == "1" {
-                // Skip starting audio engine during UI tests to avoid mic prompts
-            } else {
-                audio.start()
-            }
-        }
-        .onDisappear { audio.stop() }
-    }
-
-    private var tunerView: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                headerSection()
-                titleSection()
-                tuningBarSection()
-                readoutSection()
-                statusStripSection()
-                weakSignalNotice()
-            }
-            .padding(12)
-        }
-        .frame(minWidth: 540, minHeight: 420)
+        // Always expose primary controls in the window toolbar so
+        // UI tests (which disable audio) can still find them.
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
                 Button {
@@ -107,6 +85,30 @@ struct ContentView: View {
                 }
             }
         }
+        .onAppear {
+            let env = ProcessInfo.processInfo.environment
+            if env["UITEST_DISABLE_AUDIO"] == "1" {
+                // Skip starting audio engine during UI tests to avoid mic prompts
+            } else {
+                audio.start()
+            }
+        }
+        .onDisappear { audio.stop() }
+    }
+
+    private var tunerView: some View {
+        ScrollView {
+            VStack(spacing: 12) {
+                headerSection()
+                titleSection()
+                tuningBarSection()
+                readoutSection()
+                statusStripSection()
+                weakSignalNotice()
+            }
+            .padding(12)
+        }
+        .frame(minWidth: 540, minHeight: 420)
         .onChange(of: isAuto) { newValue in
             audio.mode = newValue ? .auto : .manual(manualIndex)
             storedIsAuto = newValue
