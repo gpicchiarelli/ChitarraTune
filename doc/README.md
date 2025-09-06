@@ -5,6 +5,7 @@ Questa cartella contiene documentazione estensiva classe per classe e funzione p
 - Architettura generale: `doc/architecture.md`
 - Istruzioni di build: `doc/build.md`
 - Localizzazione: `doc/localization.md`
+ - UI Test/Accessibilità: vedi note in `doc/app/ContentView.md` (identificatori e variabile `UITEST_DISABLE_AUDIO`)
 
 Core DSP (`ChitarraTuneCore`)
 - `doc/core/PitchDetector.md` — Rilevamento frequenza (YIN)
@@ -15,4 +16,3 @@ App (UI + Engine)
 - `doc/app/AudioEngineManager.md` — Audio engine, smoothing, dispositivi
 - `doc/app/ContentView.md` — Interfaccia SwiftUI e controlli
 - `doc/app/ChitarraTuneApp.md` — Entrypoint app
-

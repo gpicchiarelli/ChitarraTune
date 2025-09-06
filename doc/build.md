@@ -15,3 +15,7 @@ Note
 - Le lingue supportate (IT/EN) sono dichiarate in `Info.plist` (`CFBundleLocalizations`).
  - Versioning: il target imposta automaticamente `CFBundleShortVersionString` e `CFBundleVersion` dai dati Git (ultimo tag e SHA breve) tramite uno script di build. Per ottenere il valore corretto, esegui la build in una working copy git con almeno un tag.
  - About/Help: il pannello “Informazioni” mostra anche “Versione: tag (commit)” e un pulsante “Copia versione”. La finestra “Licenza” legge il file `LICENSE` dal bundle.
+
+## Test rapidi
+- Core: `swift test --parallel --enable-code-coverage`
+- UI (XCUITest) con audio disabilitato: `xcodebuild -project ChitarraTune.xcodeproj -scheme ChitarraTune -destination platform=macOS CODE_SIGNING_ALLOWED=NO test` con `UITEST_DISABLE_AUDIO=1` nel `launchEnvironment` (già impostato nei test).

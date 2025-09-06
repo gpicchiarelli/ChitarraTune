@@ -18,6 +18,10 @@ Posizione: `Apps/Shared/ContentView.swift`
 - Indicatore a barra `TuningBarView` (solo barra; ago rimosso)
 - Letture numeriche: Hz e cents
 - Avviso segnale debole `signal.weak`
+- Toolbar (sempre visibile su macOS):
+  - Bottone start/stop monitoraggio (`monitoringButton`)
+  - Picker modalità Auto/Manuale (`modePicker`, `.segmented`)
+  - Picker corda manuale (`stringPicker`, `.segmented`, visibile solo in Manuale)
 - Sezioni `GroupBox` (macOS‑style):
   - `controls.mode`: Auto/Manuale + Picker corda (dinamico dal preset)
   - `controls.tuningPreset`: selezione accordatura (menu + label localizzata)
@@ -28,7 +32,10 @@ Posizione: `Apps/Shared/ContentView.swift`
 - `onAppear`: ripristino preferenze, refresh dispositivi, applicazione selezione input
 - `onChange`: sincronizza `audio.mode`, aggiorna preferenze, applica device
 
+## Accessibilità e UI Test
+- Identificatori accessibilità usati dai test: `appTitleLabel`, `modePicker`, `stringPicker`, `monitoringButton`.
+- I test UI impostano `UITEST_DISABLE_AUDIO=1` per evitare il prompt del microfono; la toolbar a livello superiore garantisce che i controlli principali restino individuabili anche senza input audio disponibile.
+
 ## TuningBarView
 - Indicatore orizzontale con tacche a −50/−25/0/+25/+50
 - Zona verde centrale ±5c; colore indicatore: verde (<5), giallo (<15), rosso (altrimenti)
-
