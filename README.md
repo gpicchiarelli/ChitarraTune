@@ -48,6 +48,12 @@ Notes · Note
 - The UI tests are resilient: title is always checked; mode control is validated when exposed (may be skipped on some headless setups).
 - GitHub Actions CI runs SwiftPM + XCUITest and publishes coverage.
 
+## Releases · Rilasci
+- Create a tag like `v1.2.3` and push it.
+- The Release workflow runs tests, builds a Release `.app`, stamps version from the tag/commit, zips it, and attaches it to the GitHub Release.
+- Output file: `ChitarraTune-<version>-macOS.zip` with a `.sha256` checksum.
+- Local packaging: run `scripts/package_app.sh v1.2.3` to reproduce the same artifact locally (tests must pass).
+
 ## Privacy · Privacy
 Uses the microphone only to compute pitch locally. No data leaves the device.
 

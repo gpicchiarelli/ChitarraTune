@@ -17,12 +17,15 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '15.x'
+
+      # Generate BuildInfo used by About panel; driven by the tag
       - name: Generate VersionInfo.swift from Git
         run: |
           set -euo pipefail
           OUT="Apps/Shared/Generated/VersionInfo.swift"
           mkdir -p "$(dirname "$OUT")"
-          TAG="$(git describe --tags --abbrev=0 2>/dev/null || echo)"
+          TAG_REF="${GITHUB_REF_NAME}"
+          TAG="${TAG_REF}"
           SHA="$(git rev-parse --short HEAD 2>/dev/null || echo)"
           DESC="$(git describe --tags --dirty --always 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo)"
           DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -35,17 +38,44 @@ jobs:
               public static let buildDate: String = "${DATE}"
           }
           EOF
-      - name: Build Release
+
+      # Gate packaging on tests success
+      - name: Resolve Swift Packages
+        run: xcodebuild -resolvePackageDependencies -project ChitarraTune.xcodeproj
+      - name: SwiftPM tests
         run: |
           set -euo pipefail
-          xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Release -derivedDataPath build -destination 'platform=macOS' build
+          swift test --parallel --configuration release
+      - name: UI Tests (Xcode)
+        run: |
+          set -euo pipefail
+          xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
+
+      - name: Build Release
+        id: build
+        run: |
+          set -euo pipefail
+          xcodebuild -project ChitarraTune.xcodeproj -scheme "ChitarraTune" -configuration Release -derivedDataPath build -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
           APP="build/Build/Products/Release/ChitarraTune.app"
           test -d "$APP"
-          ditto -c -k --sequesterRsrc --keepParent "$APP" ChitarraTune.app.zip
+          # Stamp Info.plist inside the built .app with tag and commit
+          TAG_REF="${GITHUB_REF_NAME}"
+          SHORT_VER="${TAG_REF#v}"
+          SHA="$(git rev-parse --short HEAD)"
+          PLIST="$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $SHORT_VER" "$PLIST" || /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string $SHORT_VER" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $SHA" "$PLIST" || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $SHA" "$PLIST"
+          # Zip and checksum
+          ZIP_NAME="ChitarraTune-${SHORT_VER}-macOS.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP_NAME"
+          shasum -a 256 "$ZIP_NAME" > "$ZIP_NAME.sha256"
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ChitarraTune.app.zip
+            ${{ steps.build.outputs.zip_name }}
+            ${{ steps.build.outputs.zip_name }}.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -19,3 +19,6 @@ Note
 ## Test rapidi
 - Core: `swift test --parallel --enable-code-coverage`
 - UI (XCUITest) con audio disabilitato: `xcodebuild -project ChitarraTune.xcodeproj -scheme ChitarraTune -destination platform=macOS CODE_SIGNING_ALLOWED=NO test` con `UITEST_DISABLE_AUDIO=1` nel `launchEnvironment` (già impostato nei test).
+
+## Packaging (locale)
+- Esegui `scripts/package_app.sh vX.Y.Z` per ottenere `ChitarraTune-<version>-macOS.zip` e relativo `.sha256`. Lo script lancia i test e fallisce se non passano.
