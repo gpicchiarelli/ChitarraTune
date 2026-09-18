@@ -1,0 +1,42 @@
+// App.xcconfig — the ChitarraTune application target (macOS + iOS + iPadOS).
+
+PRODUCT_NAME = ChitarraTune
+PRODUCT_BUNDLE_IDENTIFIER = com.chitarratune.app
+ENABLE_PREVIEWS = YES
+COMBINE_HIDPI_IMAGES = YES
+
+// Everything in the app target is UI code: isolate it to the main actor by default.
+SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor
+
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
+
+// MARK: Info.plist (generated, plus Config/Info.plist for custom keys)
+GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_FILE = Config/Info.plist
+INFOPLIST_KEY_CFBundleDisplayName = ChitarraTune
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.music
+INFOPLIST_KEY_NSHumanReadableCopyright = Copyright © 2025–2026 Giacomo Picchiarelli. BSD 3-Clause License.
+INFOPLIST_KEY_NSMicrophoneUsageDescription = ChitarraTune listens to your guitar through the microphone to measure its pitch. Audio is analysed on the device and never recorded or sent anywhere.
+INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO
+INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES
+INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES
+INFOPLIST_KEY_UILaunchScreen_Generation = YES
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+
+// MARK: Enhanced Security
+// Pointer authentication would make the app arm64e, but the local SwiftPM targets are arm64-only and
+// cannot be linked into an arm64e binary. Everything else in Enhanced Security stays on (security
+// compiler warnings, typed allocators, hardened heap / dyld-ro / platform restrictions entitlements).
+ENABLE_POINTER_AUTHENTICATION = NO
+
+// MARK: Entitlements & sandbox
+CODE_SIGN_ENTITLEMENTS = Config/ChitarraTune.entitlements
+ENABLE_APP_SANDBOX[sdk=macosx*] = YES
+ENABLE_RESOURCE_ACCESS_AUDIO_INPUT[sdk=macosx*] = YES
+ENABLE_INCOMING_NETWORK_CONNECTIONS = NO
+ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO
+
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks
+LD_RUNPATH_SEARCH_PATHS[sdk=macosx*] = $(inherited) @executable_path/../Frameworks

@@ -1,0 +1,66 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Set tuning in ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imposta accordatura in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Start tuner in ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvia l'accordatore in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Start tuning in ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvia accordatura in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Stop tuner in ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ferma l'accordatore in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Stop tuning in ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ferma accordatura in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Tune my guitar with ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accorda la chitarra con ${applicationName}"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

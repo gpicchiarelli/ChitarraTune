@@ -1,0 +1,9 @@
+// UITests.xcconfig — XCUITest bundle driving the app.
+
+PRODUCT_NAME = $(TARGET_NAME)
+PRODUCT_BUNDLE_IDENTIFIER = com.chitarratune.app.ui-tests
+TEST_TARGET_NAME = ChitarraTune
+GENERATE_INFOPLIST_FILE = YES
+SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor
+ENABLE_ENHANCED_SECURITY = NO
+CODE_SIGN_STYLE = Automatic
