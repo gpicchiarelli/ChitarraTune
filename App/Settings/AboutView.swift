@@ -1,4 +1,9 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 import TunerAudio
 
 /// Build metadata read from the bundle (no generated source files, no build scripts).
@@ -72,6 +77,9 @@ private struct CopyInfoButton: View {
                 UIPasteboard.general.string = report
                 #endif
                 didCopy = true
+                // Back to the copy icon, so a second copy gets its own confirmation and haptic.
+                try? await Task.sleep(for: .seconds(2))
+                didCopy = false
             }
         } label: {
             Label(.aboutCopyDiagnostics, systemImage: didCopy ? "checkmark" : "doc.on.doc")
@@ -119,9 +127,3 @@ struct LicenseView: View {
         return String(localized: .licenseMissing)
     }
 }
-
-#if os(macOS)
-import AppKit
-#else
-import UIKit
-#endif

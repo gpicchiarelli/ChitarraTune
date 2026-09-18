@@ -55,7 +55,7 @@ struct DocumentationSpecTests {
         for shortcut in [#".keyboardShortcut("l")"#, #".keyboardShortcut("0")"#, #".keyboardShortcut("n")"#, "KeyEquivalent(Character(\"\\(number)\"))"] {
             #expect(commands.contains(shortcut), "TunerCommands.swift lost \(shortcut)")
         }
-        #expect(commands.contains("ForEach(1...6"))
+        #expect(commands.contains("ForEach(1...(tuner?.tuning.stringCount"), "the string menu must follow the tuning, not a fixed six")
         #expect(try Repo.text("App/ChitarraTuneApp.swift").contains("Settings {"), "⌘, needs a Settings scene")
     }
 

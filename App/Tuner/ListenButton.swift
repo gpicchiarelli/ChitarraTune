@@ -21,7 +21,6 @@ struct ListenButton: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.prominentCapsule(fill: model.isBusy ? .tuneRedFill : .tuneAccentFill))
-        .keyboardShortcut(.space, modifiers: [])
         .accessibilityHint(Text(model.isBusy ? .a11YStopHint : .a11YStartHint))
         .accessibilityIdentifier("listenButton")
     }

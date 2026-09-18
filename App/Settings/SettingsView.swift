@@ -39,9 +39,9 @@ struct SettingsView: View {
             Slider(value: $settings.referenceA, in: PitchMath.referenceARange, step: 1) {
                 Text(.settingsReferencePitch)
             } minimumValueLabel: {
-                Text(verbatim: "415")
+                Text(PitchMath.referenceARange.lowerBound, format: .number)
             } maximumValueLabel: {
-                Text(verbatim: "466")
+                Text(PitchMath.referenceARange.upperBound, format: .number)
             }
             .accessibilityValue(Text(.settingsReferencePitchValue(Int(settings.referenceA))))
             // Offered only when there is something to reset (a disabled button would be unreadable).

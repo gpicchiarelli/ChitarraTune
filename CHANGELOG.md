@@ -37,6 +37,10 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Fixed
 
+- VoiceOver now says notes as words in the user's language ("E flat, octave 2", "Mi bemolle, ottava 2") instead of leaving "Mi♭2" to the speech engine, and the readout's spoken value is a localized format.
+- Shortcuts shows each tuning's strings in the user's notation (solfège in Italian) instead of hard-coded English letters.
+- The Space key no longer starts or stops listening from the Listen button: with Full Keyboard Access it must activate the focused control. ⌘L remains.
+- The string menu follows the current tuning's string count, the reference-pitch slider labels come from the supported range, and "Copy diagnostics" confirms every copy, not only the first.
 - The signal level (noise gate, attack detection) is now measured over a fixed 46 ms instead of 2 048 samples, so the gate behaves the same at every sample rate. Only the level value changes at 48 and 96 kHz; no frequency or cents value changes anywhere in the golden readings.
 - Demo mode tunes its synthetic guitar to the user's reference pitch instead of always 440 Hz.
 - The gauges draw their green zone from the engine's in-tune threshold instead of a repeated ±5.

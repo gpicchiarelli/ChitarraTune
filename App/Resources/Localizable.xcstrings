@@ -211,6 +211,60 @@
         }
       }
     },
+    "a11y.note.flat": {
+      "comment": "Spoken flat note for VoiceOver. %1$@ = note name, %2$lld = octave",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ flat, octave %2$lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ bemolle, ottava %2$lld"
+          }
+        }
+      }
+    },
+    "a11y.note.natural": {
+      "comment": "Spoken note name for VoiceOver. %1$@ = note letter or solfège name, %2$lld = octave number",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, octave %2$lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, ottava %2$lld"
+          }
+        }
+      }
+    },
+    "a11y.note.sharp": {
+      "comment": "Spoken sharp note for VoiceOver. %1$@ = note name, %2$lld = octave",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ sharp, octave %2$lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ diesis, ottava %2$lld"
+          }
+        }
+      }
+    },
     "a11y.pinHint": {
       "comment": "Hint of a string chip",
       "extractionState": "manual",
@@ -225,6 +279,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Accorda solo questa corda"
+          }
+        }
+      }
+    },
+    "a11y.readout": {
+      "comment": "VoiceOver value of the note readout. %1$@ = spoken note, %2$@ = deviation (e.g. '3 cents flat')",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
           }
         }
       }
@@ -2336,6 +2408,24 @@
         }
       }
     },
+    "tuning.dadgad.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D A D G A D"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re La Re Sol La Re"
+          }
+        }
+      }
+    },
     "tuning.dropC": {
       "comment": "Name of a guitar tuning",
       "extractionState": "manual",
@@ -2350,6 +2440,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drop C"
+          }
+        }
+      }
+    },
+    "tuning.dropC.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "C G C F A D"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do Sol Do Fa La Re"
           }
         }
       }
@@ -2372,6 +2480,24 @@
         }
       }
     },
+    "tuning.dropD.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D A D G B E"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re La Re Sol Si Mi"
+          }
+        }
+      }
+    },
     "tuning.fullDown": {
       "comment": "Name of a guitar tuning",
       "extractionState": "manual",
@@ -2386,6 +2512,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un tono sotto"
+          }
+        }
+      }
+    },
+    "tuning.fullDown.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D G C F A D"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re Sol Do Fa La Re"
           }
         }
       }
@@ -2408,6 +2552,24 @@
         }
       }
     },
+    "tuning.halfDown.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E♭ A♭ D♭ G♭ B♭ E♭"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mi♭ La♭ Re♭ Sol♭ Si♭ Mi♭"
+          }
+        }
+      }
+    },
     "tuning.openA": {
       "comment": "Name of a guitar tuning",
       "extractionState": "manual",
@@ -2422,6 +2584,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open A"
+          }
+        }
+      }
+    },
+    "tuning.openA.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E A E A C♯ E"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mi La Mi La Do♯ Mi"
           }
         }
       }
@@ -2444,6 +2624,24 @@
         }
       }
     },
+    "tuning.openD.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D A D F♯ A D"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re La Re Fa♯ La Re"
+          }
+        }
+      }
+    },
     "tuning.openE": {
       "comment": "Name of a guitar tuning",
       "extractionState": "manual",
@@ -2458,6 +2656,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open E"
+          }
+        }
+      }
+    },
+    "tuning.openE.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E B E G♯ B E"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mi Si Mi Sol♯ Si Mi"
           }
         }
       }
@@ -2480,6 +2696,24 @@
         }
       }
     },
+    "tuning.openG.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D G D G B D"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re Sol Re Sol Si Re"
+          }
+        }
+      }
+    },
     "tuning.standard": {
       "comment": "Name of a guitar tuning",
       "extractionState": "manual",
@@ -2494,6 +2728,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Standard"
+          }
+        }
+      }
+    },
+    "tuning.standard.strings": {
+      "comment": "Open strings of a tuning, low to high, shown under its name in Shortcuts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E A D G B E"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mi La Re Sol Si Mi"
           }
         }
       }

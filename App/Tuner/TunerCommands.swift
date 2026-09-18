@@ -43,10 +43,10 @@ struct TunerCommands: Commands {
                 .keyboardShortcut("0")
                 .disabled(tuner == nil)
 
-            ForEach(1...6, id: \.self) { number in
+            ForEach(1...(tuner?.tuning.stringCount ?? Tuning.standard.stringCount), id: \.self) { number in
                 Button(.menuString(number)) { tuner?.pinString(number - 1) }
                     .keyboardShortcut(KeyEquivalent(Character("\(number)")))
-                    .disabled(tuner == nil || number > (tuner?.tuning.stringCount ?? 0))
+                    .disabled(tuner == nil)
             }
 
             Divider()

@@ -12,8 +12,19 @@ struct NoteParts: Equatable {
         accidental = note.accidental.symbol
         octave = String(note.octave)
     }
+}
 
-    var spoken: String { letter + accidental + octave }
+extension Note {
+    /// The note as VoiceOver should say it, e.g. "E flat, octave 2" / "Mi bemolle, ottava 2". A symbol
+    /// such as ♭ would otherwise be left to the speech engine to guess, differently in every language.
+    func spokenName(_ notation: NoteNotation) -> String {
+        let name = notation == .english ? letter.english : letter.solfege
+        switch accidental {
+        case .natural: return String(localized: .a11YNoteNatural(name, octave))
+        case .sharp: return String(localized: .a11YNoteSharp(name, octave))
+        case .flat: return String(localized: .a11YNoteFlat(name, octave))
+        }
+    }
 }
 
 extension Note {

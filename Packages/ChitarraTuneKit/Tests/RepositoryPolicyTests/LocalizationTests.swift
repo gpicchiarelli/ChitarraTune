@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import TunerCore
 
 /// English and Italian must be complete and consistent in every string catalog.
 @Suite("Localization")
@@ -103,5 +104,33 @@ struct LocalizationTests {
         let entry = try #require(strings["NSMicrophoneUsageDescription"])
         let localizations = try #require(entry["localizations"] as? [String: Any])
         #expect(localizations["en"] != nil && localizations["it"] != nil)
+    }
+
+    @Test("Shortcuts subtitles list each tuning's strings, in English letters and in Italian solfège")
+    func tuningSubtitles() throws {
+        let (_, strings) = try catalog("App/Resources/Localizable.xcstrings")
+        let option = try Repo.text("App/Intents/TuningOption.swift")
+        for tuning in Tuning.catalog {
+            let key = "tuning.\(tuning.id.rawValue).strings"
+            #expect(option.contains("LocalizedStringResource(\"\(key)\")"), "TuningOption does not use \(key)")
+            let localizations = try #require(strings[key]?["localizations"] as? [String: Any], "\(key) is missing")
+            let expected = ["en": NoteNotation.english, "it": .solfege].mapValues { notation in
+                tuning.strings.map { $0.name(notation: notation) }.joined(separator: " ")
+            }
+            for (language, text) in expected {
+                #expect(values(try #require(localizations[language])) == [text], "\(key) [\(language)] is not \(text)")
+            }
+        }
+    }
+
+    @Test("VoiceOver speaks accidentals as words in both languages")
+    func spokenAccidentals() throws {
+        let (_, strings) = try catalog("App/Resources/Localizable.xcstrings")
+        let expected = ["a11y.note.sharp": ("sharp", "diesis"), "a11y.note.flat": ("flat", "bemolle")]
+        for (key, words) in expected {
+            let localizations = try #require(strings[key]?["localizations"] as? [String: Any])
+            #expect(values(try #require(localizations["en"])).allSatisfy { $0.contains(words.0) })
+            #expect(values(try #require(localizations["it"])).allSatisfy { $0.contains(words.1) })
+        }
     }
 }

@@ -121,7 +121,7 @@ struct NoteReadout: View {
 
     private var accessibilityValue: String {
         guard let reading, let note else { return String(localized: .a11YNoSignal) }
-        let spoken = NoteParts(note, notation: notation).spoken
+        let spoken = note.spokenName(notation)
         let cents = abs(reading.displayedCents)
         let deviation: String
         if reading.isInTune {
@@ -131,6 +131,6 @@ struct NoteReadout: View {
         } else {
             deviation = String(localized: .a11YCentsSharp(cents))
         }
-        return "\(spoken), \(deviation)"
+        return String(localized: .a11YReadout(spoken, deviation))
     }
 }

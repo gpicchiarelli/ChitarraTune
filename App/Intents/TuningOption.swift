@@ -3,22 +3,27 @@ import TunerCore
 
 /// Tunings offered to Siri and Shortcuts. The exhaustive switches make the compiler flag any
 /// ``TuningID`` that is added without a matching case here.
+///
+/// It mirrors ``TuningID`` instead of conforming it to `AppEnum` because the App Intents metadata
+/// extractor needs `caseDisplayRepresentations` as a literal in the app target. The subtitles are
+/// localized (solfège in Italian); `AppStoreMetadataTests`/`LocalizationTests` check them against the
+/// tuning catalog.
 enum TuningOption: String, AppEnum {
     case standard, halfDown, fullDown, dropD, dropC, dadgad, openD, openG, openE, openA
 
     static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("intent.tuning.type"))
 
     static let caseDisplayRepresentations: [TuningOption: DisplayRepresentation] = [
-        .standard: DisplayRepresentation(title: LocalizedStringResource("tuning.standard"), subtitle: "E A D G B E"),
-        .halfDown: DisplayRepresentation(title: LocalizedStringResource("tuning.halfDown"), subtitle: "E♭ A♭ D♭ G♭ B♭ E♭"),
-        .fullDown: DisplayRepresentation(title: LocalizedStringResource("tuning.fullDown"), subtitle: "D G C F A D"),
-        .dropD: DisplayRepresentation(title: LocalizedStringResource("tuning.dropD"), subtitle: "D A D G B E"),
-        .dropC: DisplayRepresentation(title: LocalizedStringResource("tuning.dropC"), subtitle: "C G C F A D"),
-        .dadgad: DisplayRepresentation(title: LocalizedStringResource("tuning.dadgad"), subtitle: "D A D G A D"),
-        .openD: DisplayRepresentation(title: LocalizedStringResource("tuning.openD"), subtitle: "D A D F♯ A D"),
-        .openG: DisplayRepresentation(title: LocalizedStringResource("tuning.openG"), subtitle: "D G D G B D"),
-        .openE: DisplayRepresentation(title: LocalizedStringResource("tuning.openE"), subtitle: "E B E G♯ B E"),
-        .openA: DisplayRepresentation(title: LocalizedStringResource("tuning.openA"), subtitle: "E A E A C♯ E"),
+        .standard: DisplayRepresentation(title: LocalizedStringResource("tuning.standard"), subtitle: LocalizedStringResource("tuning.standard.strings")),
+        .halfDown: DisplayRepresentation(title: LocalizedStringResource("tuning.halfDown"), subtitle: LocalizedStringResource("tuning.halfDown.strings")),
+        .fullDown: DisplayRepresentation(title: LocalizedStringResource("tuning.fullDown"), subtitle: LocalizedStringResource("tuning.fullDown.strings")),
+        .dropD: DisplayRepresentation(title: LocalizedStringResource("tuning.dropD"), subtitle: LocalizedStringResource("tuning.dropD.strings")),
+        .dropC: DisplayRepresentation(title: LocalizedStringResource("tuning.dropC"), subtitle: LocalizedStringResource("tuning.dropC.strings")),
+        .dadgad: DisplayRepresentation(title: LocalizedStringResource("tuning.dadgad"), subtitle: LocalizedStringResource("tuning.dadgad.strings")),
+        .openD: DisplayRepresentation(title: LocalizedStringResource("tuning.openD"), subtitle: LocalizedStringResource("tuning.openD.strings")),
+        .openG: DisplayRepresentation(title: LocalizedStringResource("tuning.openG"), subtitle: LocalizedStringResource("tuning.openG.strings")),
+        .openE: DisplayRepresentation(title: LocalizedStringResource("tuning.openE"), subtitle: LocalizedStringResource("tuning.openE.strings")),
+        .openA: DisplayRepresentation(title: LocalizedStringResource("tuning.openA"), subtitle: LocalizedStringResource("tuning.openA.strings")),
     ]
 
     var tuningID: TuningID {

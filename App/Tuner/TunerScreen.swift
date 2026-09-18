@@ -39,7 +39,7 @@ struct TunerScreen: View {
     private var hint: LocalizedStringResource {
         if !model.isListening { return .tunerHintStopped }
         if case .string(let index) = model.target, let note = model.tuning.strings[safe: index] {
-            return .tunerHintPinned(NoteParts(note, notation: notation).spoken)
+            return .tunerHintPinned(note.spokenName(notation))
         }
         return .tunerHintIdle
     }
@@ -240,7 +240,7 @@ struct TunerScreen: View {
 
     private func announceInTune() {
         guard let note = model.detectedNote else { return }
-        var announcement = AttributedString(String(localized: .a11YInTune(NoteParts(note, notation: notation).spoken)))
+        var announcement = AttributedString(String(localized: .a11YInTune(note.spokenName(notation))))
         announcement.accessibilitySpeechAnnouncementPriority = .high
         AccessibilityNotification.Announcement(announcement).post()
     }
