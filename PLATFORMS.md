@@ -33,4 +33,8 @@ English and Italian, in string catalogs: `App/Resources/Localizable.xcstrings` (
 
 ## Icons and assets
 
-`App/Resources/Assets.xcassets` holds the app icon (all iPhone, iPad and Mac sizes plus the 1024 pt marketing icon), the accent colour and the tuner colours (`TuneGreen`, `TuneAmber`, `TuneRed`), each with light, dark and high-contrast variants.
+The app icon is an Icon Composer document, `App/Resources/AppIcon.icon`: a gradient background and a guitar layer the system renders in Liquid Glass, in the default, dark, clear and tinted appearances on every platform. `App/Resources/Assets.xcassets` holds a flat preview of it for the About screen, the accent colour, the tuner colours (`TuneGreen`, `TuneAmber`, `TuneRed`), the fills behind white text and the secondary text colour, each with light, dark and high-contrast variants.
+
+## System controls
+
+The **ChitarraTuneControls** WidgetKit extension provides a *Start Tuning* control: Control Center, the Lock Screen and the Action Button on iPhone and iPad; Control Center and the menu bar on the Mac. It opens the app and starts listening.

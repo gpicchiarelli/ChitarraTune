@@ -35,7 +35,7 @@ struct DocumentationSpecTests {
 
     @Test("Every Siri and Shortcuts action the README lists is implemented, and no other")
     func intents() throws {
-        let source = try Repo.text("App/Intents/TunerIntents.swift")
+        let source = try Repo.text("App/Intents/TunerIntents.swift") + Repo.text("Shared/StartTuningIntent.swift")
         let implemented = Set(
             try NSRegularExpression(pattern: #"struct (\w+): AppIntent"#)
                 .matches(in: source, range: NSRange(source.startIndex..., in: source))
@@ -61,7 +61,7 @@ struct DocumentationSpecTests {
 
     @Test("Each platform behaviour claimed in docs/ACCESSIBILITY.md has code behind it")
     func accessibilityClaims() throws {
-        let app = try Repo.files(in: "App", extensions: ["swift"]).map { try String(contentsOf: $0, encoding: .utf8) }.joined(separator: "\n")
+        let app = try (Repo.files(in: "App", extensions: ["swift"]) + Repo.files(in: "Shared", extensions: ["swift"])).map { try String(contentsOf: $0, encoding: .utf8) }.joined(separator: "\n")
         for evidence in ["accessibilityReduceMotion", "AccessibilityNotification.Announcement", ".updatesFrequently",
                          "accessibilityHint", ".isSelected", "accessibilityValue", "accessibilityLabel", "sensoryFeedback",
                          "dynamicTypeSize"] {
@@ -72,7 +72,9 @@ struct DocumentationSpecTests {
     @Test("Relative links in the Markdown files all resolve")
     func links() throws {
         let files = ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "PRIVACY.md", "CONTRIBUTORS.md", "PLATFORMS.md",
-                     "CODE_SIGNING.md", "APPLE_COMPLIANCE.md", "docs/ARCHITECTURE.md", "docs/ACCESSIBILITY.md", ".github/PULL_REQUEST_TEMPLATE.md"]
+                     "CODE_SIGNING.md", "APPLE_COMPLIANCE.md", "SUPPORT.md", "docs/ARCHITECTURE.md", "docs/ACCESSIBILITY.md",
+                     "docs/DEVICE_TEST_PLAN.md", "AppStore/README.md", "Packages/ChitarraTuneKit/Tests/TunerCoreTests/Fixtures/Recordings/README.md",
+                     ".github/PULL_REQUEST_TEMPLATE.md"]
         let link = try NSRegularExpression(pattern: ##"\]\(([^)#\s]+)(?:#[^)]*)?\)|(?:src|href)="([^"#]+)""##)
         for file in files {
             let text = try Repo.text(file)

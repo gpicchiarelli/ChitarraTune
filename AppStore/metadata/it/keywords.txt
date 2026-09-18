@@ -1,0 +1,1 @@
+accordatore,chitarra,accordare,accordatura,intonazione,drop d,dadgad,open g,acustica,elettrica,432

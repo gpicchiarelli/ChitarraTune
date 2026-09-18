@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="App/Resources/Assets.xcassets/AppIcon.appiconset/icon_1024x1024.png" width="128" height="128" alt="ChitarraTune app icon">
+<img src="docs/assets/icon.png" width="128" height="128" alt="ChitarraTune app icon">
 
 # ChitarraTune
 
@@ -67,7 +67,7 @@
 <br>
 
 > [!NOTE]
-> **Version 2.0 is a ground-up rewrite in progress.** The audio, DSP and presentation layers (`ChitarraTuneKit`) are complete and tested; the app on top of them is still being finished, so a build from `main` may not run yet. The last stable line is 1.x. See the [changelog](CHANGELOG.md).
+> **Version 2.0** is a ground-up rewrite for iOS 26, iPadOS 26 and macOS 26, free on the App Store (as an unlisted app: ask for the link) and as a notarized download for the Mac on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). See the [changelog](CHANGELOG.md).
 
 <table>
   <tr>
@@ -132,7 +132,9 @@
 microphone → input tap → ring buffer → noise gate → YIN (FFT) → string → smoothing → stability → hold → gauge
 ```
 
-A pitch detector that costs almost nothing is what makes a tuner feel instant. ChitarraTune computes the YIN difference function through the frequency domain with Accelerate: about 16 µs per reading on an Apple M4, roughly 65 times faster than the direct loop it replaced (about 1.06 ms). When you pin a string, the search narrows to a window around it, which rules out octave errors by construction.
+A pitch detector that costs almost nothing is what makes a tuner feel instant. ChitarraTune computes the YIN difference function through the frequency domain with Accelerate: about 16 µs per analysis on an Apple M4, roughly 65 times faster than the direct loop it replaced (about 1.06 ms). When you pin a string, the search narrows to a window around it, which rules out octave errors by construction.
+
+Real steel strings are slightly inharmonic, and that pulls a period detector a few cents sharp. So once YIN has found the period, ChitarraTune measures it again on a band-passed copy of the signal that keeps only the fundamental and part of the second partial, one filter per string, running on the live stream. The whole reading stays well under a tenth of a millisecond, and on a modelled steel string the typical error is below one cent.
 
 The code is split so that the interesting part can be tested without a microphone:
 
@@ -156,7 +158,7 @@ Concurrency is explicit: capture and DSP are actors, the interface is `@MainActo
 | **Pick a string** | Pins string 1–6, or returns to automatic |
 | **Choose input** | Selects a microphone or interface |
 
-Try *"Start tuning in ChitarraTune"* or add the actions to your own shortcuts.
+Try *"Start tuning in ChitarraTune"* or add the actions to your own shortcuts. The **Start Tuning** control can go in Control Center, on the Lock Screen or on the Action Button (iPhone, iPad), and in Control Center or the menu bar (Mac).
 
 ## Keyboard shortcuts <sub>macOS</sub>
 
@@ -238,7 +240,10 @@ ChitarraTune/
 │   ├── Intents/            Siri and Shortcuts
 │   ├── DesignSystem/       colours, formatting, tuning names
 │   └── Resources/          string catalogs, assets, privacy manifest
-├── Config/                 build settings, entitlements, Info.plist
+├── Shared/                 code shared by the app and the extension (Start Tuning intent)
+├── Controls/               WidgetKit extension: the Start Tuning system control
+├── AppStore/               store listing (en, it), review notes, screenshots
+├── Config/                 build settings, entitlements, Info.plists, export options
 ├── Packages/ChitarraTuneKit/
 │   ├── Sources/TunerCore/      pitch maths, tunings, YIN, tuning engine
 │   ├── Sources/TunerAudio/     capture, permission, input discovery
@@ -256,6 +261,9 @@ ChitarraTune/
 | [Platforms](PLATFORMS.md) | Requirements and per-platform behaviour |
 | [Code signing](CODE_SIGNING.md) | Entitlements, signing, notarization, secrets |
 | [Apple compliance](APPLE_COMPLIANCE.md) | App Store readiness |
+| [App Store submission](AppStore/README.md) | Listing, submission and unlisted distribution |
+| [Device test plan](docs/DEVICE_TEST_PLAN.md) | What to check on real hardware before each release |
+| [Support](SUPPORT.md) | How to get help |
 | [Changelog](CHANGELOG.md) | What changed |
 | [Contributing](CONTRIBUTING.md) | Ground rules and how to help |
 | [Security policy](SECURITY.md) | How to report a vulnerability |
@@ -284,7 +292,7 @@ BSD 3-Clause. See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 **ChitarraTune** è un accordatore per chitarra per **Mac, iPhone e iPad**, scritto in Swift 6 e SwiftUI. Misura l'intonazione con l'algoritmo YIN calcolato via FFT, mostra un ago fluido e conferma «intonato» solo quando la nota si è davvero stabilizzata.
 
 > [!NOTE]
-> **La versione 2.0 è una riscrittura completa, ancora in corso.** I livelli audio, DSP e di presentazione (`ChitarraTuneKit`) sono completi e testati; l'app che li usa è ancora in via di completamento, quindi una build da `main` potrebbe non partire. L'ultima linea stabile è la 1.x.
+> **La versione 2.0** è una riscrittura completa per iOS 26, iPadOS 26 e macOS 26, gratuita sull'App Store (come app non in elenco: chiedi il link) e scaricabile per Mac, autenticata da Apple, dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
 
 **Caratteristiche**
 

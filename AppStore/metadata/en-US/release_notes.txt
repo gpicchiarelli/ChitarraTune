@@ -1,0 +1,4 @@
+• Rebuilt from the ground up for iOS 26, iPadOS 26 and macOS 26.
+• More accurate on real strings: the tuner now measures the fundamental itself, so the sharp overtones of steel strings no longer pull the reading off.
+• Explains why it needs the microphone before asking, and resumes by itself after a phone call.
+• Ten tunings, A4 from 415 to 466 Hz, dial or bar gauge, English or solfège note names.

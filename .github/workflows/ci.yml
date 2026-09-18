@@ -74,12 +74,79 @@ jobs:
             GIT_COMMIT="$(git rev-parse --short HEAD)" \
             build
 
+  # The realistic-signal accuracy matrix in full (every tuning × string × detuning × scenario). Too
+  # slow for a debug build on every push, fast in an optimised one.
+  dsp:
+    name: DSP accuracy (full matrix)
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Realistic signals and recorded corpus, optimised build
+        env:
+          CHITARRA_FULL_DSP: "1"
+        run: |
+          swift test --package-path Packages/ChitarraTuneKit -c release -Xswiftc -enable-testing \
+            --filter "RealisticSignalTests|RecordingCorpusTests"
+
+  # End-to-end tests in demo mode (synthetic guitar, no microphone), including Xcode's accessibility
+  # audit of every screen in light, dark, landscape and the largest text size.
+  ui:
+    name: UI · ${{ matrix.name }}
+    runs-on: macos-26
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: iPhone
+            destination: platform=iOS Simulator,name=iPhone 17 Pro,OS=latest
+            signing: CODE_SIGNING_ALLOWED=NO
+          - name: iPad
+            destination: platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=latest
+            signing: CODE_SIGNING_ALLOWED=NO
+          - name: Mac
+            destination: platform=macOS
+            # The macOS test runner must be signed; an ad-hoc signature is enough on the runner.
+            signing: CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Toolchain and simulators
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available | grep -E "iPhone 17 Pro|iPad Pro 13" || true
+      - name: UI tests
+        env:
+          DESTINATION: ${{ matrix.destination }}
+          SIGNING: ${{ matrix.signing }}
+        run: |
+          set -euo pipefail
+          # SIGNING holds several build settings, so it is split on purpose.
+          # shellcheck disable=SC2086
+          xcodebuild test \
+            -project ChitarraTune.xcodeproj \
+            -scheme ChitarraTune \
+            -destination "$DESTINATION" \
+            -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
+            $SIGNING
+      - name: Keep the result bundle when a test fails
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ui-${{ matrix.name }}
+          path: ${{ runner.temp }}/ui.xcresult
+          retention-days: 7
+
   # One check that stands for all of the above, so the result of the whole run is a single line on
   # the commit. Add every new job to `needs` below.
   gate:
     name: Gate
     if: always()
-    needs: [kit, app]
+    needs: [kit, app, dsp, ui]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

@@ -1,6 +1,6 @@
 # Architecture
 
-ChitarraTune is a single multiplatform SwiftUI app (macOS, iPhone, iPad) on top of a local Swift package, **ChitarraTuneKit**, that holds everything that is not user interface.
+ChitarraTune is a single multiplatform SwiftUI app (macOS, iPhone, iPad) on top of a local Swift package, **ChitarraTuneKit**, that holds everything that is not user interface. A small WidgetKit extension, **ChitarraTuneControls**, adds a system control that starts the tuner.
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
@@ -23,7 +23,9 @@ Dependencies only point downwards. `TunerCore` imports Foundation and Accelerate
 | **TunerCore** | Notes, tunings, frequency ↔ cents maths, pitch detection and the tuning pipeline. | `Note`, `Tuning`, `PitchMath`, `PitchDetector`, `CrossCorrelator`, `TuningEngine` |
 | **TunerAudio** | Turns a microphone into a stream of mono audio chunks; microphone permission; the list of inputs and its changes. | `EngineAudioCapture`, `SystemMicrophoneAuthorization`, `SystemAudioInputs`, `CaptureFailure` |
 | **TunerFeature** | The state the UI renders and the user's preferences. | `TunerModel`, `TunerHub`, `TunerSettings`, `PowerProfile`, `TunerProcessor` |
-| **App** | Screens (dial, bar, note read-out, string selector), menu commands, Settings, About, Siri and Shortcuts. | `TunerScreen`, `TunerCommands`, `TunerIntents` |
+| **App** | Screens (dial, bar, note read-out, string selector), the microphone explanation, menu commands, Settings, About, Siri and Shortcuts. | `TunerScreen`, `MicrophonePrimer`, `TunerCommands`, `TunerIntents` |
+| **Shared** | Code compiled into both the app and the extension. | `StartTuningIntent` |
+| **Controls** (extension) | The *Start Tuning* control for Control Center, the Lock Screen and the Action Button (iPhone, iPad) and Control Center and the menu bar (Mac). | `StartTuningControl` |
 
 `TunerAudio` exposes protocols (`AudioCapturing`, `MicrophoneAuthorizing`, `AudioInputProviding`) so `TunerModel` can be driven by test doubles and by a synthetic guitar (`SimulatedAudioCapture`).
 
@@ -36,12 +38,17 @@ microphone
   → ring buffer                                           TunerCore
   → noise gate with hysteresis
   → YIN: FFT cross-correlation (Accelerate) → CMNDF → parabolic interpolation
+  → octave continuity (no jump while a string dies away)
   → string selection (automatic, or pinned to one string)
+  → low-partial refinement (inharmonicity correction, per string)
   → smoothing → in-tune stability with hysteresis → hold
   → TunerFrame → TunerModel → SwiftUI
 ```
 
 - **Detector.** The difference function is computed as `E₀ + E_τ − 2·c(τ)` with `c` obtained through the frequency domain, so one analysis costs `O(N log N)` instead of `O(W · lags)`. The search range follows the tuning and A4; pinning a string narrows it to 0.7×–1.5× of that string, which rules out octave errors by construction.
+- **Inharmonicity.** Real steel strings are stiff: overtone `k` sits about `866·B·k²` cents sharp of `k·f0`, which pulls YIN's period sharp by one to four cents on a typical string (up to eight on a stiff one). Each string has a streaming band-pass (`PartialFilter`: 4th-order Butterworth low-pass at 1.6× the string, 2nd-order high-pass at 0.5×) running on the continuous stream, so it has no edge transients. After YIN has found the period, `PitchDetector.refine(_:lowPassed:)` measures it again on that string's filtered window, where only the fundamental and part of the second partial remain. The difference is averaged over time (it is a property of the string; single measurements are noisy where hum shares the fundamental's band) and applied to the reading. A measurement that is not clearly periodic is ignored.
+- **Octave continuity.** As a note decays into noise and hum, YIN can latch onto two to four times the period (or a fraction of it). Without a new pluck — a level rise by 1.5× — a detection at such a ratio from the note being followed is folded back onto it.
+- **Accuracy.** `RealisticSignalTests` plays a physically informed string model (inharmonicity, pluck position, partial decay, phone-microphone roll-off, pick noise, room noise, mains hum) through the engine for every tuning and string: the typical error of the reading is under 1 cent for an interface, a stiff string or a phone in a quiet room. Real recordings can be added to `Tests/TunerCoreTests/Fixtures/Recordings` and become regression tests.
 - **Engine parameters.** Noise gate opens at 0.004 RMS and closes at 0.0025; minimum clarity 0.55; deviations beyond ±300 cents are ignored; "in tune" is ±5 cents with 2 cents of exit margin and six consecutive stable analyses; the last reading is held for 0.8 s after the signal fades.
 - **Cadence.** One analysis every 25 ms (~40 Hz). In Low Power Mode or under serious thermal pressure `PowerProfile` relaxes this to 45 ms.
 
@@ -53,7 +60,8 @@ The package is built in Swift 6 language mode; the app with `SWIFT_STRICT_CONCUR
 - `TunerProcessor` is an **actor** that owns the non-`Sendable` `TuningEngine`, so the DSP runs off the main thread with no locks.
 - `TunerModel`, `TunerHub` and `TunerSettings` are `@MainActor @Observable`. Properties are written only when the value changes, which keeps SwiftUI redraws to a minimum.
 - Session control uses a **generation counter**: every `start()` and `stop()` bumps it, and every asynchronous continuation checks that it still belongs to the current generation before acting. A permission prompt or a slow start that finishes after the user stopped is therefore ignored.
-- A route or hardware-format change ends the stream with `CaptureFailure.configurationChanged`; the model restarts capture up to three times before reporting the failure.
+- A route or hardware-format change, or a reset of the media services, ends the stream with `CaptureFailure.configurationChanged`; the model restarts capture up to three times before reporting the failure.
+- A phone call or Siri interrupts capture (`CaptureFailure.interrupted`). When the system reports that the interruption has ended with the "may resume" option, the model starts listening again by itself.
 
 ## State
 
@@ -69,10 +77,14 @@ The package is built in Swift 6 language mode; the app with `SWIFT_STRICT_CONCUR
 
 App Intents reach the running tuner through `AppDependencyManager` (`@Dependency var hub: TunerHub`). Available actions: start tuning (opens the app, because a microphone needs the foreground), stop tuning, set tuning, set reference pitch, pick a string, choose an input.
 
+`StartTuningIntent` lives in `Shared/` and is compiled into the Controls extension as well. The extension only describes the control; because the intent opens the app, the system performs it in the app process, where the hub exists. It uses literal string keys, present in both string catalogs (a policy test keeps them identical).
+
 ## Build configuration
 
-Build settings live in `Config/*.xcconfig`, not in the project file: `Base` (platforms, Swift, security), `Debug`, `Release`, `App`, `UITests`. Signing material and sandbox entitlements are described in [CODE_SIGNING.md](../CODE_SIGNING.md).
+Build settings live in `Config/*.xcconfig`, not in the project file: `Base` (platforms, Swift, security), `Debug`, `Release`, `App`, `Controls`, `UITests`. The app icon is an Icon Composer document (`App/Resources/AppIcon.icon`), rendered by the system in the default, dark, clear and tinted appearances. Signing material and sandbox entitlements are described in [CODE_SIGNING.md](../CODE_SIGNING.md).
 
 ## Testing
 
-`swift test --package-path Packages/ChitarraTuneKit` runs the Swift Testing suites for `TunerCore` (notes, tunings, correlator, detector, engine) and `TunerFeature` (model and settings, using test doubles). Anything that needs a real microphone is exercised manually.
+`swift test --package-path Packages/ChitarraTuneKit` runs the Swift Testing suites for `TunerCore` (notes, tunings, correlator, detector, engine, realistic signals, recorded corpus), `TunerFeature` (model and settings, using test doubles) and the repository policies (privacy, entitlements, workflows, localization, colour contrast, App Store metadata).
+
+The UI tests (`ChitarraTuneUITests`) drive the app in demo mode on iPhone, iPad and Mac, and run Xcode's accessibility audit on every screen in light and dark appearance, landscape and the largest text size. CI runs all of them; the full DSP matrix runs in an optimised build. What only real hardware can show is in the [device test plan](DEVICE_TEST_PLAN.md).

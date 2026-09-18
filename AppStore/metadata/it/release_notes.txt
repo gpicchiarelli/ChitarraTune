@@ -1,0 +1,4 @@
+• Riscritto da zero per iOS 26, iPadOS 26 e macOS 26.
+• Più preciso sulle corde vere: l'accordatore misura la fondamentale, così gli armonici crescenti delle corde in acciaio non falsano più la lettura.
+• Spiega perché serve il microfono prima di chiederlo, e riprende da solo dopo una telefonata.
+• Dieci accordature, La da 415 a 466 Hz, quadrante o barra, note in solfeggio o in inglese.

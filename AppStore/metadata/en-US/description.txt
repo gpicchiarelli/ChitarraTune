@@ -1,0 +1,27 @@
+ChitarraTune is a guitar tuner for iPhone, iPad and Mac that does one thing and does it well: it tells you, quickly and steadily, how far each string is from where it should be.
+
+PRECISE
+• Pitch detection measures the fundamental of the string itself, so the sharp overtones of real steel strings don't pull the reading off.
+• A smooth needle, the note, the frequency and the deviation in cents.
+• "In tune" lights up only once the note has really settled inside the ±5 cent zone.
+
+TEN TUNINGS
+Standard, Half step down, Full step down, Drop D, Drop C, DADGAD, Open D, Open G, Open E and Open A. The tuner recognises which string you play, or you can pin one string and tune just that.
+
+YOUR PITCH
+Set A4 anywhere from 415 to 466 Hz: baroque pitch, 432 Hz, or the out-of-tune piano at a friend's house.
+
+YOUR WAY
+• Note names in English (C D E F G A B) or fixed-do solfège (Do Re Mi Fa Sol La Si).
+• Dial or bar gauge.
+• On the Mac, choose any microphone or audio interface and open one tuner per window.
+
+PRIVATE BY DESIGN
+Sound is analysed on your device as you play and thrown away a fraction of a second later. ChitarraTune never records audio, has no network access at all, and contains no analytics, advertising or tracking.
+
+CONSIDERATE
+• Stops listening after a period of silence, and slows its analysis in Low Power Mode.
+• VoiceOver, Dynamic Type, Reduce Motion and full keyboard control.
+• Siri and Shortcuts: start and stop tuning, pick a tuning, a string, an input or a reference pitch.
+
+ChitarraTune is free, with no ads and no in-app purchases. It is open source under the BSD licence.

@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-Version 2.0 is a ground-up rewrite. Work in progress: the package is complete and tested, the app layer is being finished.
+Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPhone, iPad and Mac, free, unlisted) alongside the notarized Developer ID build for the Mac.
 
 ### Changed
 
@@ -21,6 +21,14 @@ Version 2.0 is a ground-up rewrite. Work in progress: the package is complete an
 
 ### Added
 
+- **More accurate on real strings.** Steel strings are slightly inharmonic, which pulled YIN's reading one to four cents sharp (up to eight on a stiff string). A per-string streaming band-pass and a second period measurement on it now measure the fundamental itself; the typical error on a modelled string is under one cent. As a note dies away the reading can no longer jump an octave (or to another string).
+- A physically informed string model (inharmonicity, pluck position, phone-microphone roll-off, pick and room noise, mains hum) and accuracy tests for every tuning and string; a corpus directory for real recordings that become regression tests.
+- A screen that explains why the tuner needs the microphone before the system asks.
+- Listening resumes by itself after a phone call or Siri, and restarts after a reset of the media services.
+- A *Start Tuning* control for Control Center, the Lock Screen and the Action Button (iPhone, iPad) and Control Center and the menu bar (Mac).
+- A new app icon for Liquid Glass, made in Icon Composer, with dark, clear and tinted appearances.
+- App Store listing in English and Italian, review notes, support page, updated privacy policy, device test plan and submission runbook.
+- Release workflow for the App Store: iOS/iPadOS and macOS archives with cloud-managed signing, uploaded to App Store Connect; version bump and release-notes scripts.
 - Ten tunings (Standard, Half step down, Full step down, Drop D, Drop C, DADGAD, Open D, Open G, Open E, Open A).
 - Dial and bar gauges; English or fixed-do solfège note names; haptic feedback; an idle timeout that stops listening after a period of silence.
 - One tuner per window on macOS, each with its own input and tuning.
@@ -29,6 +37,9 @@ Version 2.0 is a ground-up rewrite. Work in progress: the package is complete an
 
 ### Fixed
 
+- Accessibility, found by Xcode's audit now run on every screen: the *Auto* chip had an 18-point touch target; secondary text, white text on tinted glass in Dark Mode and green and amber text did not reach 4.5:1 contrast; the string chips shrank their labels instead of growing with Dynamic Type; the landscape layout and the failure screen clipped text at the largest sizes; a disabled *Reset* button was unreadable.
+- Two sheets on the same view meant the Settings sheet shadowed any other; the explanation screen and Settings now share one.
+- The demo mode no longer shows third-party product names.
 - A `NaN` A4 stored in the preferences no longer crashes the engine (it used to survive the clamp and trap on the first audio chunk); it now falls back to 440 Hz.
 - On an audio interface the tuner now listens to the loudest input channel instead of always channel 0, so a guitar plugged into input 2 is heard.
 - On iOS a start requested from the microphone permission prompt is no longer cancelled: the tuner stops when the app is in the background, not merely inactive.
@@ -42,6 +53,8 @@ Version 2.0 is a ground-up rewrite. Work in progress: the package is complete an
 
 ### Quality gate
 
+- UI tests on iPhone, iPad and Mac in CI, with the accessibility audit of every screen in light and dark appearance, landscape and the largest text size; the full DSP accuracy matrix in an optimised build.
+- New policy tests: WCAG contrast of every colour in every appearance, App Store metadata limits and claims, the Controls extension's entitlements, every string catalog complete in both languages.
 - The pre-push hook runs the gate before anything leaves the machine, and CI repeats it (Gate, Lint, CodeQL) on GitHub. The gate builds without warnings, runs SwiftLint in strict mode, enforces per-module coverage floors and runs every test. `main` itself only refuses deletion and force-pushes.
 - New test families: hostile input and fuzzing of the DSP, checks of the documented numbers against the code, smoke tests of the system audio layer, and repository-policy tests (no network APIs, entitlements, privacy manifest, pinned actions, complete translations, README matching the implementation).
 - `Scripts/verify.sh` runs the same checks locally; `.githooks/pre-push` runs it automatically once enabled.

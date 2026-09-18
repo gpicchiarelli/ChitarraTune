@@ -1,5 +1,9 @@
 name: Release
 
+# One tag, two channels:
+#   • Developer ID — a signed, notarized macOS zip on GitHub Releases, for download outside the store.
+#   • App Store    — iOS/iPadOS and macOS builds uploaded to App Store Connect (TestFlight first,
+#                    then submitted for review by hand; see AppStore/README.md).
 on:
   push:
     tags:
@@ -10,16 +14,21 @@ on:
         description: "Version to release, e.g. 2.0.0 (the tag becomes v2.0.0)"
         required: true
         type: string
+      channels:
+        description: "Where to publish"
+        type: choice
+        default: both
+        options: [both, developer-id, app-store]
       prerelease:
-        description: "Mark as pre-release"
+        description: "Mark the GitHub release as pre-release"
         type: boolean
         default: false
       allow_unsigned:
-        description: "Publish an unsigned, non-notarized build when no Developer ID secrets are configured"
+        description: "Developer ID channel only: publish an unsigned, non-notarized build when no certificate is configured"
         type: boolean
         default: false
 
-# Read-only by default; the single job below asks for exactly what it needs.
+# Read-only by default; each job asks for exactly what it needs.
 permissions:
   contents: read
 
@@ -28,41 +37,48 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build, sign, notarize, publish
+  prepare:
+    name: Version and tests
     runs-on: macos-26
-    timeout-minutes: 60
-    permissions:
-      contents: write # create the GitHub Release
-      id-token: write # build-provenance attestation
-      attestations: write
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build: ${{ steps.version.outputs.build }}
+      developer_id: ${{ steps.version.outputs.developer_id }}
+      app_store: ${{ steps.version.outputs.app_store }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      # Untrusted values (tag name, dispatch input) reach the shell only through env vars and are
+      # Untrusted values (tag name, dispatch inputs) reach the shell only through env vars and are
       # validated before use.
       - name: Resolve and validate version
+        id: version
         env:
           EVENT_NAME: ${{ github.event_name }}
           REF_NAME: ${{ github.ref_name }}
           INPUT_VERSION: ${{ inputs.version }}
+          INPUT_CHANNELS: ${{ inputs.channels }}
         run: |
           set -euo pipefail
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            VERSION="$INPUT_VERSION"
-          else
-            VERSION="${REF_NAME#v}"
-          fi
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then VERSION="$INPUT_VERSION"; CHANNELS="$INPUT_CHANNELS"; else VERSION="${REF_NAME#v}"; CHANNELS=both; fi
           re='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'
-          if ! [[ "$VERSION" =~ $re ]]; then
-            echo "::error::'$VERSION' is not a valid semantic version"
-            exit 1
+          [[ "$VERSION" =~ $re ]] || { echo "::error::'$VERSION' is not a valid semantic version"; exit 1; }
+          case "$CHANNELS" in both|developer-id|app-store) ;; *) echo "::error::unknown channel '$CHANNELS'"; exit 1 ;; esac
+          # App Store versions are numeric only; a pre-release goes to the Developer ID channel alone.
+          APP_STORE=false; DEVELOPER_ID=false
+          [ "$CHANNELS" != "app-store" ] && DEVELOPER_ID=true
+          if [ "$CHANNELS" != "developer-id" ]; then
+            if [[ "$VERSION" == *-* ]]; then echo "::warning::pre-release $VERSION is not uploaded to the App Store"; else APP_STORE=true; fi
           fi
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-          echo "TAG=v$VERSION" >> "$GITHUB_ENV"
+          {
+            echo "version=$VERSION"
+            echo "build=$GITHUB_RUN_NUMBER"
+            echo "developer_id=$DEVELOPER_ID"
+            echo "app_store=$APP_STORE"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Require a commit that is on main
         run: |
@@ -72,8 +88,37 @@ jobs:
             exit 1
           fi
 
+      - name: Version matches the build settings and the changelog
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          CORE="${VERSION%%-*}"
+          grep -Eq "^MARKETING_VERSION = ${CORE//./\\.}$" Config/Base.xcconfig \
+            || { echo "::error::Config/Base.xcconfig MARKETING_VERSION is not $CORE (run Scripts/bump-version.sh)"; exit 1; }
+          Scripts/release-notes.sh "$CORE" > /dev/null \
+            || { echo "::error::CHANGELOG.md has no section for $CORE"; exit 1; }
+
       - name: Test ChitarraTuneKit
         run: swift test --package-path Packages/ChitarraTuneKit
+
+  developer-id:
+    name: Developer ID (macOS, notarized)
+    needs: prepare
+    if: needs.prepare.outputs.developer_id == 'true'
+    runs-on: macos-26
+    timeout-minutes: 60
+    permissions:
+      contents: write # create the GitHub Release
+      id-token: write # build-provenance attestation
+      attestations: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      BUILD: ${{ needs.prepare.outputs.build }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Import Developer ID certificate
         env:
@@ -81,16 +126,16 @@ jobs:
           ALLOW_UNSIGNED: ${{ inputs.allow_unsigned }}
           MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
           MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
-          MACOS_TEAM_ID: ${{ secrets.MACOS_TEAM_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
-          if [ -z "${MACOS_CERT_P12:-}" ] || [ -z "${MACOS_CERT_PASSWORD:-}" ] || [ -z "${MACOS_TEAM_ID:-}" ]; then
+          if [ -z "${MACOS_CERT_P12:-}" ] || [ -z "${MACOS_CERT_PASSWORD:-}" ] || [ -z "${APPLE_TEAM_ID:-}" ]; then
             if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$ALLOW_UNSIGNED" = "true" ]; then
               echo "::warning::No Developer ID secrets: publishing an UNSIGNED, non-notarized build"
               echo "SIGNED=false" >> "$GITHUB_ENV"
               exit 0
             fi
-            echo "::error::MACOS_CERT_P12, MACOS_CERT_PASSWORD and MACOS_TEAM_ID are required to publish a release"
+            echo "::error::MACOS_CERT_P12, MACOS_CERT_PASSWORD and APPLE_TEAM_ID are required to publish a release"
             exit 1
           fi
           umask 077
@@ -120,24 +165,24 @@ jobs:
       # and audio-input entitlements come from build settings, not from Config/*.entitlements).
       - name: Build Release
         env:
-          MACOS_TEAM_ID: ${{ secrets.MACOS_TEAM_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
           COMMON=(
             -project ChitarraTune.xcodeproj
             -scheme ChitarraTune
             -configuration Release
-            -destination 'platform=macOS'
+            -destination 'generic/platform=macOS'
             -derivedDataPath build
-            MARKETING_VERSION="$VERSION"
-            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER"
+            MARKETING_VERSION="${VERSION%%-*}"
+            CURRENT_PROJECT_VERSION="$BUILD"
             GIT_COMMIT="$(git rev-parse --short HEAD)"
           )
           if [ "$SIGNED" = "true" ]; then
             xcodebuild "${COMMON[@]}" \
               CODE_SIGN_STYLE=Manual \
               CODE_SIGN_IDENTITY="$IDENTITY" \
-              DEVELOPMENT_TEAM="$MACOS_TEAM_ID" \
+              DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
               PROVISIONING_PROFILE_SPECIFIER="" \
               OTHER_CODE_SIGN_FLAGS="--timestamp --keychain $KEYCHAIN" \
               ENABLE_HARDENED_RUNTIME=YES \
@@ -152,35 +197,37 @@ jobs:
         run: |
           set -euo pipefail
           APP="build/Build/Products/Release/ChitarraTune.app"
+          EXT="$APP/Contents/PlugIns/ChitarraTuneControls.appex"
           codesign --verify --deep --strict --verbose=2 "$APP"
-          codesign -dv "$APP" 2>&1 | grep -Eq 'flags=.*runtime' \
-            || { echo "::error::Hardened Runtime is not enabled"; exit 1; }
-          ENTITLEMENTS="$(codesign -d --entitlements :- "$APP" 2>/dev/null)"
-          for key in com.apple.security.app-sandbox com.apple.security.device.audio-input; do
-            grep -q "<key>$key</key>" <<< "$ENTITLEMENTS" \
-              || { echo "::error::Signed app is missing the $key entitlement"; exit 1; }
+          for BUNDLE in "$APP" "$EXT"; do
+            codesign -dv "$BUNDLE" 2>&1 | grep -Eq 'flags=.*runtime' \
+              || { echo "::error::Hardened Runtime is not enabled on $BUNDLE"; exit 1; }
+            grep -q "<key>com.apple.security.app-sandbox</key>" <<< "$(codesign -d --entitlements :- "$BUNDLE" 2>/dev/null)" \
+              || { echo "::error::$BUNDLE is not sandboxed"; exit 1; }
           done
+          grep -q "<key>com.apple.security.device.audio-input</key>" <<< "$(codesign -d --entitlements :- "$APP" 2>/dev/null)" \
+            || { echo "::error::The app is missing the audio-input entitlement"; exit 1; }
 
       - name: Notarize and staple
         if: env.SIGNED == 'true'
         env:
-          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
-          NOTARY_API_ISSUER_ID: ${{ secrets.NOTARY_API_ISSUER_ID }}
-          NOTARY_API_KEY_P8: ${{ secrets.NOTARY_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
         run: |
           set -euo pipefail
-          if [ -z "${NOTARY_API_KEY_ID:-}" ] || [ -z "${NOTARY_API_ISSUER_ID:-}" ] || [ -z "${NOTARY_API_KEY_P8:-}" ]; then
-            echo "::warning::Notary API secrets not configured: the release is signed but NOT notarized"
+          if [ -z "${ASC_API_KEY_ID:-}" ] || [ -z "${ASC_API_ISSUER_ID:-}" ] || [ -z "${ASC_API_KEY_P8:-}" ]; then
+            echo "::warning::App Store Connect API secrets not configured: the release is signed but NOT notarized"
             exit 0
           fi
           umask 077
           APP="build/Build/Products/Release/ChitarraTune.app"
-          echo "$NOTARY_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          echo "$ASC_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/asc.p8"
           ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/notarize.zip"
           RESULT="$(xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
-            --key "$RUNNER_TEMP/notary.p8" \
-            --key-id "$NOTARY_API_KEY_ID" \
-            --issuer "$NOTARY_API_ISSUER_ID" \
+            --key "$RUNNER_TEMP/asc.p8" \
+            --key-id "$ASC_API_KEY_ID" \
+            --issuer "$ASC_API_ISSUER_ID" \
             --wait --timeout 30m --output-format json)"
           echo "$RESULT"
           grep -Eq '"status" *: *"Accepted"' <<< "$RESULT" \
@@ -197,6 +244,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
           shasum -a 256 "$ZIP" > "$ZIP.sha256"
           echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+          Scripts/release-notes.sh "${VERSION%%-*}" > "$RUNNER_TEMP/notes.md"
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
@@ -209,15 +257,101 @@ jobs:
           PRERELEASE: ${{ inputs.prerelease }}
         run: |
           set -euo pipefail
-          ARGS=(--title "ChitarraTune $VERSION" --generate-notes --target "$GITHUB_SHA")
-          if [ "$PRERELEASE" = "true" ] || [[ "$VERSION" == *-* ]]; then ARGS+=(--prerelease); fi
+          TAG="v$VERSION"
+          NOTES="$RUNNER_TEMP/notes.md"
           if [ "$SIGNED" != "true" ]; then
-            ARGS+=(--notes "> **Unsigned build.** macOS Gatekeeper will warn about it. Verify the checksum, then use Right-click → Open once.")
+            printf '\n> **Unsigned build.** macOS Gatekeeper will warn about it. Verify the checksum, then use Right-click → Open once.\n' >> "$NOTES"
           fi
+          ARGS=(--title "ChitarraTune $VERSION" --notes-file "$NOTES" --target "$GITHUB_SHA")
+          if [ "$PRERELEASE" = "true" ] || [[ "$VERSION" == *-* ]]; then ARGS+=(--prerelease); fi
           gh release create "$TAG" "$ZIP" "$ZIP.sha256" "${ARGS[@]}"
 
       - name: Remove signing material
         if: always()
         run: |
-          rm -f "$RUNNER_TEMP/certificate.p12" "$RUNNER_TEMP/notary.p8" "$RUNNER_TEMP/notarize.zip"
+          rm -f "$RUNNER_TEMP/certificate.p12" "$RUNNER_TEMP/asc.p8" "$RUNNER_TEMP/notarize.zip"
           if [ -n "${KEYCHAIN:-}" ]; then security delete-keychain "$KEYCHAIN" || true; fi
+
+  app-store:
+    name: App Store Connect · ${{ matrix.name }}
+    needs: prepare
+    if: needs.prepare.outputs.app_store == 'true'
+    runs-on: macos-26
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: iOS and iPadOS
+            destination: generic/platform=iOS
+          - name: macOS
+            destination: generic/platform=macOS
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      BUILD: ${{ needs.prepare.outputs.build }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Cloud-managed signing: xcodebuild obtains the Apple Distribution certificate and the
+      # provisioning profiles through the App Store Connect API key, so no certificate is stored in
+      # the repository secrets. The key needs the App Manager (or Admin) role.
+      - name: App Store Connect API key
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ASC_API_KEY_P8:-}" ] || [ -z "${ASC_API_KEY_ID:-}" ] || [ -z "${ASC_API_ISSUER_ID:-}" ] || [ -z "${APPLE_TEAM_ID:-}" ]; then
+            echo "::error::ASC_API_KEY_P8, ASC_API_KEY_ID, ASC_API_ISSUER_ID and APPLE_TEAM_ID are required for the App Store channel"
+            exit 1
+          fi
+          umask 077
+          echo "$ASC_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/asc.p8"
+
+      - name: Archive
+        env:
+          DESTINATION: ${{ matrix.destination }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project ChitarraTune.xcodeproj \
+            -scheme ChitarraTune \
+            -configuration Release \
+            -destination "$DESTINATION" \
+            -archivePath "$RUNNER_TEMP/ChitarraTune.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/asc.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD" \
+            GIT_COMMIT="$(git rev-parse --short HEAD)"
+
+      - name: Export and upload to App Store Connect
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/ChitarraTune.xcarchive" \
+            -exportOptionsPlist Config/ExportOptions-AppStore.plist \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/asc.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
+          echo "Uploaded build $BUILD of $VERSION. It appears in TestFlight once App Store Connect has processed it." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove signing material
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/asc.p8" "$RUNNER_TEMP/ChitarraTune.xcarchive" "$RUNNER_TEMP/export"
