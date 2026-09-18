@@ -23,7 +23,7 @@ Open `ChitarraTune.xcodeproj`, choose the **ChitarraTune** scheme and a destinat
 | Windows | One window per tuner (⌘N opens another, each with its own input and tuning); a Settings window; About and License windows | One window; Settings in a sheet |
 | Commands | Menu bar commands and keyboard shortcuts | Hardware-keyboard shortcuts on iPad |
 | Microphone | Any Core Audio input, chosen from the toolbar, with hot-plug detection | The system route, or one of the available input ports |
-| Leaving the app | Keeps listening while the window is open; holds an activity assertion so App Nap does not throttle analysis | Stops listening as soon as the app leaves the foreground (iOS may not record in the background) |
+| Leaving the app | Keeps listening while the window is open; holds an activity assertion so App Nap does not throttle analysis | Stops listening when the app goes to the background (iOS may not record there); a transient interruption such as a permission prompt does not stop it |
 | Screen | Normal | Kept awake while listening |
 | Feedback | Visual | Visual and haptic |
 

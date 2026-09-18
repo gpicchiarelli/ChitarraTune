@@ -10,6 +10,43 @@ struct WorkflowPolicyTests {
         try String(contentsOf: file, encoding: .utf8).components(separatedBy: "\n")
     }
 
+    /// Runs a tool and returns its status and combined output, or `nil` if it cannot be launched.
+    private func run(_ tool: String, _ arguments: [String]) -> (status: Int32, output: String)? {
+        guard FileManager.default.isExecutableFile(atPath: tool) else { return nil }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: tool)
+        process.arguments = arguments
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        do { try process.run() } catch { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        return (process.terminationStatus, String(decoding: data, as: UTF8.self))
+    }
+
+    /// Regression: `- name: X (strict: y)` is not valid YAML, GitHub refused the whole workflow, and
+    /// nothing in this repository noticed until after the push.
+    @Test("Every workflow and issue form is syntactically valid YAML")
+    func validYAML() {
+        let files = (workflows + Repo.files(in: ".github/ISSUE_TEMPLATE", extensions: ["yml"]) + [Repo.url(".github/dependabot.yml")]).map(\.path)
+        #expect(files.count >= 8)
+        let parsers: [(tool: String, arguments: [String])] = [
+            ("/usr/bin/ruby", ["-ryaml", "-e", "ARGV.each { |f| YAML.load_file(f) }"]),
+            ("/usr/bin/python3", ["-c", "import sys, yaml\nfor f in sys.argv[1:]: yaml.safe_load(open(f))"]),
+        ]
+        var checked = false
+        for parser in parsers {
+            guard let result = run(parser.tool, parser.arguments + files) else { continue }
+            if result.status == 0 { checked = true; break }
+            if result.output.contains("ModuleNotFoundError") || result.output.contains("cannot load such file") { continue }
+            Issue.record("invalid YAML: \(result.output)")
+            checked = true
+            break
+        }
+        #expect(checked, "neither ruby nor python3 with PyYAML is available to validate the YAML")
+    }
+
     @Test("The expected workflows exist")
     func present() {
         let names = Set(workflows.map(\.lastPathComponent))

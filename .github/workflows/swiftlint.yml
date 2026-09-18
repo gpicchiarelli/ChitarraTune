@@ -26,5 +26,5 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: SwiftLint (strict: warnings fail the build)
+      - name: SwiftLint in strict mode (warnings fail the build)
         run: swiftlint lint --strict --reporter github-actions-logging

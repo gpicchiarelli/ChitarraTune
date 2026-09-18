@@ -85,6 +85,20 @@ struct DocumentationSpecTests {
         }
     }
 
+    @Test("The platform table in PLATFORMS.md matches the build settings")
+    func platforms() throws {
+        let s = try Repo.xcconfig("Config/Base.xcconfig", "Config/App.xcconfig")
+        #expect(s["MACOSX_DEPLOYMENT_TARGET"] == "26.0" && s["IPHONEOS_DEPLOYMENT_TARGET"] == "26.0")
+        #expect(s["TARGETED_DEVICE_FAMILY"] == "1,2", "iPhone and iPad only")
+        #expect(s["SUPPORTS_MACCATALYST"] == "NO")
+        #expect(s["SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD"] == "NO" && s["SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD"] == "NO")
+        #expect(s["PRODUCT_BUNDLE_IDENTIFIER"] == "com.chitarratune.app")
+        let iPhone = try #require(s["INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone"]).split(separator: " ")
+        let iPad = try #require(s["INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad"]).split(separator: " ")
+        #expect(iPhone.count == 3 && !iPhone.contains("UIInterfaceOrientationPortraitUpsideDown"), "iPhone: portrait and both landscapes")
+        #expect(iPad.count == 4, "iPad: all four orientations")
+    }
+
     @Test("The changelog keeps an Unreleased section and the version badge matches the build settings")
     func versioning() throws {
         #expect(try Repo.text("CHANGELOG.md").contains("## [Unreleased]"))

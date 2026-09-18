@@ -14,7 +14,7 @@ What is in place for the App Store, Human Interface Guidelines and system requir
 | Hardening | Hardened Runtime and Xcode Enhanced Security (see [CODE_SIGNING.md](CODE_SIGNING.md)). |
 | Localization | English and Italian: app strings, permission text and Siri phrases. |
 | Copyright | `NSHumanReadableCopyright` in the Info.plist; the license is shown in the app (macOS: Help → License). |
-| Background behaviour | No `UIBackgroundModes`. On iOS listening stops when the app leaves the foreground. |
+| Background behaviour | No `UIBackgroundModes`. On iOS listening stops when the app goes to the background. |
 | Accessibility | See [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md). |
 
 ## To do at submission
