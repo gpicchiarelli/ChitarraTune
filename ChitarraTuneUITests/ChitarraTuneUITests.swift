@@ -82,6 +82,9 @@ final class ChitarraTuneUITests: XCTestCase {
         // The Touch Bar and the window's own content groups are AppKit's, not the app's.
         if let element = issue.element {
             if element.elementType == .touchBar { return true }
+            // SwiftUI's menu-style Picker is a system pop-up button that opens its menu when pressed;
+            // the audit does not see the press action AppKit gives it.
+            if element.elementType == .popUpButton, issue.auditType == .action { return true }
             // Controls in the window toolbar are hosted by AppKit's toolbar item, which the audit
             // inspects instead of the pop-up button inside it (that keeps its label and action).
             if app.toolbars.firstMatch.exists, app.toolbars.firstMatch.frame.contains(element.frame),

@@ -31,7 +31,7 @@ struct ChitarraTuneApp: App {
         } defaultValue: {
             hub.primaryID
         }
-        .defaultSize(width: 460, height: 800)
+        .defaultSize(width: 460, height: 720)
         .windowResizability(.contentMinSize)
         // Always present a tuner at launch, also when the app is launched in the background (a
         // login item, a test runner): AppKit would otherwise wait for the app to become active.
