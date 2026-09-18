@@ -51,7 +51,8 @@ public final class PitchDetector {
     private var cmnd: [Double]
 
     /// - Returns: `nil` when the parameters cannot describe a valid analysis
-    ///   (non-positive sample rate, empty or inverted range, range above Nyquist/4).
+    ///   (non-finite or non-positive sample rate, empty or inverted range, or an upper bound at or above
+    ///   a quarter of the sample rate).
     public init?(
         sampleRate: Double,
         frequencyRange: ClosedRange<Double>,
@@ -73,7 +74,7 @@ public final class PitchDetector {
         self.maxLag = maxLag
         // Two periods of the lowest frequency give a stable minimum; +1 lag for interpolation.
         // The floor keeps very high ranges (short periods) statistically stable.
-        let window = max(640, 2 * maxLag)
+        let window = max(Self.minimumIntegrationLength, 2 * maxLag)
         self.integrationLength = window
         self.requiredSampleCount = window + maxLag + 1
         guard let correlator = CrossCorrelator(minimumSize: requiredSampleCount) else { return nil }
@@ -90,18 +91,7 @@ public final class PitchDetector {
     /// - Returns: `nil` if there are too few samples or no periodicity was found.
     public func estimate(in samples: [Float]) -> PitchEstimate? {
         guard samples.count >= requiredSampleCount else { return nil }
-        let count = requiredSampleCount
-        // Work on a demeaned copy: microphones and interfaces often carry a DC offset, which YIN
-        // would read as a perfectly periodic (constant) signal.
-        samples.withUnsafeBufferPointer { source in
-            let tail = UnsafeBufferPointer(rebasing: source[(source.count - count)...])
-            var mean: Float = 0
-            vDSP_meanv(tail.baseAddress!, 1, &mean, vDSP_Length(count))
-            var negated = -mean
-            work.withUnsafeMutableBufferPointer { work in
-                vDSP_vsadd(tail.baseAddress!, 1, &negated, work.baseAddress!, 1, vDSP_Length(count))
-            }
-        }
+        loadDemeanedTail(of: samples)
         return analyse()
     }
 
@@ -224,16 +214,7 @@ public final class PitchDetector {
     /// of a cent. Returns `estimate` unchanged whenever the refinement is not trustworthy.
     public func refine(_ estimate: Double, lowPassed samples: [Float]) -> Double {
         guard samples.count >= requiredSampleCount, estimate.isFinite, estimate > 0 else { return estimate }
-        let count = requiredSampleCount
-        samples.withUnsafeBufferPointer { source in
-            let tail = UnsafeBufferPointer(rebasing: source[(source.count - count)...])
-            var mean: Float = 0
-            vDSP_meanv(tail.baseAddress!, 1, &mean, vDSP_Length(count))
-            var negated = -mean
-            work.withUnsafeMutableBufferPointer { work in
-                vDSP_vsadd(tail.baseAddress!, 1, &negated, work.baseAddress!, 1, vDSP_Length(count))
-            }
-        }
+        loadDemeanedTail(of: samples)
         guard computeCMNDF() else { return estimate }
 
         // The raw difference, not the CMNDF: on a smooth two-partial signal the dip is broad, and
@@ -250,6 +231,26 @@ public final class PitchDetector {
         let frequency = sampleRate / interpolatedLag(best, in: difference)
         let correction = abs(1200 * log2(frequency / estimate))
         return frequency.isFinite && correction <= Self.maximumRefinement ? frequency : estimate
+    }
+
+    /// Floor of the integration window (samples): very high ranges (short periods) still integrate
+    /// enough samples to be statistically stable.
+    public static let minimumIntegrationLength = 640
+
+    /// Copies the newest ``requiredSampleCount`` samples into the work buffer with their mean removed:
+    /// microphones and interfaces often carry a DC offset, which YIN would read as a perfectly
+    /// periodic (constant) signal. Callers have checked that there are enough samples.
+    private func loadDemeanedTail(of samples: [Float]) {
+        let count = requiredSampleCount
+        samples.withUnsafeBufferPointer { source in
+            let tail = UnsafeBufferPointer(rebasing: source[(source.count - count)...])
+            var mean: Float = 0
+            vDSP_meanv(tail.baseAddress!, 1, &mean, vDSP_Length(count))
+            var negated = -mean
+            work.withUnsafeMutableBufferPointer { work in
+                vDSP_vsadd(tail.baseAddress!, 1, &negated, work.baseAddress!, 1, vDSP_Length(count))
+            }
+        }
     }
 
     /// How much deeper (in CMNDF units) a multiple-lag dip must be to replace the primary one.

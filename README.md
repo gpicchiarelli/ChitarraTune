@@ -129,7 +129,7 @@
 ## How it works
 
 ```
-microphone → input tap → ring buffer → noise gate → YIN (FFT) → string → smoothing → stability → hold → gauge
+microphone → input tap → sliding window → noise gate → YIN (FFT) → string → smoothing → stability → hold → gauge
 ```
 
 A pitch detector that costs almost nothing is what makes a tuner feel instant. ChitarraTune computes the YIN difference function through the frequency domain with Accelerate: about 16 µs per analysis on an Apple M4, roughly 65 times faster than the direct loop it replaced (about 1.06 ms). When you pin a string, the search narrows to a window around it, which rules out octave errors by construction.

@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Engine
 
 /// Deterministic, hardware-independent tuning pipeline:
-/// ring buffer → noise gate → YIN → string selection → low-partial refinement → smoothing →
+/// sliding analysis window → noise gate → YIN → string selection → low-partial refinement → smoothing →
 /// stability → hold.
 ///
 /// Feed it consecutive audio chunks with ``process(_:sampleRate:)``. It performs no I/O, so the
@@ -13,13 +13,28 @@ public struct TuningEngine {
     public private(set) var configuration: TunerConfiguration
     public let parameters: EngineParameters
 
+    /// Search range around a pinned string, as frequency ratios (−617 … +702 cents): wide enough for a
+    /// badly detuned string, narrow enough that its upper partials cannot win.
+    public static let pinnedSearchSpan: ClosedRange<Double> = 0.7...1.5
+
     /// Sample rates the engine accepts (Hz). Everything from telephone-band to 384 kHz interfaces.
     public static let supportedSampleRates: ClosedRange<Double> = 8_000...384_000
 
     private var sampleRate: Double = 0
     private var detector: PitchDetector?
+    /// `true` once building a detector for the current configuration and sample rate has failed, so
+    /// it is not retried (together with the string filters) on every chunk.
+    private var detectorUnavailable = false
+    /// The newest ``PitchDetector/requiredSampleCount`` samples: a sliding window that drops its
+    /// oldest samples as new ones arrive (a copy of a few kilobytes per chunk, negligible next to the
+    /// analysis itself).
     private var buffer: [Float] = []
     /// One streaming low-pass per string and the matching history, for the refinement pass.
+    ///
+    /// All strings are filtered even when one is pinned: switching back to automatic, or to another
+    /// string, then finds settled filter history and the fundamental can be refined at once. The whole
+    /// engine costs about 80 µs per 1 024-sample chunk on Apple silicon (0.3 % of real time), so
+    /// saving five biquads is not worth a measurement that briefly loses its refinement.
     private var partialFilters: [PartialFilter?] = []
     private var filtered: [[Float]] = []
     /// Samples the filters have processed since they were created; they need a moment to settle.
@@ -55,6 +70,7 @@ public struct TuningEngine {
         configuration = newValue
         resetReading()
         detector = nil
+        detectorUnavailable = false
     }
 
     /// Forgets buffered audio and filter state after a discontinuity in the stream.
@@ -93,14 +109,16 @@ public struct TuningEngine {
             buffer.removeAll(keepingCapacity: true)
             samplesSinceAnalysis = 0
             nextSampleTime = nil
+            detectorUnavailable = false
             resetReading()
         }
         if let sampleTime {
             if let expected = nextSampleTime, sampleTime != expected { discardHistory() }
             nextSampleTime = sampleTime + Int64(samples.count)
         }
-        if detector == nil {
+        if detector == nil, !detectorUnavailable {
             detector = PitchDetector(sampleRate: sampleRate, frequencyRange: searchRange())
+            detectorUnavailable = detector == nil
             partialFilters = configuration.tuning.strings.map {
                 PartialFilter(frequency: $0.frequency(referenceA: configuration.referenceA), sampleRate: sampleRate)
             }
@@ -133,7 +151,8 @@ public struct TuningEngine {
     // MARK: - Analysis step
 
     private mutating func analyse(detector: PitchDetector, hops: Int, hop: Int) -> TunerFrame {
-        let window = buffer.suffix(min(buffer.count, 2048))
+        let levelSamples = max(1, Int((parameters.levelWindowDuration * sampleRate).rounded()))
+        let window = buffer.suffix(min(buffer.count, levelSamples))
         var sumSquares = 0.0
         for sample in window { sumSquares += Double(sample) * Double(sample) }
         level = (sumSquares / Double(window.count)).squareRoot()
@@ -283,7 +302,7 @@ public struct TuningEngine {
         case .string(let requested):
             let index = min(max(0, requested), tuning.stringCount - 1)
             let target = tuning.strings[index].frequency(referenceA: configuration.referenceA)
-            return (target * 0.7)...(target * 1.5)
+            return (target * Self.pinnedSearchSpan.lowerBound)...(target * Self.pinnedSearchSpan.upperBound)
         }
     }
 

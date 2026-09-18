@@ -88,7 +88,7 @@ public final class TunerHub {
             TunerModel(
                 id: id,
                 settings: settings,
-                capture: SimulatedAudioCapture(),
+                capture: SimulatedAudioCapture(referenceA: { @MainActor in settings.referenceA }),
                 authorization: FixedMicrophoneAuthorization(permission),
                 inputs: inputs
             )

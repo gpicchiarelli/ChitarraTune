@@ -37,6 +37,9 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Fixed
 
+- The signal level (noise gate, attack detection) is now measured over a fixed 46 ms instead of 2 048 samples, so the gate behaves the same at every sample rate. Only the level value changes at 48 and 96 kHz; no frequency or cents value changes anywhere in the golden readings.
+- Demo mode tunes its synthetic guitar to the user's reference pitch instead of always 440 Hz.
+- The gauges draw their green zone from the engine's in-tune threshold instead of a repeated ±5.
 - After tuning a low string, playing the string one or two octaves above it (E2 → E4 in standard; D2 → D3 → D4 in Drop D, DADGAD and Open D) kept showing the low string for as long as the new one sounded. The octave-continuity rule now folds a detection down only while the followed note's fundamental is still measurably present.
 - Lost audio (a dropped buffer, an overloaded main thread) could splice two unrelated stretches of signal into one analysis window. The audio loop now runs off the main actor, and a gap in the device timeline discards the history.
 - Closing a tab of a tabbed macOS window no longer discards the tuner of a *hidden* tab: a tuner is released only when its window is really closed.
@@ -59,6 +62,7 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Quality gate
 
+- A golden-readings test freezes every frame the engine produces for 132 reference signals (every string of every tuning, detuned, at 44.1, 48 and 96 kHz, harmonic and inharmonic plucked), and an independent accuracy envelope requires the right string everywhere, a median error of at most 2 cents per note and 0.5 cent overall (today: 0.34 cent). A refactor must reproduce the golden readings exactly; a deliberate change must regenerate them and say why.
 - Line coverage is 100 % in TunerCore, TunerAudio and TunerFeature. The code that drives the real microphone and Core Audio devices lives in `TunerAudio/Hardware/`, is the only exclusion, and a policy test keeps that folder to its four adapters. Buffer conversion and permission mapping moved out of it so they are tested.
 - Removed dead code found on the way (an unreachable `fail` overload, a `rangeChanged` flag that was always true, fallbacks that could never run) and made the power state injectable.
 - UI tests on iPhone, iPad and Mac in CI, with the accessibility audit of every screen in light and dark appearance, landscape and the largest text size; the full DSP accuracy matrix in an optimised build.

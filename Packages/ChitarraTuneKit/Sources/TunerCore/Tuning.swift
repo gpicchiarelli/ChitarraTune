@@ -31,12 +31,16 @@ public struct Tuning: Sendable, Hashable, Identifiable {
 
     public var stringCount: Int { strings.count }
 
+    /// How far outside its lowest and highest string the automatic search reaches, as frequency
+    /// ratios: a string may be detected even when it is badly out of tune (−386 … +702 cents).
+    public static let headroom: ClosedRange<Double> = 0.8...1.5
+
     /// Frequency range a detector must cover to hear every string of this tuning
     /// (with head-room for strings that are far out of tune).
     public func detectionRange(referenceA: Double = PitchMath.standardReferenceA) -> ClosedRange<Double> {
         // `strings` is never empty (see `init`), so both folds see at least one value.
         let frequencies = strings.map { $0.frequency(referenceA: referenceA) }
-        return (frequencies.reduce(.infinity, min) * 0.8)...(frequencies.reduce(0, max) * 1.5)
+        return (frequencies.reduce(.infinity, min) * Self.headroom.lowerBound)...(frequencies.reduce(0, max) * Self.headroom.upperBound)
     }
 
     /// The string whose pitch is closest (on a logarithmic scale) to `frequency`.

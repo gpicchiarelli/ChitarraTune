@@ -33,11 +33,19 @@ public struct SimulatedAudioCapture: AudioCapturing {
 
     private let script: Script
     private let sampleRate: Double
+    private let referenceA: @Sendable () async -> Double
     private let state = StreamTask()
 
-    public init(script: Script = .init(), sampleRate: Double = 48_000) {
+    /// - Parameter referenceA: the concert pitch the synthetic guitar is tuned to, read once per pluck
+    ///   so that demo mode follows the user's calibration instead of always playing at 440 Hz.
+    public init(
+        script: Script = .init(),
+        sampleRate: Double = 48_000,
+        referenceA: @escaping @Sendable () async -> Double = { PitchMath.standardReferenceA }
+    ) {
         self.script = script
         self.sampleRate = sampleRate
+        self.referenceA = referenceA
     }
 
     public func start(input: AudioInputSelection) async throws(CaptureFailure) -> AsyncThrowingStream<AudioChunk, any Error> {
@@ -47,8 +55,9 @@ public struct SimulatedAudioCapture: AudioCapturing {
         )
         let script = self.script
         let sampleRate = self.sampleRate
+        let referenceA = self.referenceA
         let task = Task.detached(priority: .userInitiated) {
-            await Self.generate(script: script, sampleRate: sampleRate, into: continuation)
+            await Self.generate(script: script, sampleRate: sampleRate, referenceA: referenceA, into: continuation)
         }
         await state.set(task)
         continuation.onTermination = { _ in task.cancel() }
@@ -66,6 +75,7 @@ public struct SimulatedAudioCapture: AudioCapturing {
     private static func generate(
         script: Script,
         sampleRate: Double,
+        referenceA: @escaping @Sendable () async -> Double,
         into continuation: AsyncThrowingStream<AudioChunk, any Error>.Continuation
     ) async {
         let chunkFrames = 1_024
@@ -86,7 +96,7 @@ public struct SimulatedAudioCapture: AudioCapturing {
             let local = elapsed - Double(pluck) * script.pluckDuration
             let progress = min(1, local / script.settleDuration)
             let cents = script.startCents * (1 - progress) * (1 - progress)
-            let base = script.tuning.strings[stringIndex].frequency()
+            let base = script.tuning.strings[stringIndex].frequency(referenceA: await referenceA())
             let frequency = base * pow(2, cents / 1200)
 
             var samples = [Float](repeating: 0, count: chunkFrames)

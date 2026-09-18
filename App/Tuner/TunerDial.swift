@@ -1,4 +1,5 @@
 import SwiftUI
+import TunerCore
 import TunerFeature
 
 /// Analogue-style gauge: ±50 cents mapped onto a 124° arc, needle pivoting at the bottom.
@@ -79,10 +80,12 @@ private struct DialFace: View {
             }
 
             let track = radius * 0.035
-            // In-tune zone (±5 cents), then the full track.
+            // In-tune zone, then the full track. The zone is the engine's own threshold, so the face
+            // can never promise an accuracy the measurement does not apply.
+            let inTune = EngineParameters.standard.inTuneThreshold
             context.stroke(arc(from: -range, to: range, radius), with: .color(.secondary.opacity(highContrast ? 0.6 : 0.28)),
                            style: StrokeStyle(lineWidth: track, lineCap: .round))
-            context.stroke(arc(from: -5, to: 5, radius), with: .color(.tuneGreen.opacity(highContrast ? 1 : 0.85)),
+            context.stroke(arc(from: -inTune, to: inTune, radius), with: .color(.tuneGreen.opacity(highContrast ? 1 : 0.85)),
                            style: StrokeStyle(lineWidth: track * 2.2, lineCap: .round))
 
             // Ticks every 5 cents; longer every 10, longest at 0.

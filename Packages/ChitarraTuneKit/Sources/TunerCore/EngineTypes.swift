@@ -32,6 +32,9 @@ public struct TunerConfiguration: Sendable, Hashable {
 public struct EngineParameters: Sendable, Hashable {
     /// Time between two analyses.
     public var hopDuration: Double = 0.025
+    /// Window the signal level (and therefore the noise gate and the attack test) is measured over.
+    /// In seconds, so that behaviour does not depend on the device's sample rate.
+    public var levelWindowDuration: Double = 2_048 / 44_100
     /// RMS above which the noise gate opens.
     public var gateOpenLevel: Double = 0.004
     /// RMS below which an open gate closes (hysteresis avoids chatter).

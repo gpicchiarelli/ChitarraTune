@@ -1,4 +1,5 @@
 import SwiftUI
+import TunerCore
 import TunerFeature
 
 /// Linear alternative to the dial: a horizontal track with a sliding indicator (±50 cents).
@@ -49,7 +50,9 @@ private struct BarFace: View {
 
             let track = CGRect(x: inset, y: midY - 5, width: usable, height: 10)
             context.fill(Path(roundedRect: track, cornerRadius: 5), with: .color(.secondary.opacity(highContrast ? 0.5 : 0.22)))
-            let zone = CGRect(x: x(-5), y: midY - 5, width: x(5) - x(-5), height: 10)
+            // The green zone is the engine's in-tune threshold, not a number repeated here.
+            let inTune = EngineParameters.standard.inTuneThreshold
+            let zone = CGRect(x: x(-inTune), y: midY - 5, width: x(inTune) - x(-inTune), height: 10)
             context.fill(Path(roundedRect: zone, cornerRadius: 5), with: .color(.tuneGreen.opacity(highContrast ? 1 : 0.8)))
 
             for value in stride(from: -50.0, through: 50.0, by: 10) {
