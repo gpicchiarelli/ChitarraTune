@@ -3,26 +3,59 @@ import os
 import TunerAudio
 import TunerCore
 
-/// Runs the DSP off the main actor. It owns the (non-`Sendable`) ``TuningEngine``, so all access
-/// is serialised by actor isolation and no locks or `@unchecked Sendable` are needed.
+/// Runs the whole audio loop off the main actor: it reads the capture stream, feeds the
+/// (non-`Sendable`) ``TuningEngine`` and hands back only the resulting ``TunerFrame``s.
+///
+/// Audio never waits for the main thread. If the UI falls behind, it misses *frames* (only the newest
+/// is kept), never samples, so the analysis history stays contiguous. All engine access is serialised
+/// by actor isolation; no locks or `@unchecked Sendable`.
 actor TunerProcessor {
-    private var engine = TuningEngine()
-    private var parameters = EngineParameters.standard
+    private var engine: TuningEngine
+    private var configuration: TunerConfiguration
+    private var parameters: EngineParameters
     private let signposter = TunerLog.signposter
 
-    func process(
-        _ chunk: AudioChunk,
-        configuration: TunerConfiguration,
-        parameters: EngineParameters
-    ) -> TunerFrame? {
+    init(configuration: TunerConfiguration, parameters: EngineParameters) {
+        self.configuration = configuration
+        self.parameters = parameters
+        engine = TuningEngine(configuration: configuration, parameters: parameters)
+    }
+
+    /// Applies the user's current configuration. New parameters (a power-profile change) need a new
+    /// engine; a new tuning, A4 or target is a reconfiguration.
+    func update(configuration: TunerConfiguration, parameters: EngineParameters) {
         if parameters != self.parameters {
             self.parameters = parameters
             engine = TuningEngine(configuration: configuration, parameters: parameters)
+        } else {
+            engine.reconfigure(configuration)
         }
-        engine.reconfigure(configuration)
+        self.configuration = configuration
+    }
 
+    /// Analyses `chunks` on this actor and returns the frames. The stream ends when the capture ends,
+    /// and rethrows the capture's failure.
+    nonisolated func frames(from chunks: AsyncThrowingStream<AudioChunk, any Error>) -> AsyncThrowingStream<TunerFrame, any Error> {
+        let (frames, continuation) = AsyncThrowingStream<TunerFrame, any Error>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        let loop = Task { await self.run(chunks, into: continuation) }
+        continuation.onTermination = { _ in loop.cancel() }
+        return frames
+    }
+
+    private func run(_ chunks: AsyncThrowingStream<AudioChunk, any Error>, into frames: AsyncThrowingStream<TunerFrame, any Error>.Continuation) async {
+        do {
+            for try await chunk in chunks {
+                if let frame = process(chunk) { frames.yield(frame) }
+            }
+            frames.finish()
+        } catch {
+            frames.finish(throwing: error)
+        }
+    }
+
+    func process(_ chunk: AudioChunk) -> TunerFrame? {
         let interval = signposter.beginInterval("analyse")
         defer { signposter.endInterval("analyse", interval) }
-        return engine.process(chunk.samples, sampleRate: chunk.sampleRate)
+        return engine.process(chunk.samples, sampleRate: chunk.sampleRate, sampleTime: chunk.sampleTime)
     }
 }

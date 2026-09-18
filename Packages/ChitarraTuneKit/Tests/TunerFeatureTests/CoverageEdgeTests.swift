@@ -38,7 +38,8 @@ struct LifecycleEdgeTests {
         var reached = false
         for start in stride(from: 0, to: signal.count, by: 1_024) {
             capture.send(Array(signal[start..<min(start + 1_024, signal.count)]))
-            if await eventually(timeout: .milliseconds(50)) { tuner.isInTune } { reached = true; break }
+            let done = await eventually(timeout: .milliseconds(50)) { tuner.isInTune }
+            if done { reached = true; break }
         }
         #expect(reached)
         #expect(tuner.isInTune == (tuner.tuneState == .inTune))
@@ -179,5 +180,41 @@ struct DemoIsolationTests {
         defaults.set(1, forKey: "probe")
         #expect(UserDefaults.standard.object(forKey: "probe") == nil)
         defaults.removeObject(forKey: "probe")
+    }
+}
+
+@MainActor
+@Suite("Changes while listening")
+struct LiveReconfigurationTests {
+    @Test("Pinning a string and recalibrating A4 while listening reach the audio loop")
+    func reconfigureWhileListening() async {
+        let capture = MockCapture()
+        let settings = makeSettings()
+        let tuner = TunerModel(settings: settings, capture: capture, authorization: FixedMicrophoneAuthorization(),
+                               inputs: MutableInputs(), power: PowerSource(current: { .standard }, changes: { AsyncStream { _ in } }))
+        await tuner.start()
+        let signal = pluckSamples(midi: 45, duration: 3) // A2
+        var index = 0
+        func send(seconds: Double) async {
+            let end = min(signal.count, index + Int(seconds * 44_100))
+            while index < end {
+                capture.send(Array(signal[index..<min(index + 1_024, end)]))
+                index += 1_024
+                await Task.yield()
+            }
+        }
+        await send(seconds: 0.6)
+        #expect(await eventually { tuner.reading?.stringIndex == 1 })
+
+        // Recalibrate while listening: 110 Hz measured against A4 = 432 Hz reads about +32 cents.
+        settings.referenceA = 432
+        await send(seconds: 0.8)
+        #expect(await eventually { (tuner.reading?.cents ?? 0) > 25 })
+
+        // Pin the low E while an A is sounding: 500 cents away, beyond ±300, so no fresh reading.
+        tuner.pinString(0)
+        await send(seconds: 1.2)
+        #expect(await eventually { tuner.reading == nil || tuner.reading?.isHeld == true })
+        await tuner.stop()
     }
 }

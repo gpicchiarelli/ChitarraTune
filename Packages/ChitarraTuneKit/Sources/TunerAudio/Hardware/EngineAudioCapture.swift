@@ -48,8 +48,9 @@ public actor EngineAudioCapture: AudioCapturing {
         // audio interface the guitar is rarely in channel 0, so the selector follows the loudest one.
         // Nothing here touches actor state.
         let selector = ChannelSelector()
-        inputNode.installTap(onBus: 0, bufferSize: Self.tapFrames, format: format) { buffer, _ in
-            if let chunk = selector.chunk(from: buffer, sampleRate: sampleRate) { continuation.yield(chunk) }
+        inputNode.installTap(onBus: 0, bufferSize: Self.tapFrames, format: format) { buffer, when in
+            let sampleTime = when.isSampleTimeValid ? when.sampleTime : nil
+            if let chunk = selector.chunk(from: buffer, sampleRate: sampleRate, sampleTime: sampleTime) { continuation.yield(chunk) }
         }
 
         do {

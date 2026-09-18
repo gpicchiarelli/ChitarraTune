@@ -38,13 +38,11 @@ public struct SystemAudioInputs: AudioInputProviding {
         }
     }
     #else
+    /// Read-only: it never touches the audio session's configuration. iOS only lists the inputs once
+    /// the session allows recording, which capture sets up when listening starts, so before the first
+    /// start this can be empty (the model refreshes the list when listening begins).
     public func availableInputs() -> [AudioInputDevice] {
-        let session = AVAudioSession.sharedInstance()
-        // `availableInputs` is only populated once the category allows recording.
-        if session.category != .record, session.category != .playAndRecord {
-            try? session.setCategory(.record, mode: .measurement)
-        }
-        return (session.availableInputs ?? []).map { AudioInputDevice(id: $0.uid, name: $0.portName) }
+        (AVAudioSession.sharedInstance().availableInputs ?? []).map { AudioInputDevice(id: $0.uid, name: $0.portName) }
     }
 
     public func activeInputName(for selection: AudioInputSelection) -> String? {
@@ -56,23 +54,11 @@ public struct SystemAudioInputs: AudioInputProviding {
     }
 
     public func changes() -> AsyncStream<Void> {
-        AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
-            nonisolated(unsafe) let token = NotificationCenter.default.addObserver(
-                forName: AVAudioSession.routeChangeNotification, object: nil, queue: nil
-            ) { _ in continuation.yield() }
-            continuation.onTermination = { _ in NotificationCenter.default.removeObserver(token) }
-        }
+        SystemNotifications.changes([AVAudioSession.routeChangeNotification])
     }
 
     public func resumptions() -> AsyncStream<Void> {
-        AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
-            nonisolated(unsafe) let token = NotificationCenter.default.addObserver(
-                forName: AVAudioSession.interruptionNotification, object: nil, queue: nil
-            ) { note in
-                if Self.isResumableEnd(note.userInfo) { continuation.yield() }
-            }
-            continuation.onTermination = { _ in NotificationCenter.default.removeObserver(token) }
-        }
+        SystemNotifications.changes([AVAudioSession.interruptionNotification]) { Self.isResumableEnd($0) }
     }
 
     /// `true` for an interruption that has ended with the system's "you may resume" hint.

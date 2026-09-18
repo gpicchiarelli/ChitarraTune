@@ -37,6 +37,10 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Fixed
 
+- After tuning a low string, playing the string one or two octaves above it (E2 → E4 in standard; D2 → D3 → D4 in Drop D, DADGAD and Open D) kept showing the low string for as long as the new one sounded. The octave-continuity rule now folds a detection down only while the followed note's fundamental is still measurably present.
+- Lost audio (a dropped buffer, an overloaded main thread) could splice two unrelated stretches of signal into one analysis window. The audio loop now runs off the main actor, and a gap in the device timeline discards the history.
+- Closing a tab of a tabbed macOS window no longer discards the tuner of a *hidden* tab: a tuner is released only when its window is really closed.
+- On iOS, listing the audio inputs no longer changes the audio session's category.
 - Demo mode could have written into, and then wiped, the real preferences if its settings suite could not be opened; it now falls back to a private suite.
 - Accessibility, found by Xcode's audit now run on every screen: the *Auto* chip had an 18-point touch target; secondary text, white text on tinted glass in Dark Mode and green and amber text did not reach 4.5:1 contrast; the string chips shrank their labels instead of growing with Dynamic Type; the landscape layout and the failure screen clipped text at the largest sizes; a disabled *Reset* button was unreadable.
 - Two sheets on the same view meant the Settings sheet shadowed any other; the explanation screen and Settings now share one.

@@ -35,10 +35,14 @@ final class ChannelSelector: Sendable {
     }
 
     /// Copies the active channel of `buffer` into a chunk; `nil` for an empty or non-float buffer.
-    func chunk(from buffer: AVAudioPCMBuffer, sampleRate: Double) -> AudioChunk? {
+    func chunk(from buffer: AVAudioPCMBuffer, sampleRate: Double, sampleTime: Int64? = nil) -> AudioChunk? {
         guard let channels = buffer.floatChannelData, buffer.frameLength > 0 else { return nil }
         let channel = channels[channel(in: buffer)]
-        return AudioChunk(samples: Array(UnsafeBufferPointer(start: channel, count: Int(buffer.frameLength))), sampleRate: sampleRate)
+        return AudioChunk(
+            samples: Array(UnsafeBufferPointer(start: channel, count: Int(buffer.frameLength))),
+            sampleRate: sampleRate,
+            sampleTime: sampleTime
+        )
     }
 
     /// Pure selection rule, separated so it can be tested without audio hardware.

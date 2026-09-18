@@ -5,10 +5,15 @@ public struct AudioChunk: Sendable {
     public let samples: [Float]
     /// Sample rate of `samples` in hertz.
     public let sampleRate: Double
+    /// Position of the first sample on the device's timeline, when the backend knows it. Consecutive
+    /// chunks are contiguous when each starts where the previous one ended; a jump means audio was
+    /// lost (a dropped buffer, an overloaded consumer) and the analysis history must be discarded.
+    public let sampleTime: Int64?
 
-    public init(samples: [Float], sampleRate: Double) {
+    public init(samples: [Float], sampleRate: Double, sampleTime: Int64? = nil) {
         self.samples = samples
         self.sampleRate = sampleRate
+        self.sampleTime = sampleTime
     }
 }
 

@@ -34,8 +34,9 @@ Dependencies only point downwards. `TunerCore` imports Foundation and Accelerate
 ```
 microphone
   → AVAudioEngine input tap (1024 frames, loudest channel) TunerAudio
-  → AsyncThrowingStream<AudioChunk>  (newest 8 kept)
-  → ring buffer                                           TunerCore
+  → AsyncThrowingStream<AudioChunk>  (newest 8 kept, each stamped with its sample time)
+  → TunerProcessor actor: the whole loop runs here, off the main actor   TunerFeature
+  → analysis window (history discarded on a sample-time gap)            TunerCore
   → noise gate with hysteresis
   → YIN: FFT cross-correlation (Accelerate) → CMNDF → parabolic interpolation
   → octave continuity (no jump while a string dies away)
@@ -57,7 +58,9 @@ microphone
 The package is built in Swift 6 language mode; the app with `SWIFT_STRICT_CONCURRENCY = complete`.
 
 - `EngineAudioCapture` is an **actor**. The audio-thread tap closure touches no actor state; it copies the samples and yields them into a stream.
-- `TunerProcessor` is an **actor** that owns the non-`Sendable` `TuningEngine`, so the DSP runs off the main thread with no locks.
+- `TunerProcessor` is an **actor** that owns the non-`Sendable` `TuningEngine` and runs the whole audio loop: it reads the capture stream and hands the main actor only `TunerFrame`s (newest one kept). If the UI stalls it misses frames, never audio, so the analysis window stays contiguous. Configuration changes reach it within one analysis hop.
+- Each chunk carries its device sample time. A jump means audio was lost; the engine then discards its window and filter state instead of splicing two unrelated stretches of signal.
+- System notifications become `AsyncStream`s through `SystemNotifications`, which registers observers synchronously and keeps their tokens in a `Mutex`; the only `nonisolated(unsafe)` left is the immutable Core Audio listener block.
 - `TunerModel`, `TunerHub` and `TunerSettings` are `@MainActor @Observable`. Properties are written only when the value changes, which keeps SwiftUI redraws to a minimum.
 - Session control uses a **generation counter**: every `start()` and `stop()` bumps it, and every asynchronous continuation checks that it still belongs to the current generation before acting. A permission prompt or a slow start that finishes after the user stopped is therefore ignored.
 - A route or hardware-format change, or a reset of the media services, ends the stream with `CaptureFailure.configurationChanged`; the model restarts capture up to three times before reporting the failure.

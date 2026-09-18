@@ -69,7 +69,14 @@ public final class TunerModel: Identifiable {
     @ObservationIgnored private let power: PowerSource
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private var sessionTask: Task<Void, Never>?
-    @ObservationIgnored private var restartBudget = 3
+    /// How many automatic restarts a route change may still trigger before the failure is shown.
+    @ObservationIgnored private var restartBudget = TunerModel.restartLimit
+    @ObservationIgnored private var processor: TunerProcessor?
+    /// Configuration last handed to ``processor``.
+    @ObservationIgnored private var appliedConfiguration: TunerConfiguration?
+    @ObservationIgnored private var appliedParameters: EngineParameters?
+    @ObservationIgnored private var lastSignal = ContinuousClock.Instant.now
+    static let restartLimit = 3
     /// Open while waiting for the first analysed frame (Instruments ▸ Points of Interest).
     @ObservationIgnored private var firstFrameInterval: OSSignpostIntervalState?
     #if os(macOS)
@@ -131,6 +138,12 @@ public final class TunerModel: Identifiable {
     }
 
     public func start() async {
+        await start(restartBudget: Self.restartLimit)
+    }
+
+    /// - Parameter budget: automatic restarts still allowed after a route change. Passed explicitly so
+    ///   that a restart cannot refill its own budget.
+    private func start(restartBudget budget: Int) async {
         guard !isBusy else { return }
         status = .starting
         didStopForInactivity = false
@@ -157,7 +170,7 @@ public final class TunerModel: Identifiable {
                 await capture.stop()
                 return
             }
-            begin(stream, generation: mine)
+            begin(stream, generation: mine, restartBudget: budget)
         } catch {
             fail(error, generation: mine)
         }
@@ -169,20 +182,37 @@ public final class TunerModel: Identifiable {
         generation += 1
         sessionTask?.cancel()
         sessionTask = nil
+        processor = nil
         endActivity()
         await capture.stop()
         clearOutput()
         status = .idle
     }
 
-    private func begin(_ stream: AsyncThrowingStream<AudioChunk, any Error>, generation mine: Int) {
+    private func begin(_ stream: AsyncThrowingStream<AudioChunk, any Error>, generation mine: Int, restartBudget budget: Int) {
         status = .listening
-        restartBudget = 3
+        restartBudget = budget
+        lastSignal = now()
         beginActivity()
         refreshInputs()
         Self.logger.info("listening (input: \(String(describing: self.inputSelection), privacy: .private), profile: \(String(describing: self.powerProfile), privacy: .public))")
+        let parameters = powerProfile.engineParameters
+        let processor = TunerProcessor(configuration: configuration, parameters: parameters)
+        self.processor = processor
+        appliedConfiguration = configuration
+        appliedParameters = parameters
+        let frames = processor.frames(from: stream)
+        // Only frames cross to the main actor. `self` is re-acquired weakly for each frame, so a closed
+        // window's model is not kept alive by its audio stream.
         sessionTask = Task(priority: .userInitiated) { [weak self] in
-            await self?.consume(stream, generation: mine)
+            do {
+                for try await frame in frames {
+                    guard let self, await self.receive(frame, generation: mine) else { return }
+                }
+                await self?.streamEnded(generation: mine)
+            } catch {
+                await self?.recover(from: CaptureFailure(error), generation: mine)
+            }
         }
     }
 
@@ -204,37 +234,36 @@ public final class TunerModel: Identifiable {
         inputLevel = 0
     }
 
-    // MARK: - Consuming audio
+    // MARK: - Consuming frames
 
-    private func consume(_ stream: AsyncThrowingStream<AudioChunk, any Error>, generation mine: Int) async {
-        let processor = TunerProcessor()
-        var lastSignal = now()
-        do {
-            for try await chunk in stream {
-                guard mine == generation else { return }
-                let frame = await processor.process(
-                    chunk,
-                    configuration: configuration,
-                    parameters: powerProfile.engineParameters
-                )
-                guard mine == generation, let frame else { continue }
-                apply(frame)
-
-                if frame.isSignalPresent {
-                    lastSignal = now()
-                    restartBudget = 3
-                } else if let limit = settings.idleTimeout.seconds, now() - lastSignal > .seconds(limit) {
-                    Self.logger.info("stopping after \(limit, format: .fixed(precision: 0)) s of silence")
-                    await stop()
-                    didStopForInactivity = true
-                    return
-                }
-            }
-            if mine == generation { await stop() }
-        } catch {
-            guard mine == generation else { return }
-            await recover(from: CaptureFailure(error), generation: mine)
+    /// Applies one analysed frame. Returns `false` when the session is over.
+    private func receive(_ frame: TunerFrame, generation mine: Int) async -> Bool {
+        guard mine == generation else { return false }
+        await pushConfigurationIfNeeded()
+        apply(frame)
+        if frame.isSignalPresent {
+            lastSignal = now()
+            restartBudget = Self.restartLimit
+        } else if let limit = settings.idleTimeout.seconds, now() - lastSignal > .seconds(limit) {
+            Self.logger.info("stopping after \(limit, format: .fixed(precision: 0)) s of silence")
+            await stop()
+            didStopForInactivity = true
+            return false
         }
+        return true
+    }
+
+    /// Hands a changed tuning, A4, target or power profile to the processor (within one analysis hop).
+    private func pushConfigurationIfNeeded() async {
+        let configuration = configuration, parameters = powerProfile.engineParameters
+        guard configuration != appliedConfiguration || parameters != appliedParameters, let processor else { return }
+        appliedConfiguration = configuration
+        appliedParameters = parameters
+        await processor.update(configuration: configuration, parameters: parameters)
+    }
+
+    private func streamEnded(generation mine: Int) async {
+        if mine == generation { await stop() }
     }
 
     private func endFirstFrameInterval() {
@@ -266,12 +295,10 @@ public final class TunerModel: Identifiable {
         await capture.stop()
         guard mine == generation else { return }
         if failure == .configurationChanged, restartBudget > 0 {
-            restartBudget -= 1
-            Self.logger.info("audio route changed; restarting (\(self.restartBudget) left)")
-            let remaining = restartBudget
+            let remaining = restartBudget - 1
+            Self.logger.info("audio route changed; restarting (\(remaining) left)")
             status = .idle
-            await start()
-            restartBudget = remaining
+            await start(restartBudget: remaining)
         } else {
             fail(failure, generation: mine)
         }

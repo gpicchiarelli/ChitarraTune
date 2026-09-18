@@ -1,4 +1,5 @@
 import Foundation
+import TunerAudio
 import TunerCore
 
 /// How aggressively the tuner may spend energy, derived from the device power state.
@@ -26,18 +27,7 @@ public enum PowerProfile: Sendable, Hashable {
 
     /// Emits whenever Low Power Mode or the thermal state may have changed. Event-driven.
     public static func changes() -> AsyncStream<Void> {
-        AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
-            let center = NotificationCenter.default
-            nonisolated(unsafe) let tokens = [
-                center.addObserver(forName: .NSProcessInfoPowerStateDidChange, object: nil, queue: nil) { _ in
-                    continuation.yield()
-                },
-                center.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil, queue: nil) { _ in
-                    continuation.yield()
-                },
-            ]
-            continuation.onTermination = { _ in tokens.forEach(center.removeObserver) }
-        }
+        SystemNotifications.changes([.NSProcessInfoPowerStateDidChange, ProcessInfo.thermalStateDidChangeNotification])
     }
 }
 

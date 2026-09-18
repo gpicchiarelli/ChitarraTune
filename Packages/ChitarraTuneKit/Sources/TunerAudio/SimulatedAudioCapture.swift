@@ -103,7 +103,7 @@ public struct SimulatedAudioCapture: AudioCapturing {
             sampleIndex += chunkFrames
             elapsed = Double(sampleIndex) / sampleRate
 
-            continuation.yield(AudioChunk(samples: samples, sampleRate: sampleRate))
+            continuation.yield(AudioChunk(samples: samples, sampleRate: sampleRate, sampleTime: Int64(sampleIndex - chunkFrames)))
             // Pace the stream in real time.
             let due = start.advanced(by: .seconds(elapsed - chunkDuration))
             try? await clock.sleep(until: due)
