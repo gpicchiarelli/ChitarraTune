@@ -102,7 +102,7 @@ struct SystemNotificationsTests {
     }
 }
 
-@Suite("Demo guitar")
+@Suite("Demo guitar", .timeLimit(.minutes(1)))
 struct SimulatedCaptureTests {
     /// Runs the synthetic guitar for `seconds` and measures it with an engine on the same calibration.
     /// `referenceA == nil` uses the capture's default calibration and measures it against 440 Hz.
@@ -112,12 +112,14 @@ struct SimulatedCaptureTests {
         var engine = TuningEngine(configuration: TunerConfiguration(referenceA: referenceA ?? 440))
         var readings: [Double] = []
         let stream = try await capture.start(input: .systemDefault)
-        let deadline = ContinuousClock.now + .seconds(seconds)
+        // Count audio, not wall-clock time: a loaded CI runner may deliver it late, never less of it.
+        var remaining = Int(seconds * 44_100 / 1_024)
         for try await chunk in stream {
             if let reading = engine.process(chunk.samples, sampleRate: chunk.sampleRate, sampleTime: chunk.sampleTime)?.reading, !reading.isHeld {
                 readings.append(reading.cents)
             }
-            if ContinuousClock.now > deadline { break }
+            remaining -= 1
+            if remaining <= 0 { break }
         }
         await capture.stop()
         return readings
