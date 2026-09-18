@@ -34,13 +34,13 @@ Put behaviour in `TunerCore` or `TunerFeature` where it can be tested with synth
 
 ## The quality gate
 
-Nothing reaches `main` unless the **Gate**, **Lint** and **CodeQL** checks pass. Run the same checks locally before you push:
+You push straight to `main`. What stands between a commit and `main` is `Scripts/verify.sh`, which the pre-push hook runs on every push (enable it once with `git config core.hooksPath .githooks`); a push that fails it never leaves your machine. CI then runs the same checks (**Gate**, **Lint**, **CodeQL**) on GitHub, and a red run is fixed before anything else. Run the checks by hand with:
 
 ```bash
 Scripts/verify.sh
 ```
 
-It runs SwiftLint in strict mode, builds the package with warnings as errors, runs every test and enforces the coverage thresholds in `Scripts/coverage-thresholds.json`. Add `--app` to build the app too, and run `git config core.hooksPath .githooks` once to run it automatically on every push.
+It runs SwiftLint in strict mode, builds the package with warnings as errors, runs every test and enforces the coverage thresholds in `Scripts/coverage-thresholds.json`. Add `--app` to build the app too.
 
 What the gate protects, and how:
 

@@ -42,7 +42,7 @@ Version 2.0 is a ground-up rewrite. Work in progress: the package is complete an
 
 ### Quality gate
 
-- Nothing reaches `main` unless the Gate, Lint and CodeQL checks pass. The gate builds without warnings, runs SwiftLint in strict mode, enforces per-module coverage floors and runs every test.
+- The pre-push hook runs the gate before anything leaves the machine, and CI repeats it (Gate, Lint, CodeQL) on GitHub. The gate builds without warnings, runs SwiftLint in strict mode, enforces per-module coverage floors and runs every test. `main` itself only refuses deletion and force-pushes.
 - New test families: hostile input and fuzzing of the DSP, checks of the documented numbers against the code, smoke tests of the system audio layer, and repository-policy tests (no network APIs, entitlements, privacy manifest, pinned actions, complete translations, README matching the implementation).
 - `Scripts/verify.sh` runs the same checks locally; `.githooks/pre-push` runs it automatically once enabled.
 

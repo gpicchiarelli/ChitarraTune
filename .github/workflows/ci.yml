@@ -74,8 +74,8 @@ jobs:
             GIT_COMMIT="$(git rev-parse --short HEAD)" \
             build
 
-  # One required check that stands for all of the above. Branch protection requires this job (plus
-  # Lint and CodeQL), so adding or renaming a job above never silently drops it from the gate.
+  # One check that stands for all of the above, so the result of the whole run is a single line on
+  # the commit. Add every new job to `needs` below.
   gate:
     name: Gate
     if: always()
