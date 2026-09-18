@@ -41,7 +41,6 @@ struct FailureView: View {
                     .accessibilityAddTraits(.isHeader)
 
                 Text(failure.message)
-                    .foregroundStyle(Color.tuneSecondaryLabel)
                     .multilineTextAlignment(.center)
 
                 VStack(spacing: 10) {

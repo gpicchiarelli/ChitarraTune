@@ -15,9 +15,6 @@ final class AppStoreScreenshots: XCTestCase {
         let locale = language == "it" ? "it_IT" : "en_US"
         app = XCUIApplication()
         app.launchArguments += ["-demo", "-AppleLanguages", "(\(language))", "-AppleLocale", locale]
-        #if os(macOS)
-        app.launchArguments += ["-ApplePersistenceIgnoreState", "YES"]
-        #endif
     }
 
     override func tearDown() async throws {
@@ -28,6 +25,13 @@ final class AppStoreScreenshots: XCTestCase {
 
     private func element(_ identifier: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
+    private func launch() {
+        app.launch()
+        #if os(macOS)
+        if !element("listenButton").waitForExistence(timeout: 5) { app.activate() }
+        #endif
     }
 
     private func snapshot(_ name: String) {
@@ -53,23 +57,20 @@ final class AppStoreScreenshots: XCTestCase {
     /// 1. A string in tune. 2. The next string, still flat, with its advice.
     func test1Tuning() {
         app.launchArguments += ["-autostart"]
-        app.launch()
+        launch()
         waitForReadout(matching: inTunePattern)
         snapshot("01-in-tune")
 
-        // The demo plucks the next string about 28 cents flat and lets it drift up.
-        let current = element("noteReadout").value as? String ?? ""
-        let note = String(current.prefix { $0 != "," })
-        let next = NSPredicate(format: "NOT (value BEGINSWITH %@) AND NOT (value MATCHES %@)", note + ",", inTunePattern)
-        expectation(for: next, evaluatedWith: element("noteReadout"))
-        waitForExpectations(timeout: 10)
-        Thread.sleep(forTimeInterval: 0.4)
+        // The demo plucks the next string about 28 cents flat and lets it drift up: catch it while
+        // it is still clearly flat (more than 8 cents).
+        let flat = language == "it" ? ".*, ([89]|[1-9][0-9]) cent calant.*" : ".*, ([89]|[1-9][0-9]) cents flat.*"
+        waitForReadout(matching: flat, timeout: 10)
         snapshot("02-flat")
     }
 
     /// 3. Every tuning.
     func test2Tunings() {
-        app.launch()
+        launch()
         XCTAssertTrue(element("tuningPicker").waitForExistence(timeout: 15))
         element("tuningPicker").tap()
         Thread.sleep(forTimeInterval: 0.8)
@@ -78,11 +79,13 @@ final class AppStoreScreenshots: XCTestCase {
 
     /// 4. The bar gauge in Dark Mode (iPhone, iPad) with a pinned string.
     func test3BarGauge() {
-        #if os(iOS)
-        XCUIDevice.shared.appearance = .dark
-        #endif
         app.launchArguments += ["-autostart", "-settings.gauge", "bar"]
-        app.launch()
+        launch()
+        #if os(iOS)
+        // Set once the app runs, so the running scene picks the change up.
+        XCUIDevice.shared.appearance = .dark
+        Thread.sleep(forTimeInterval: 1)
+        #endif
         XCTAssertTrue(element("stringChip.5").waitForExistence(timeout: 15))
         element("stringChip.5").tap()
         waitForReadout(matching: inTunePattern, timeout: 30)
@@ -91,7 +94,7 @@ final class AppStoreScreenshots: XCTestCase {
 
     /// 5. Settings.
     func test4Settings() {
-        app.launch()
+        launch()
         XCTAssertTrue(element("listenButton").waitForExistence(timeout: 15))
         #if os(macOS)
         app.typeKey(",", modifierFlags: .command)

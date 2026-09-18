@@ -30,6 +30,7 @@ struct GaugeView: View {
             .accessibilityHidden(true)
         }
         .accessibilityElement(children: .ignore)
+        .accessibilityAddTraits(.isStaticText)
         .accessibilityLabel(Text(.gaugeLabel))
         .accessibilityValue(Text(accessibilityValue))
         .accessibilityAddTraits(.updatesFrequently)

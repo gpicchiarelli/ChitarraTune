@@ -5,10 +5,9 @@
 	<!-- Merged with the Info.plist Xcode generates from INFOPLIST_KEY_* settings. -->
 	<key>ChitarraGitCommit</key>
 	<string>$(GIT_COMMIT)</string>
-	<!-- macOS: the app keeps no unsaved state, so the system may terminate it when idle and hidden.
-	     Listening holds a ProcessInfo activity that suppresses this while the microphone is in use. -->
-	<key>NSSupportsAutomaticTermination</key>
-	<true/>
+	<!-- macOS: the app keeps no unsaved state, so it may be killed at logout without being asked.
+	     Automatic termination is deliberately off: with it, a "quit" app stays alive invisibly and a
+	     relaunch reuses that process without opening a tuner window. -->
 	<key>NSSupportsSuddenTermination</key>
 	<true/>
 </dict>

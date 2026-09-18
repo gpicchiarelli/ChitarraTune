@@ -60,7 +60,7 @@ struct StringSelector: View {
                     .fixedSize()
                 Text(verbatim: "\(index + 1)")
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(emphasised ? Color.white : Color.tuneSecondaryLabel)
+                    .foregroundStyle(emphasised ? Color.white : Color.primary)
             }
             .frame(maxWidth: .infinity, minHeight: 56)
             .padding(.horizontal, 4)
@@ -85,7 +85,8 @@ struct StringSelector: View {
                     .accessibilityHidden(true)
             }
         }
-        .accessibilityElement(children: .ignore)
+        // A Button stays one element with its role and press action on every platform; only its
+        // label is replaced (the string number is spoken as the value).
         .accessibilityLabel(Text(note.chipLabel(notation)))
         .accessibilityValue(Text(.tunerString(index + 1)))
         .accessibilityHint(Text(.a11YPinHint))
@@ -121,9 +122,8 @@ struct AutoChip: View {
         }
         .glassEffect(.regular.interactive(), in: .capsule)
         .foregroundStyle(isAuto ? Color.white : Color.primary)
-        .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(.tunerAuto))
-        .accessibilityAddTraits(isAuto ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAddTraits(isAuto ? .isSelected : [])
         .accessibilityHint(Text(.a11YAutoHint))
         .accessibilityIdentifier("autoChip")
     }

@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- An acoustic guitar, drawn upright and tilted. One shape: outer contours wind clockwise, the
+  <!-- An acoustic guitar standing upright: the needle of the meter, pointing at the in-tune mark. One shape: outer contours wind clockwise, the
        sound hole and the bridge wind anticlockwise, so they are cut out under the non-zero rule. -->
-  <g transform="translate(512 512) rotate(40) scale(0.96) translate(-512 -600)" fill="#FFFFFF">
+  <g transform="translate(512 770) scale(0.66) translate(-512 -820)" fill="#FFFFFF">
     <path fill-rule="nonzero" d="
       M 482 92 Q 482 68 506 68 L 518 68 Q 542 68 542 92 L 549 196 Q 550 216 534 220 L 534 470
       L 490 470 L 490 220 Q 474 216 475 196 Z

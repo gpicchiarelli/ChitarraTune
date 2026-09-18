@@ -54,6 +54,8 @@ struct TunerScreen: View {
                 tuner
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(.appName))
         .navigationTitle(Text(.appName))
         #if os(macOS)
         .navigationSubtitle(Text(model.tuning.id.title))

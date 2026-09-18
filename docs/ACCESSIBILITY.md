@@ -49,7 +49,7 @@ This page describes what the code does today. It is not a certification: the beh
 
 ## Automated checks
 
-`ChitarraTuneUITests` runs Xcode's accessibility audit (element descriptions, hit regions, traits, clipping, Dynamic Type, contrast) on the tuner idle and listening, the microphone explanation, the failure screen and Settings, in light and Dark Mode, in landscape and at the largest accessibility text size, on iPhone, iPad and Mac. CI fails on any finding. The few accepted exceptions are listed, with their reason, in the test itself (the 88-point note name is capped at *accessibility2* so it fits; decorative ♭/♯; system bar buttons, which use the Large Content Viewer).
+`ChitarraTuneUITests` runs Xcode's accessibility audit (element descriptions, hit regions, traits, actions, clipping, Dynamic Type) on the tuner idle and listening, the microphone explanation, the failure screen and Settings, in light and Dark Mode, in landscape and at the largest accessibility text size, on iPhone, iPad and Mac. CI fails on any finding. Contrast is checked exactly by `ColorContrastTests` rather than by the audit's pixel sampling, which flags black text on white next to Liquid Glass. The few accepted exceptions are listed, with their reason, in the test itself (the 88-point note name is capped at *accessibility2* so it fits; decorative ♭/♯; system bar buttons, which use the Large Content Viewer).
 
 ## Known gaps
 

@@ -32,6 +32,7 @@ struct NoteReadout: View {
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .ignore)
+        .accessibilityAddTraits(.isStaticText)
         .accessibilityLabel(Text(.a11YNote))
         .accessibilityValue(Text(accessibilityValue))
         .accessibilityAddTraits(.updatesFrequently)

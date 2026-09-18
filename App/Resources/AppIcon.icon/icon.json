@@ -22,6 +22,29 @@
         "enabled" : true,
         "value" : 0.4
       }
+    },
+    {
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name" : "zone.svg",
+          "name" : "in-tune zone"
+        },
+        {
+          "glass" : false,
+          "image-name" : "ticks.svg",
+          "name" : "scale",
+          "opacity" : 0.75
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.3
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.3
+      }
     }
   ],
   "supported-platforms" : {

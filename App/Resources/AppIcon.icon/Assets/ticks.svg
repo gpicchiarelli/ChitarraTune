@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- The scale of the tuner dial, around the guitar's headstock (every 10 cents of the app's dial). -->
+  <g stroke="#FFFFFF" stroke-linecap="round" fill="none">
+    <line x1="187.4" y1="383.1" x2="136.0" y2="321.9" stroke-width="26"/>
+    <line x1="248.5" y1="313.6" x2="223.5" y2="270.3" stroke-width="18"/>
+    <line x1="339.3" y1="295.5" x2="311.9" y2="220.3" stroke-width="26"/>
+    <line x1="420.5" y1="251.0" x2="411.8" y2="201.8" stroke-width="18"/>
+    <line x1="603.5" y1="251.0" x2="612.2" y2="201.8" stroke-width="18"/>
+    <line x1="684.7" y1="295.5" x2="712.1" y2="220.3" stroke-width="26"/>
+    <line x1="775.5" y1="313.6" x2="800.5" y2="270.3" stroke-width="18"/>
+    <line x1="836.6" y1="383.1" x2="888.0" y2="321.9" stroke-width="26"/>
+  </g>
+</svg>

@@ -53,7 +53,8 @@ struct ColorContrastTests {
     /// The window background and the tinted washes drawn over it.
     static func backgrounds(_ appearance: Appearance) throws -> [(String, RGB)] {
         let base = appearance.isDark ? black : white
-        var result = [("window", base), ("grouped form", appearance.isDark ? (0.11, 0.11, 0.118) : (0.949, 0.949, 0.969))]
+        let grouped: RGB = appearance.isDark ? (0.11, 0.11, 0.118) : (0.949, 0.949, 0.969)
+        var result: [(String, RGB)] = [("window", base), ("grouped form", grouped)]
         for tint in ["AccentColor", "TuneGreen", "TuneAmber", "TuneRed"] {
             result.append(("\(tint) wash", blend(try color(tint, appearance), wash, over: base)))
         }

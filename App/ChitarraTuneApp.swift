@@ -39,16 +39,19 @@ struct ChitarraTuneApp: App {
             NavigationStack { SettingsView(settings: hub.settings) }
         }
 
+        // Auxiliary windows open on request, never by themselves at launch.
         Window(Text(.aboutTitle), id: "about") {
             AboutView()
         }
         .windowResizability(.contentSize)
         .windowStyle(.hiddenTitleBar)
+        .restorationBehavior(.disabled)
 
         Window(Text(.licenseTitle), id: "license") {
             LicenseView()
         }
         .windowResizability(.contentSize)
+        .restorationBehavior(.disabled)
         #else
         WindowGroup {
             TunerWindow(hub: hub, id: hub.primaryID)

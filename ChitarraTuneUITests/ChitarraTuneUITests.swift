@@ -10,10 +10,6 @@ final class ChitarraTuneUITests: XCTestCase {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launchArguments += ["-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        #if os(macOS)
-        // Every test starts from a fresh window, not the windows macOS restored from the last run.
-        app.launchArguments += ["-ApplePersistenceIgnoreState", "YES"]
-        #endif
     }
 
     override func tearDown() async throws {
@@ -30,24 +26,28 @@ final class ChitarraTuneUITests: XCTestCase {
     }
 
     private func waitForTuner(file: StaticString = #filePath, line: UInt = #line) {
+        #if os(macOS)
+        // AppKit opens the first window when the app becomes active. A runner that launched it in
+        // the background (CI, or a Mac in use) must bring it forward.
+        if !element("listenButton").waitForExistence(timeout: 5) { app.activate() }
+        #endif
         XCTAssertTrue(element("listenButton").waitForExistence(timeout: 15), "Tuner did not appear", file: file, line: line)
     }
 
-    /// Xcode's automatic accessibility audit (labels, hit regions, Dynamic Type, clipping, contrast,
-    /// traits). Every issue is reported with the element it concerns, then the test fails once.
+    /// Xcode's automatic accessibility audit: element descriptions, hit regions, traits, actions,
+    /// clipping and Dynamic Type. Every issue is reported with the element it concerns, then the test
+    /// fails once. The few accepted exceptions are in ``isAcceptedException(_:)``, each with its reason.
     ///
-    /// The only issues tolerated are listed in ``isAcceptedException(_:)``, each with its reason.
-    ///
-    /// `live` screens redraw about 40 times a second and animate their colours, so the contrast
-    /// check would sample half-drawn frames there. Their colours are checked deterministically, from
-    /// the asset catalog, by `ColorContrastTests`; every other audit still runs on them.
-    private func audit(_ screen: String, live: Bool = false, file: StaticString = #filePath, line: UInt = #line) throws {
+    /// Contrast is not sampled here. The audit reads rendered pixels and flags black text on white
+    /// once Liquid Glass or an animated background is nearby; contrast is instead computed exactly,
+    /// with the WCAG formula, for every colour of the asset catalog in every appearance, by
+    /// `ColorContrastTests`.
+    private func audit(_ screen: String, file: StaticString = #filePath, line: UInt = #line) throws {
         // Let transitions finish (the background fades between states over 0.6 s), so the audit
         // measures the screen as the user sees it, not a frame in between.
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "settle")], timeout: 1)
         var problems: [String] = []
-        let types: XCUIAccessibilityAuditType = live ? XCUIAccessibilityAuditType.all.subtracting(.contrast) : .all
-        try app.performAccessibilityAudit(for: types) { issue in
+        try app.performAccessibilityAudit(for: XCUIAccessibilityAuditType.all.subtracting(.contrast)) { issue in
             if self.isAcceptedException(issue) { return true }
             let element = issue.element.map {
                 "\($0.elementType.rawValue) '\($0.identifier)' '\($0.label)' at \($0.frame)"
@@ -66,6 +66,14 @@ final class ChitarraTuneUITests: XCTestCase {
 
     /// Accepted audit findings. Keep this list short and justified.
     private func isAcceptedException(_ issue: XCUIAccessibilityAuditIssue) -> Bool {
+        #if os(macOS)
+        // The Touch Bar and the window's own content groups are AppKit's, not the app's.
+        if let element = issue.element {
+            if element.elementType == .touchBar { return true }
+            let window = app.windows.firstMatch
+            if element.elementType == .group, element.label.isEmpty, window.exists, element.frame == window.frame { return true }
+        }
+        #endif
         #if os(iOS)
         guard issue.auditType == .dynamicType, let element = issue.element else { return false }
         // The ♭ and ♯ at the ends of the gauge are decorative (hidden from VoiceOver) and sized to
@@ -78,6 +86,9 @@ final class ChitarraTuneUITests: XCTestCase {
         if readout.exists, readout.frame.intersects(element.frame), element.frame.height > 60 { return true }
         // Bar buttons are capped by the system and offer the Large Content Viewer instead.
         if app.navigationBars.allElementsBoundByIndex.contains(where: { $0.frame.contains(element.frame) }) { return true }
+        // Rows, headers and footers of the Settings form are system list cells, which scale their
+        // own text (on iPad a form sheet keeps its width, so the audit reports them as partial).
+        if app.collectionViews.allElementsBoundByIndex.contains(where: { $0.frame.contains(element.frame) }) { return true }
         #endif
         return false
     }
@@ -217,7 +228,7 @@ final class ChitarraTuneUITests: XCTestCase {
         let hasNote = NSPredicate(format: "value MATCHES %@", "^[A-G][♯♭]?[0-9], .*")
         expectation(for: hasNote, evaluatedWith: element("noteReadout"))
         waitForExpectations(timeout: 15)
-        try audit("Tuner while listening", live: true)
+        try audit("Tuner while listening")
     }
 
     func testAccessibilityAuditMicrophoneExplanation() throws {
@@ -263,7 +274,7 @@ final class ChitarraTuneUITests: XCTestCase {
         expectation(for: hasNote, evaluatedWith: element("noteReadout"))
         waitForExpectations(timeout: 15)
         element("stringChip.3").tap()
-        try audit("Tuner in Dark Mode, string pinned", live: true)
+        try audit("Tuner in Dark Mode, string pinned")
     }
 
     func testAccessibilityAuditLandscape() throws {

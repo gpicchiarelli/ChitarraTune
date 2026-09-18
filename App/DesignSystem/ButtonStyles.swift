@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The primary action: white text on a solid fill, inside an interactive glass capsule.
+/// The primary action: white text on a solid capsule.
 ///
 /// The fill is opaque on purpose. White on a translucent tinted glass depends on whatever is behind
 /// it and can drop well below 4.5:1; on the solid ``Color/tuneAccentFill`` or ``Color/tuneRedFill``
@@ -19,8 +19,9 @@ struct ProminentCapsuleButtonStyle: ButtonStyle {
             .frame(minHeight: 52)
             .background(Capsule().fill(fill))
             .contentShape(.capsule)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .opacity(isEnabled ? (configuration.isPressed ? 0.85 : 1) : 0.5)
+            .animation(.snappy(duration: 0.15), value: configuration.isPressed)
     }
 }
 

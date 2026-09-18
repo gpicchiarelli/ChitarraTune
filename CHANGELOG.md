@@ -26,7 +26,7 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 - A screen that explains why the tuner needs the microphone before the system asks.
 - Listening resumes by itself after a phone call or Siri, and restarts after a reset of the media services.
 - A *Start Tuning* control for Control Center, the Lock Screen and the Action Button (iPhone, iPad) and Control Center and the menu bar (Mac).
-- A new app icon for Liquid Glass, made in Icon Composer, with dark, clear and tinted appearances.
+- A new app icon for Liquid Glass, made in Icon Composer: the guitar is the needle of a meter, pointing at the green in-tune mark of a scale, in default, dark, clear and tinted appearances.
 - App Store listing in English and Italian, review notes, support page, updated privacy policy, device test plan and submission runbook.
 - Release workflow for the App Store: iOS/iPadOS and macOS archives with cloud-managed signing, uploaded to App Store Connect; version bump and release-notes scripts.
 - Ten tunings (Standard, Half step down, Full step down, Drop D, Drop C, DADGAD, Open D, Open G, Open E, Open A).
@@ -39,6 +39,7 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 - Accessibility, found by Xcode's audit now run on every screen: the *Auto* chip had an 18-point touch target; secondary text, white text on tinted glass in Dark Mode and green and amber text did not reach 4.5:1 contrast; the string chips shrank their labels instead of growing with Dynamic Type; the landscape layout and the failure screen clipped text at the largest sizes; a disabled *Reset* button was unreadable.
 - Two sheets on the same view meant the Settings sheet shadowed any other; the explanation screen and Settings now share one.
+- macOS: automatic termination is off, so a relaunch never reuses an invisible, windowless process; the About and License windows no longer reopen at launch. The string chips, the gauge and the input menu keep proper roles and actions for VoiceOver on the Mac.
 - The demo mode no longer shows third-party product names.
 - A `NaN` A4 stored in the preferences no longer crashes the engine (it used to survive the clamp and trap on the first audio chunk); it now falls back to 440 Hz.
 - On an audio interface the tuner now listens to the loudest input channel instead of always channel 0, so a guitar plugged into input 2 is heard.

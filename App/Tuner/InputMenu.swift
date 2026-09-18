@@ -7,12 +7,22 @@ struct InputMenu: View {
     @Bindable var model: TunerModel
 
     var body: some View {
+        #if os(macOS)
+        // The Mac's pop-up button: the system shows the current input and the check mark, and
+        // assistive tools get the standard press action.
+        Picker(selection: selection) {
+            options
+        } label: {
+            Text(.inputTitle)
+        }
+        .pickerStyle(.menu)
+        .help(Text(.inputTitle))
+        .accessibilityIdentifier("inputMenu")
+        #else
+        // iPhone and iPad: a toolbar menu whose button shows the input in use.
         Menu {
             Picker(selection: selection) {
-                Text(.inputSystemDefault).tag(AudioInputSelection.systemDefault)
-                ForEach(model.availableInputs) { device in
-                    Text(device.name).tag(AudioInputSelection.device(id: device.id))
-                }
+                options
             } label: {
                 Text(.inputTitle)
             }
@@ -26,6 +36,15 @@ struct InputMenu: View {
         }
         .accessibilityLabel(Text(.inputA11Y(model.activeInputName ?? String(localized: .inputMicrophone))))
         .accessibilityIdentifier("inputMenu")
+        #endif
+    }
+
+    @ViewBuilder
+    private var options: some View {
+        Text(.inputSystemDefault).tag(AudioInputSelection.systemDefault)
+        ForEach(model.availableInputs) { device in
+            Text(device.name).tag(AudioInputSelection.device(id: device.id))
+        }
     }
 
     private var selection: Binding<AudioInputSelection> {
