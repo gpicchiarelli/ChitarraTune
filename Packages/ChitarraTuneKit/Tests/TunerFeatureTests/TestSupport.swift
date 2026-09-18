@@ -57,6 +57,7 @@ final class MockCapture: AudioCapturing {
 final class MutableInputs: AudioInputProviding {
     private let devices = Mutex<[AudioInputDevice]>([])
     private let stream = AsyncStream<Void>.makeStream()
+    private let resumption = AsyncStream<Void>.makeStream()
 
     init(_ devices: [AudioInputDevice] = []) { self.devices.withLock { $0 = devices } }
 
@@ -73,6 +74,11 @@ final class MutableInputs: AudioInputProviding {
     }
 
     func changes() -> AsyncStream<Void> { stream.stream }
+
+    /// Simulates the end of a system interruption that allows capture to resume.
+    func endInterruption() { resumption.continuation.yield() }
+
+    func resumptions() -> AsyncStream<Void> { resumption.stream }
 }
 
 /// Mutable time source for idle-timeout tests.

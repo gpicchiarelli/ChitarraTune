@@ -72,20 +72,24 @@ public final class TunerHub {
     }
 
     /// Synthetic guitar, no microphone, no permission prompt: for screenshots, previews and UI tests.
-    public static func demo(settings: TunerSettings = TunerSettings(defaults: demoDefaults())) -> TunerHub {
+    /// `permission` lets a UI test start from a microphone permission that has not been asked yet.
+    public static func demo(
+        settings: TunerSettings = TunerSettings(defaults: demoDefaults()),
+        permission: MicrophoneAuthorization = .authorized
+    ) -> TunerHub {
         let inputs = StaticAudioInputs(
             devices: [
-                AudioInputDevice(id: "demo.interface", name: "Scarlett Solo USB"),
-                AudioInputDevice(id: "demo.builtin", name: "MacBook Pro Microphone"),
+                AudioInputDevice(id: "demo.interface", name: "USB Audio Interface"),
+                AudioInputDevice(id: "demo.builtin", name: "Built-in Microphone"),
             ],
-            defaultName: "MacBook Pro Microphone"
+            defaultName: "Built-in Microphone"
         )
         return TunerHub(settings: settings) { id, settings in
             TunerModel(
                 id: id,
                 settings: settings,
                 capture: SimulatedAudioCapture(),
-                authorization: FixedMicrophoneAuthorization(),
+                authorization: FixedMicrophoneAuthorization(permission),
                 inputs: inputs
             )
         }

@@ -88,4 +88,11 @@ public protocol AudioInputProviding: Sendable {
     /// Emits whenever the list of inputs or the default input may have changed.
     /// The stream is event-driven (no polling) and stops observing when its consumer ends.
     func changes() -> AsyncStream<Void>
+    /// Emits when a system interruption (phone call, Siri, an alarm) has ended and the system says
+    /// capture may resume. Platforms without interruptions return a stream that finishes at once.
+    func resumptions() -> AsyncStream<Void>
+}
+
+extension AudioInputProviding {
+    public func resumptions() -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 }

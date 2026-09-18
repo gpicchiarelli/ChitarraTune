@@ -186,6 +186,45 @@ struct TunerModelTests {
         #expect(capture.startCount == 1)
     }
 
+    @Test("Listening resumes by itself when an interruption ends")
+    func interruptionEnds() async {
+        let inputs = MutableInputs()
+        let (model, capture, _) = makeModel(inputs: inputs)
+        let monitor = Task { await model.monitorEnvironment() }
+        await model.start()
+        capture.fail(with: .interrupted)
+        #expect(await eventually { model.failure == .interrupted })
+
+        inputs.endInterruption()
+        #expect(await eventually { model.isListening && capture.startCount == 2 })
+        await model.stop()
+        monitor.cancel()
+    }
+
+    @Test("The end of an interruption never starts a tuner that was not interrupted")
+    func resumptionIgnoredWhenNotInterrupted() async {
+        let inputs = MutableInputs()
+        let (model, capture, _) = makeModel(authorization: .denied, inputs: inputs)
+        let monitor = Task { await model.monitorEnvironment() }
+        inputs.endInterruption()
+        try? await Task.sleep(for: .milliseconds(50))
+        #expect(model.status == .idle)
+
+        await model.start()
+        inputs.endInterruption()
+        try? await Task.sleep(for: .milliseconds(50))
+        #expect(model.failure == .microphoneDenied)
+        #expect(capture.startCount == 0)
+        monitor.cancel()
+    }
+
+    @Test("The permission explanation is only needed before the first prompt")
+    func permissionExplanation() {
+        #expect(makeModel(authorization: .notDetermined).0.needsMicrophonePermission)
+        #expect(!makeModel(authorization: .authorized).0.needsMicrophonePermission)
+        #expect(!makeModel(authorization: .denied).0.needsMicrophonePermission)
+    }
+
     @Test("Unknown errors become engine failures")
     func unknownError() {
         struct Boom: Error {}

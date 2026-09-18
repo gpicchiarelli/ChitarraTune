@@ -63,5 +63,24 @@ public struct SystemAudioInputs: AudioInputProviding {
             continuation.onTermination = { _ in NotificationCenter.default.removeObserver(token) }
         }
     }
+
+    public func resumptions() -> AsyncStream<Void> {
+        AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
+            nonisolated(unsafe) let token = NotificationCenter.default.addObserver(
+                forName: AVAudioSession.interruptionNotification, object: nil, queue: nil
+            ) { note in
+                if Self.isResumableEnd(note.userInfo) { continuation.yield() }
+            }
+            continuation.onTermination = { _ in NotificationCenter.default.removeObserver(token) }
+        }
+    }
+
+    /// `true` for an interruption that has ended with the system's "you may resume" hint.
+    static func isResumableEnd(_ userInfo: [AnyHashable: Any]?) -> Bool {
+        let type = userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+        let options = userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+        return type == AVAudioSession.InterruptionType.ended.rawValue
+            && AVAudioSession.InterruptionOptions(rawValue: options).contains(.shouldResume)
+    }
     #endif
 }

@@ -108,6 +108,10 @@ public final class TunerModel: Identifiable {
 
     public var isInTune: Bool { tuneState == .inTune }
 
+    /// `true` until the user has answered the system microphone prompt. The app shows a short
+    /// explanation first, so the prompt never arrives out of the blue.
+    public var needsMicrophonePermission: Bool { authorization.status() == .notDetermined }
+
     /// Index of the string to highlight: the pinned one, or the detected one in automatic mode.
     public var highlightedString: Int? {
         switch target {
@@ -306,9 +310,13 @@ public final class TunerModel: Identifiable {
     public func monitorEnvironment() async {
         await reconcileSelectedInput()
         let inputChanges = inputs.changes()
+        let resumptions = inputs.resumptions()
         await withTaskGroup(of: Void.self) { group in
             group.addTask { [weak self] in
                 for await _ in inputChanges { await self?.reconcileSelectedInput() }
+            }
+            group.addTask { [weak self] in
+                for await _ in resumptions { await self?.resumeAfterInterruption() }
             }
             group.addTask { [weak self] in
                 for await _ in PowerProfile.changes() { await self?.updatePowerProfile() }
@@ -322,6 +330,15 @@ public final class TunerModel: Identifiable {
             Self.logger.info("selected input disappeared; using system default")
             await selectInput(.systemDefault)
         }
+    }
+
+    /// A phone call or Siri interrupted listening and has now finished: carry on where the user was,
+    /// as the system asks. Only an interruption is resumed; any other state is left alone.
+    private func resumeAfterInterruption() async {
+        guard failure == .interrupted else { return }
+        Self.logger.info("interruption ended; resuming")
+        status = .idle
+        await start()
     }
 
     private func updatePowerProfile() {

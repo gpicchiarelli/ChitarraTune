@@ -127,6 +127,13 @@ public actor EngineAudioCapture: AudioCapturing {
             guard raw == AVAudioSession.InterruptionType.began.rawValue else { return }
             Task { await self?.fail(.interrupted) }
         })
+        // The media server crashed and was restarted: every audio object is stale. Restarting builds
+        // a fresh engine and session, which is exactly what a configuration change does.
+        observers.append(center.addObserver(
+            forName: AVAudioSession.mediaServicesWereResetNotification, object: nil, queue: nil
+        ) { [weak self] _ in
+            Task { await self?.fail(.configurationChanged) }
+        })
         #endif
     }
 
