@@ -1,23 +1,9 @@
 import SwiftUI
-import TunerCore
+import TunerFeature
 
-/// How close the current reading is to pitch. Never conveyed by colour alone: every state also has
-/// a text label and a symbol.
-enum TuneState: Equatable {
-    case idle
-    case flat(closeness: Closeness)
-    case sharp(closeness: Closeness)
-    case inTune
-
-    enum Closeness { case close, far }
-
-    init(_ reading: TunerReading?) {
-        guard let reading else { self = .idle; return }
-        if reading.isInTune { self = .inTune; return }
-        let closeness: Closeness = abs(reading.cents) <= 15 ? .close : .far
-        self = reading.cents < 0 ? .flat(closeness: closeness) : .sharp(closeness: closeness)
-    }
-
+/// Presentation of ``TuneState``. Never conveyed by colour alone: every state also has a text label
+/// and a distinct symbol (Differentiate Without Color).
+extension TuneState {
     var tint: Color {
         switch self {
         case .idle: .secondary

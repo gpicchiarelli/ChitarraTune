@@ -1,9 +1,14 @@
 import AppIntents
+import os
 import SwiftUI
+import TunerAudio
 import TunerFeature
 
 @main
 struct ChitarraTuneApp: App {
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    #endif
     @State private var hub: TunerHub
 
     init() {
@@ -11,6 +16,11 @@ struct ChitarraTuneApp: App {
         _hub = State(initialValue: hub)
         // Siri, Shortcuts and the Action Button reach the running tuner through this dependency.
         AppDependencyManager.shared.add(dependency: hub)
+        #if os(macOS)
+        AppDelegate.hub = hub
+        #endif
+        MetricsReporter.shared.start()
+        TunerLog.app.info("launched \(BuildInfo.version, privacy: .public) (\(BuildInfo.build, privacy: .public)) demo=\(LaunchOptions.isDemo)")
     }
 
     var body: some Scene {

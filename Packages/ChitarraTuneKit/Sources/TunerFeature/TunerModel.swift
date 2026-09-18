@@ -20,7 +20,7 @@ public final class TunerModel: Identifiable {
         case failed(CaptureFailure)
     }
 
-    private static let logger = Logger(subsystem: "com.chitarratune.app", category: "Tuner")
+    private static let logger = TunerLog.tuner
 
     nonisolated public let id: UUID
     public let settings: TunerSettings
@@ -42,7 +42,14 @@ public final class TunerModel: Identifiable {
     // MARK: Observable output
 
     public private(set) var status: Status = .idle
+    /// Full-detail reading; changes on every analysis (~40 Hz). Read it only in the few views that
+    /// draw the needle and numbers. Everything else should use the coarse summaries below, which are
+    /// only written when their value changes.
     public private(set) var reading: TunerReading?
+    public private(set) var tuneState: TuneState = .idle
+    /// Note of the string currently detected (automatic mode) — changes only when the string changes.
+    public private(set) var detectedNote: Note?
+    public private(set) var detectedString: Int?
     /// `true` while the noise gate is open.
     public private(set) var hasSignal = false
     /// Input level for a meter, `0...1` (quantised to limit redraws).
@@ -62,6 +69,8 @@ public final class TunerModel: Identifiable {
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private var sessionTask: Task<Void, Never>?
     @ObservationIgnored private var restartBudget = 3
+    /// Open while waiting for the first analysed frame (Instruments ▸ Points of Interest).
+    @ObservationIgnored private var firstFrameInterval: OSSignpostIntervalState?
     #if os(macOS)
     @ObservationIgnored private var activity: (any NSObjectProtocol)?
     #endif
@@ -97,11 +106,13 @@ public final class TunerModel: Identifiable {
         if case .failed(let failure) = status { failure } else { nil }
     }
 
+    public var isInTune: Bool { tuneState == .inTune }
+
     /// Index of the string to highlight: the pinned one, or the detected one in automatic mode.
     public var highlightedString: Int? {
         switch target {
         case .string(let index): index
-        case .automatic: reading?.stringIndex
+        case .automatic: detectedString
         }
     }
 
@@ -117,6 +128,8 @@ public final class TunerModel: Identifiable {
         didStopForInactivity = false
         generation += 1
         let mine = generation
+        Self.logger.notice("start requested; microphone permission: \(String(describing: self.authorization.status()), privacy: .public)")
+        firstFrameInterval = TunerLog.signposter.beginInterval("timeToFirstFrame")
 
         switch authorization.status() {
         case .authorized:
@@ -143,6 +156,8 @@ public final class TunerModel: Identifiable {
     }
 
     public func stop() async {
+        Self.logger.notice("stop requested")
+        endFirstFrameInterval()
         generation += 1
         sessionTask?.cancel()
         sessionTask = nil
@@ -157,7 +172,7 @@ public final class TunerModel: Identifiable {
         restartBudget = 3
         beginActivity()
         refreshInputs()
-        Self.logger.info("listening")
+        Self.logger.info("listening (input: \(String(describing: self.inputSelection), privacy: .private), profile: \(String(describing: self.powerProfile), privacy: .public))")
         sessionTask = Task(priority: .userInitiated) { [weak self] in
             await self?.consume(stream, generation: mine)
         }
@@ -166,6 +181,7 @@ public final class TunerModel: Identifiable {
     private func fail(_ failure: CaptureFailure, generation mine: Int) {
         guard mine == generation else { return }
         Self.logger.error("failed: \(String(describing: failure), privacy: .public)")
+        endFirstFrameInterval()
         endActivity()
         clearOutput()
         status = .failed(failure)
@@ -177,6 +193,9 @@ public final class TunerModel: Identifiable {
 
     private func clearOutput() {
         reading = nil
+        if tuneState != .idle { tuneState = .idle }
+        if detectedNote != nil { detectedNote = nil }
+        if detectedString != nil { detectedString = nil }
         hasSignal = false
         inputLevel = 0
     }
@@ -214,8 +233,19 @@ public final class TunerModel: Identifiable {
         }
     }
 
+    private func endFirstFrameInterval() {
+        guard let interval = firstFrameInterval else { return }
+        TunerLog.signposter.endInterval("timeToFirstFrame", interval)
+        firstFrameInterval = nil
+    }
+
     private func apply(_ frame: TunerFrame) {
+        endFirstFrameInterval()
         if reading != frame.reading { reading = frame.reading }
+        let state = TuneState(frame.reading)
+        if tuneState != state { tuneState = state }
+        if detectedNote != frame.reading?.note { detectedNote = frame.reading?.note }
+        if detectedString != frame.reading?.stringIndex { detectedString = frame.reading?.stringIndex }
         if hasSignal != frame.isSignalPresent { hasSignal = frame.isSignalPresent }
         let level = Self.meterLevel(rms: frame.level)
         if level != inputLevel { inputLevel = level }

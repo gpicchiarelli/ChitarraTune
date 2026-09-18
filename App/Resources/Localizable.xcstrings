@@ -283,19 +283,20 @@
         }
       }
     },
-    "about.copyInfo": {
+    "about.copyDiagnostics": {
+      "comment": "Copies version info and recent app logs for bug reports",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copy Version Info"
+            "value": "Copy Diagnostics"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copia informazioni versione"
+            "value": "Copia diagnostica"
           }
         }
       }

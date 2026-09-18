@@ -1,4 +1,5 @@
 import SwiftUI
+import TunerFeature
 
 /// Linear alternative to the dial: a horizontal track with a sliding indicator (±50 cents).
 struct TunerBar: View {
@@ -67,7 +68,7 @@ private struct BarFace: View {
 #Preview("Bar") {
     VStack {
         TunerBar(cents: nil, state: .idle)
-        TunerBar(cents: 22, state: .sharp(closeness: .far))
+        TunerBar(cents: 22, state: .sharp(.far))
         TunerBar(cents: 0, state: .inTune)
     }
     .padding()

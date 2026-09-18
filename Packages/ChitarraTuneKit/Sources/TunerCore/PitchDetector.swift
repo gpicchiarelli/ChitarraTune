@@ -42,6 +42,13 @@ public final class PitchDetector {
     private let maxLag: Int
     private let correlator: CrossCorrelator
 
+    // Scratch memory reused by every analysis.
+    private var work: [Float]
+    private var prefix: [Double]
+    private var correlation: [Double]
+    private var difference: [Double]
+    private var cmnd: [Double]
+
     /// - Returns: `nil` when the parameters cannot describe a valid analysis
     ///   (non-positive sample rate, empty or inverted range, range above Nyquist/4).
     public init?(
@@ -70,6 +77,11 @@ public final class PitchDetector {
         self.requiredSampleCount = window + maxLag + 1
         guard let correlator = CrossCorrelator(minimumSize: requiredSampleCount) else { return nil }
         self.correlator = correlator
+        work = [Float](repeating: 0, count: requiredSampleCount)
+        prefix = [Double](repeating: 0, count: requiredSampleCount + 1)
+        correlation = [Double](repeating: 0, count: maxLag + 2)
+        difference = [Double](repeating: 0, count: maxLag + 2)
+        cmnd = [Double](repeating: 1, count: maxLag + 2)
     }
 
     /// Estimates the fundamental frequency of the **last** ``requiredSampleCount`` samples.
@@ -77,26 +89,32 @@ public final class PitchDetector {
     /// - Returns: `nil` if there are too few samples or no periodicity was found.
     public func estimate(in samples: [Float]) -> PitchEstimate? {
         guard samples.count >= requiredSampleCount else { return nil }
-        var x = Array(samples.suffix(requiredSampleCount))
-        // Microphones and interfaces often carry a DC offset, which YIN would read as a
-        // perfectly periodic (constant) signal.
-        var mean: Float = 0
-        vDSP_meanv(x, 1, &mean, vDSP_Length(x.count))
-        var negated = -mean
-        vDSP_vsadd(x, 1, &negated, &x, 1, vDSP_Length(x.count))
-        return analyse(x)
+        let count = requiredSampleCount
+        // Work on a demeaned copy: microphones and interfaces often carry a DC offset, which YIN
+        // would read as a perfectly periodic (constant) signal.
+        samples.withUnsafeBufferPointer { source in
+            let tail = UnsafeBufferPointer(rebasing: source[(source.count - count)...])
+            var mean: Float = 0
+            vDSP_meanv(tail.baseAddress!, 1, &mean, vDSP_Length(count))
+            var negated = -mean
+            work.withUnsafeMutableBufferPointer { work in
+                vDSP_vsadd(tail.baseAddress!, 1, &negated, work.baseAddress!, 1, vDSP_Length(count))
+            }
+        }
+        return analyse()
     }
 
     // MARK: - Algorithm
 
-    private func analyse(_ x: [Float]) -> PitchEstimate? {
+    /// Runs YIN on `work` using only preallocated scratch memory (no per-call allocation).
+    private func analyse() -> PitchEstimate? {
         let window = integrationLength
         let lagCount = maxLag + 1 // lags 1…maxLag+1 (one extra for interpolation at the edge)
 
         // Prefix sums of x² give the energy of any shifted window in O(1).
-        var prefix = [Double](repeating: 0, count: x.count + 1)
-        for i in 0..<x.count {
-            let sample = Double(x[i])
+        prefix[0] = 0
+        for i in 0..<requiredSampleCount {
+            let sample = Double(work[i])
             prefix[i + 1] = prefix[i] + sample * sample
         }
         let energy0 = prefix[window]
@@ -104,16 +122,22 @@ public final class PitchDetector {
         guard energy0 / Double(window) > 1e-10 else { return nil }
 
         // Step 1–2: difference function d(τ) = E₀ + E_τ − 2·c(τ)  (c = cross-correlation).
-        var correlation = [Double](repeating: 0, count: lagCount + 1)
-        correlator.correlate(Array(x[0..<window]), x, lagCount: lagCount + 1, into: &correlation)
-        var difference = [Double](repeating: 0, count: lagCount + 1)
+        work.withUnsafeBufferPointer { x in
+            correlation.withUnsafeMutableBufferPointer { output in
+                correlator.correlate(
+                    UnsafeBufferPointer(rebasing: x[0..<window]),
+                    x,
+                    lagCount: lagCount + 1,
+                    into: output
+                )
+            }
+        }
         for lag in 1...lagCount {
             let shifted = prefix[lag + window] - prefix[lag]
             difference[lag] = max(0, energy0 + shifted - 2 * correlation[lag])
         }
 
         // Step 3: cumulative mean normalised difference.
-        var cmnd = [Double](repeating: 1, count: lagCount + 1)
         var running = 0.0
         for lag in 1...lagCount {
             running += difference[lag]

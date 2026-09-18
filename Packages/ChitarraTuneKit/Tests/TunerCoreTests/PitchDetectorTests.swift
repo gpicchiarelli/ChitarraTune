@@ -107,3 +107,61 @@ struct PitchDetectorTests {
         }
     }
 }
+
+@Suite("PitchDetector — properties & performance")
+struct PitchDetectorPropertyTests {
+    /// Deterministic pseudo-random frequencies across the guitar range: the estimate must stay within
+    /// one cent whatever the pitch, harmonic content or sample rate.
+    @Test("Accuracy holds across the whole guitar range", arguments: [44_100.0, 48_000.0])
+    func sweep(sampleRate: Double) throws {
+        let detector = try #require(PitchDetector(sampleRate: sampleRate, frequencyRange: Tuning.standard.detectionRange()))
+        var generator = SystemRandomNumberGeneratorSeeded(seed: 42)
+        for _ in 0..<60 {
+            let frequency = 82 * pow(2, Double.random(in: 0...2.1, using: &generator)) // E2 … ~E4
+            let harmonics = Bool.random(using: &generator) ? SignalGenerator.guitarHarmonics : [1, 0.3, 0.1]
+            let signal = SignalGenerator.tone(frequency: frequency, sampleRate: sampleRate, harmonics: harmonics)
+            let estimate = try #require(detector.estimate(in: signal), "\(frequency) Hz")
+            #expect(abs(PitchMath.cents(from: estimate.frequency, to: frequency)) < 1, "\(frequency) Hz → \(estimate.frequency)")
+        }
+    }
+
+    @Test("One analysis stays far below the hop time (regression guard for accidental O(n²))")
+    func speed() throws {
+        let detector = try #require(PitchDetector(sampleRate: 48_000, frequencyRange: Tuning.standard.detectionRange()))
+        let signal = SignalGenerator.tone(frequency: 110, sampleRate: 48_000, harmonics: SignalGenerator.guitarHarmonics)
+        let clock = ContinuousClock()
+        let runs = 50
+        let elapsed = clock.measure { for _ in 0..<runs { _ = detector.estimate(in: signal) } }
+        let perAnalysis = elapsed / runs
+        // Release measures ≈0.16 ms on Apple silicon (≈0.6 % of a 25 ms hop); unoptimised debug builds are
+        // ~50× slower. Either way it must stay well inside one hop.
+        #if DEBUG
+        let budget = Duration.milliseconds(20)
+        #else
+        let budget = Duration.milliseconds(2)
+        #endif
+        #expect(perAnalysis < budget, "took \(perAnalysis) per analysis")
+    }
+
+    @Test("Repeated analyses give identical results (no state leaks between calls)")
+    func deterministic() throws {
+        let detector = try #require(PitchDetector(sampleRate: 44_100, frequencyRange: Tuning.standard.detectionRange()))
+        let a = SignalGenerator.tone(frequency: 196, harmonics: SignalGenerator.guitarHarmonics)
+        let b = SignalGenerator.tone(frequency: 330, harmonics: SignalGenerator.guitarHarmonics)
+        let first = detector.estimate(in: a)
+        _ = detector.estimate(in: b)
+        #expect(detector.estimate(in: a) == first)
+    }
+}
+
+/// `SystemRandomNumberGenerator` is not seedable; this xorshift keeps the sweep reproducible.
+struct SystemRandomNumberGeneratorSeeded: RandomNumberGenerator {
+    private var state: UInt64
+    init(seed: UInt64) { state = seed &* 0x9E3779B97F4A7C15 | 1 }
+    mutating func next() -> UInt64 {
+        state ^= state << 13
+        state ^= state >> 7
+        state ^= state << 17
+        return state
+    }
+}

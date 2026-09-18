@@ -1,4 +1,5 @@
 import SwiftUI
+import TunerAudio
 
 /// Build metadata read from the bundle (no generated source files, no build scripts).
 enum BuildInfo {
@@ -38,10 +39,12 @@ struct AboutView: View {
             }
             .textSelection(.enabled)
 
-            HStack {
-                Link(destination: Self.repositoryURL) { Label(.aboutSource, systemImage: "chevron.left.forwardslash.chevron.right") }
-                    .buttonStyle(.glass)
-                CopyInfoButton()
+            GlassEffectContainer(spacing: 10) {
+                HStack {
+                    Link(destination: Self.repositoryURL) { Label(.aboutSource, systemImage: "chevron.left.forwardslash.chevron.right") }
+                        .buttonStyle(.glass)
+                    CopyInfoButton()
+                }
             }
             .padding(.top, 6)
         }
@@ -54,20 +57,24 @@ struct AboutView: View {
     }
 }
 
+/// Copies version info plus the app's recent (privacy-safe) log lines for bug reports.
 private struct CopyInfoButton: View {
     @State private var didCopy = false
 
     var body: some View {
         Button {
-            #if os(macOS)
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(BuildInfo.summary, forType: .string)
-            #else
-            UIPasteboard.general.string = BuildInfo.summary
-            #endif
-            didCopy = true
+            Task {
+                let report = await Diagnostics.report()
+                #if os(macOS)
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(report, forType: .string)
+                #else
+                UIPasteboard.general.string = report
+                #endif
+                didCopy = true
+            }
         } label: {
-            Label(.aboutCopyInfo, systemImage: didCopy ? "checkmark" : "doc.on.doc")
+            Label(.aboutCopyDiagnostics, systemImage: didCopy ? "checkmark" : "doc.on.doc")
         }
         .buttonStyle(.glass)
         .sensoryFeedback(.success, trigger: didCopy)

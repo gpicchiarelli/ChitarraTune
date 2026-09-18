@@ -11,13 +11,16 @@ import os
 /// - The stream buffers only the newest chunks: a slow consumer never accumulates a backlog.
 /// - Everything not needed is torn down in ``stop()``; nothing runs while the tuner is idle.
 public actor EngineAudioCapture: AudioCapturing {
-    private static let logger = Logger(subsystem: "com.chitarratune.app", category: "Capture")
+    private static let logger = TunerLog.capture
     /// Frames per tap callback.
     private static let tapFrames: AVAudioFrameCount = 1_024
 
     private var engine: AVAudioEngine?
     private var continuation: AsyncThrowingStream<AudioChunk, any Error>.Continuation?
     private var observers: [any NSObjectProtocol] = []
+    /// Identifies the running session. A stream's `onTermination` may fire late (after a newer
+    /// session has started), so it must only tear down the session it belongs to.
+    private var sessionToken: UUID?
 
     public init() {}
 
@@ -61,10 +64,12 @@ public actor EngineAudioCapture: AudioCapturing {
             throw .engineFailed(code: (error as NSError).code)
         }
 
+        let token = UUID()
         self.engine = engine
         self.continuation = continuation
+        self.sessionToken = token
         continuation.onTermination = { [weak self] _ in
-            Task { await self?.teardown() }
+            Task { await self?.teardown(ifCurrent: token) }
         }
         observeRouteChanges(engine: engine)
         Self.logger.info("capture started @ \(sampleRate, format: .fixed(precision: 0)) Hz")
@@ -79,7 +84,13 @@ public actor EngineAudioCapture: AudioCapturing {
 
     // MARK: - Lifecycle
 
+    private func teardown(ifCurrent token: UUID) {
+        guard sessionToken == token else { return }
+        teardown()
+    }
+
     private func teardown() {
+        sessionToken = nil
         for token in observers { NotificationCenter.default.removeObserver(token) }
         observers.removeAll()
         continuation = nil

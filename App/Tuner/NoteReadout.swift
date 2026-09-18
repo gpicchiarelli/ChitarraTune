@@ -1,13 +1,18 @@
 import SwiftUI
 import TunerCore
+import TunerFeature
 
 /// The big note name with frequency and deviation underneath.
+///
+/// Reads the 40 Hz `reading` itself so that only this view (not its parents) is re-evaluated per frame.
 struct NoteReadout: View {
+    let model: TunerModel
     let note: Note?
     let notation: NoteNotation
-    let reading: TunerReading?
-    let state: TuneState
     let hint: LocalizedStringResource
+
+    private var reading: TunerReading? { model.reading }
+    private var state: TuneState { model.tuneState }
 
     @ScaledMetric(relativeTo: .largeTitle) private var letterSize: CGFloat = 88
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -30,6 +35,7 @@ struct NoteReadout: View {
         .accessibilityLabel(Text(.a11YNote))
         .accessibilityValue(Text(accessibilityValue))
         .accessibilityAddTraits(.updatesFrequently)
+        .accessibilityIdentifier("noteReadout")
     }
 
     // MARK: Pieces

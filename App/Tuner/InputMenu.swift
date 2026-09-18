@@ -25,6 +25,7 @@ struct InputMenu: View {
             }
         }
         .accessibilityLabel(Text(.inputA11Y(model.activeInputName ?? String(localized: .inputMicrophone))))
+        .accessibilityIdentifier("inputMenu")
     }
 
     private var selection: Binding<AudioInputSelection> {

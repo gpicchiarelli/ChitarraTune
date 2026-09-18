@@ -7,7 +7,8 @@ import TunerFeature
 struct StringSelector: View {
     @Bindable var model: TunerModel
     let notation: NoteNotation
-    let state: TuneState
+
+    private var state: TuneState { model.tuneState }
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Namespace private var glassNamespace
@@ -31,7 +32,7 @@ struct StringSelector: View {
 
     private func chip(index: Int, note: Note) -> some View {
         let isPinned = model.target == .string(index)
-        let isDetected = model.target == .automatic && model.highlightedString == index && model.reading != nil
+        let isDetected = model.target == .automatic && model.detectedString == index
         let emphasised = isPinned || isDetected
 
         return Button {
@@ -67,6 +68,7 @@ struct StringSelector: View {
         .accessibilityValue(Text(.tunerString(index + 1)))
         .accessibilityHint(Text(.a11YPinHint))
         .accessibilityAddTraits(isPinned ? .isSelected : [])
+        .accessibilityIdentifier("stringChip.\(index + 1)")
     }
 
     private func glass(pinned: Bool, detected: Bool) -> Glass {

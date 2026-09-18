@@ -1,4 +1,5 @@
 import SwiftUI
+import TunerFeature
 
 /// A soft radial wash that takes on the tuning state's colour. One cheap gradient, only re-rendered
 /// when the state changes; it dims on Always-On displays and stays still with Reduce Motion.

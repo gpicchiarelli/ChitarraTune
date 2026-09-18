@@ -18,12 +18,11 @@ struct TunerScreen: View {
 
     private var settings: TunerSettings { model.settings }
     private var notation: NoteNotation { settings.resolvedNotation(for: locale) }
-    private var state: TuneState { TuneState(model.reading) }
     private var isLandscapePhone: Bool { verticalSizeClass == .compact }
 
     /// Note shown in the readout: the detected one, or the pinned string while waiting.
     private var displayedNote: Note? {
-        if let reading = model.reading { return reading.note }
+        if let note = model.detectedNote { return note }
         if case .string(let index) = model.target { return model.tuning.strings[safe: index] }
         return nil
     }
@@ -38,7 +37,7 @@ struct TunerScreen: View {
 
     var body: some View {
         ZStack {
-            TunerBackground(state: state)
+            TunerBackground(state: model.tuneState)
 
             if let failure = model.failure {
                 FailureView(failure: failure, model: model)
@@ -65,14 +64,14 @@ struct TunerScreen: View {
             if phase == .background { Task { await model.stop() } }
             #endif
         }
-        .onChange(of: model.reading?.isInTune == true) { old, new in
+        .onChange(of: model.isInTune) { old, new in
             if new, !old { announceInTune() }
         }
         .onDisappear {
             PlatformSettings.setKeepScreenAwake(false)
             Task { await model.stop() }
         }
-        .sensoryFeedback(.success, trigger: model.reading?.isInTune == true) { old, new in
+        .sensoryFeedback(.success, trigger: model.isInTune) { old, new in
             new && !old && settings.isHapticsEnabled
         }
         .sensoryFeedback(.selection, trigger: model.target) { _, _ in settings.isHapticsEnabled }
@@ -109,36 +108,42 @@ struct TunerScreen: View {
             .padding(.horizontal, 24)
             .padding(.vertical, 8)
         } else {
-            ScrollView {
-                VStack(spacing: 20) {
-                    display
-                    controls
-                }
-                .frame(maxWidth: 640)
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
-                .frame(maxWidth: .infinity)
+            // Centred when it fits (iPad, Mac, tall iPhones); scrolls at large Dynamic Type sizes.
+            ViewThatFits(in: .vertical) {
+                portraitContent.frame(maxHeight: .infinity)
+                ScrollView { portraitContent }
             }
-            .scrollBounceBehavior(.basedOnSize)
             .safeAreaInset(edge: .bottom) {
                 ListenButton(model: model)
                     .frame(maxWidth: 640)
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 8)
-                    .padding(.top, 8)
+                    .padding(.vertical, 8)
                     .frame(maxWidth: .infinity)
             }
         }
     }
 
+    private var portraitContent: some View {
+        VStack(spacing: 20) {
+            Spacer(minLength: 0)
+            display
+            Spacer(minLength: 0)
+            controls
+        }
+        .frame(maxWidth: 640)
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity)
+    }
+
     /// Readout + gauge + level.
     private var display: some View {
         VStack(spacing: 14) {
-            NoteReadout(note: displayedNote, notation: notation, reading: model.reading, state: state, hint: hint)
+            NoteReadout(model: model, note: displayedNote, notation: notation, hint: hint)
                 .dynamicTypeSize(...DynamicTypeSize.accessibility2)
 
-            gauge
+            GaugeView(model: model)
 
             if model.didStopForInactivity {
                 Label(.tunerNoticeInactivity, systemImage: "battery.100percent.bolt")
@@ -146,34 +151,8 @@ struct TunerScreen: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
-            LevelMeter(level: model.inputLevel, isActive: model.isListening)
+            LevelMeter(model: model)
         }
-    }
-
-    @ViewBuilder
-    private var gauge: some View {
-        Group {
-            switch settings.gaugeStyle {
-            case .dial: TunerDial(cents: model.reading?.cents, state: state)
-            case .bar: TunerBar(cents: model.reading?.cents, state: state)
-            }
-        }
-        .frame(maxWidth: 520)
-        .overlay(alignment: .bottom) {
-            HStack {
-                Text(.gaugeFlatEnd)
-                Spacer()
-                Text(.gaugeSharpEnd)
-            }
-            .font(.title2.weight(.semibold))
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 4)
-            .accessibilityHidden(true)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(.gaugeLabel))
-        .accessibilityValue(Text(gaugeAccessibilityValue))
-        .accessibilityAddTraits(.updatesFrequently)
     }
 
     private var controls: some View {
@@ -182,15 +161,8 @@ struct TunerScreen: View {
                 TuningPicker(model: model, notation: notation)
                 AutoChip(model: model)
             }
-            StringSelector(model: model, notation: notation, state: state)
+            StringSelector(model: model, notation: notation)
         }
-    }
-
-    private var gaugeAccessibilityValue: String {
-        guard let reading = model.reading else { return String(localized: .a11YNoSignal) }
-        let cents = abs(reading.displayedCents)
-        if reading.isInTune { return String(localized: .tunerStatusInTune) }
-        return reading.cents < 0 ? String(localized: .a11YCentsFlat(cents)) : String(localized: .a11YCentsSharp(cents))
     }
 
     // MARK: Toolbar
@@ -211,7 +183,7 @@ struct TunerScreen: View {
     // MARK: Actions
 
     private func announceInTune() {
-        guard let note = model.reading?.note else { return }
+        guard let note = model.detectedNote else { return }
         var announcement = AttributedString(String(localized: .a11YInTune(NoteParts(note, notation: notation).spoken)))
         announcement.accessibilitySpeechAnnouncementPriority = .high
         AccessibilityNotification.Announcement(announcement).post()
@@ -226,28 +198,5 @@ struct TunerScreen: View {
 extension Array {
     fileprivate subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil
-    }
-}
-
-/// Thin input-level bar. Purely visual (hidden from accessibility); shows the mic is hearing you.
-private struct LevelMeter: View {
-    let level: Double
-    let isActive: Bool
-
-    var body: some View {
-        Capsule()
-            .fill(.quaternary)
-            .frame(height: 4)
-            .overlay(alignment: .leading) {
-                GeometryReader { proxy in
-                    Capsule()
-                        .fill(Color.accentColor.opacity(0.8))
-                        .frame(width: proxy.size.width * level)
-                        .animation(.linear(duration: 0.08), value: level)
-                }
-            }
-            .frame(maxWidth: 220)
-            .opacity(isActive ? 1 : 0.35)
-            .accessibilityHidden(true)
     }
 }

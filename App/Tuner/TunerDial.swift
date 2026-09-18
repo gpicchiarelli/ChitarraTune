@@ -1,4 +1,5 @@
 import SwiftUI
+import TunerFeature
 
 /// Analogue-style gauge: ±50 cents mapped onto a 124° arc, needle pivoting at the bottom.
 ///
@@ -101,8 +102,8 @@ private struct DialFace: View {
 #Preview("Dial") {
     VStack(spacing: 24) {
         TunerDial(cents: nil, state: .idle)
-        TunerDial(cents: -32, state: .flat(closeness: .far))
-        TunerDial(cents: 9, state: .sharp(closeness: .close))
+        TunerDial(cents: -32, state: .flat(.far))
+        TunerDial(cents: 9, state: .sharp(.close))
         TunerDial(cents: 1, state: .inTune)
     }
     .padding()

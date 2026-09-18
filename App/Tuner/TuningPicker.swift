@@ -38,6 +38,7 @@ struct TuningPicker: View {
         .glassEffect(.regular.interactive(), in: .capsule)
         .accessibilityLabel(Text(.tunerTuning))
         .accessibilityValue(Text(model.tuning.id.title))
+        .accessibilityIdentifier("tuningPicker")
     }
 
     private var tuningBinding: Binding<TuningID> {

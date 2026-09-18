@@ -43,10 +43,26 @@ final class CrossCorrelator {
         bImag.deallocate()
     }
 
-    /// Computes the first `lagCount` correlation lags.
-    /// - Precondition: `a.count ≤ size`, `b.count ≤ size`, `lagCount ≤ size`.
+    /// Convenience overload for arrays.
     func correlate(_ a: [Float], _ b: [Float], lagCount: Int, into output: inout [Double]) {
-        precondition(a.count <= size && b.count <= size && lagCount <= size)
+        a.withUnsafeBufferPointer { a in
+            b.withUnsafeBufferPointer { b in
+                output.withUnsafeMutableBufferPointer { output in
+                    correlate(a, b, lagCount: lagCount, into: output)
+                }
+            }
+        }
+    }
+
+    /// Computes the first `lagCount` correlation lags without allocating.
+    /// - Precondition: `a.count ≤ size`, `b.count ≤ size`, `lagCount ≤ size ≤ output.count`.
+    func correlate(
+        _ a: UnsafeBufferPointer<Float>,
+        _ b: UnsafeBufferPointer<Float>,
+        lagCount: Int,
+        into output: UnsafeMutableBufferPointer<Double>
+    ) {
+        precondition(a.count <= size && b.count <= size && lagCount <= size && output.count >= lagCount)
 
         pack(a, real: aReal, imag: aImag)
         pack(b, real: bReal, imag: bImag)
@@ -80,16 +96,18 @@ final class CrossCorrelator {
     }
 
     /// Writes even samples to `real`, odd samples to `imag`, zero-padding up to `size`.
-    private func pack(_ samples: [Float], real: UnsafeMutablePointer<Float>, imag: UnsafeMutablePointer<Float>) {
+    private func pack(
+        _ source: UnsafeBufferPointer<Float>,
+        real: UnsafeMutablePointer<Float>,
+        imag: UnsafeMutablePointer<Float>
+    ) {
         real.update(repeating: 0, count: half)
         imag.update(repeating: 0, count: half)
-        samples.withUnsafeBufferPointer { source in
-            for index in 0..<source.count {
-                if index.isMultiple(of: 2) {
-                    real[index / 2] = source[index]
-                } else {
-                    imag[index / 2] = source[index]
-                }
+        for index in 0..<source.count {
+            if index.isMultiple(of: 2) {
+                real[index / 2] = source[index]
+            } else {
+                imag[index / 2] = source[index]
             }
         }
     }

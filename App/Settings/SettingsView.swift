@@ -13,7 +13,9 @@ struct SettingsView: View {
             feedback
             battery
             privacy
+            #if os(iOS)
             about
+            #endif
         }
         .formStyle(.grouped)
         .navigationTitle(Text(.settingsTitle))
@@ -111,6 +113,7 @@ struct SettingsView: View {
         }
     }
 
+    #if os(iOS)
     private var about: some View {
         Section {
             NavigationLink {
@@ -127,4 +130,5 @@ struct SettingsView: View {
             Text(.settingsAbout)
         }
     }
+    #endif
 }

@@ -8,7 +8,7 @@ import TunerCore
 actor TunerProcessor {
     private var engine = TuningEngine()
     private var parameters = EngineParameters.standard
-    private let signposter = OSSignposter(subsystem: "com.chitarratune.app", category: .pointsOfInterest)
+    private let signposter = TunerLog.signposter
 
     func process(
         _ chunk: AudioChunk,
