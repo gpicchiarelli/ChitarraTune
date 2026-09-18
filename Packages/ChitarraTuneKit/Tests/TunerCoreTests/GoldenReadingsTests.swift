@@ -7,7 +7,8 @@ import Testing
 /// string with noise and hum) it records every frame the engine produces — level, gate, frequency,
 /// cents, string, clarity, in-tune, held — and compares them with `Fixtures/golden-readings.txt`.
 ///
-/// A refactor must reproduce them exactly. If a change is *meant* to alter a measurement, regenerate
+/// A refactor must reproduce them: discrete values exactly, continuous ones to within a thousandth
+/// of a cent (the last digits of a float differ between CPUs). If a change is *meant* to alter a measurement, regenerate
 /// the file with `UPDATE_GOLDEN=1 swift test --filter GoldenReadings`, and explain in the commit why
 /// the new numbers are more correct. Never regenerate just to make the test pass.
 @Suite("Golden readings")
@@ -67,18 +68,34 @@ struct GoldenReadingsTests {
             return
         }
         let frozen = try String(contentsOf: Self.file, encoding: .utf8)
-        guard current != frozen else { return }
-        // Point at the first differing case and frame.
         let old = frozen.components(separatedBy: "\n"), new = current.components(separatedBy: "\n")
+        #expect(old.count == new.count, "number of frames changed: \(old.count) → \(new.count)")
         var header = ""
-        for index in 0..<max(old.count, new.count) {
-            let a = index < old.count ? old[index] : "<missing>", b = index < new.count ? new[index] : "<missing>"
+        for (a, b) in zip(old, new) {
             if a.hasPrefix("## ") { header = a }
-            if a != b {
-                Issue.record("measurement changed in \(header)\n  was: \(a)\n  now: \(b)")
+            if let difference = Self.difference(a, b) {
+                Issue.record("measurement changed in \(header): \(difference)\n  was: \(a)\n  now: \(b)")
                 return
             }
         }
+    }
+
+    /// Different CPUs run different Accelerate kernels, so the last digits of a float differ between
+    /// machines (measured: 1e-6 Hz, 0.00003 cent). Discrete values (frame, gate, string, in-tune, held)
+    /// must match exactly; continuous ones within tolerances a thousand times finer than the
+    /// instrument's accuracy, yet far coarser than rounding noise.
+    static let tolerance: [Character: Double] = ["L": 1e-6, "F": 1e-4, "C": 0.001, "Q": 1e-4]
+
+    static func difference(_ a: String, _ b: String) -> String? {
+        guard a != b else { return nil }
+        let left = a.split(separator: " "), right = b.split(separator: " ")
+        guard left.count == right.count else { return "different fields" }
+        for (x, y) in zip(left, right) where x != y {
+            guard let key = x.first, key == y.first, let limit = tolerance[key],
+                  let u = Double(x.dropFirst()), let v = Double(y.dropFirst()) else { return "\(x) → \(y)" }
+            if abs(u - v) > limit { return "\(x) → \(y) (tolerance \(limit))" }
+        }
+        return nil
     }
 
     /// Independent of the frozen file: what any version of the engine must achieve on these signals.

@@ -59,7 +59,7 @@ What the gate protects, and how:
 
 ChitarraTune is a measuring instrument, so what it reads is protected on its own:
 
-- `GoldenReadingsTests` compares every frame the engine produces for 132 reference signals with `Packages/ChitarraTuneKit/Tests/TunerCoreTests/Fixtures/golden-readings.txt`. A refactor must reproduce them **exactly**.
+- `GoldenReadingsTests` compares every frame the engine produces for 132 reference signals with `Packages/ChitarraTuneKit/Tests/TunerCoreTests/Fixtures/golden-readings.txt`. A refactor must reproduce them: discrete values (string, gate, in-tune, held) exactly, continuous ones to within a thousandth of a cent, because the last digits of a float differ between CPUs.
 - If a change is *meant* to alter a measurement, regenerate the file with `UPDATE_GOLDEN=1 swift test --package-path Packages/ChitarraTuneKit --filter GoldenReadings`, compare the old and new readings field by field, and explain in the commit why the new numbers are more correct. Never regenerate just to make the test pass.
 - The same test enforces an accuracy envelope that no regeneration can loosen: right string on every note, median error ≤ 2 cents per note and ≤ 0.5 cent overall.
 - Recordings of a real guitar, with a reading from a reference tuner, are the missing piece: see `Packages/ChitarraTuneKit/Tests/TunerCoreTests/Fixtures/Recordings/README.md`.
