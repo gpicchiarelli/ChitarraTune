@@ -7,17 +7,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Set by the App at launch; the Dock menu and termination act on it.
     static weak var hub: TunerHub?
 
-    /// AppKit opens the first window only when the app is launched active. Demo mode (UI tests,
-    /// screenshots) is often launched in the background by a test runner, so there it asks for
-    /// the tuner window itself, exactly as a click on the Dock icon would.
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        guard LaunchOptions.isDemo else { return }
-        DispatchQueue.main.async {
-            guard !NSApp.windows.contains(where: \.isVisible) else { return }
-            NSApp.sendAction(#selector(NSResponder.newWindowForTab(_:)), to: nil, from: nil)
-        }
-    }
-
     /// A tuner has no documents: closing its window means "I'm done".
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
