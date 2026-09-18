@@ -11,7 +11,8 @@
 
 ## Verification · Verifica
 
-- [ ] `swift test --package-path Packages/ChitarraTuneKit` passes
+- [ ] `Scripts/verify.sh` passes (lint, no warnings, tests, coverage floors)
+- [ ] A bug fix comes with a test that fails without it
 - [ ] The app builds for macOS and for the iOS Simulator
 - [ ] Tried with a real microphone (if audio, DSP or permissions are involved)
 

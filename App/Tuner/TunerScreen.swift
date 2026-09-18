@@ -59,8 +59,10 @@ struct TunerScreen: View {
         .onChange(of: model.isListening) { _, listening in PlatformSettings.setKeepScreenAwake(listening) }
         .onChange(of: scenePhase) { _, phase in
             #if os(iOS)
-            // iOS may not record in the background: release the microphone as soon as we leave the foreground.
-            if phase != .active { Task { await model.stop() } }
+            // iOS may not record in the background: release the microphone once the app is really in the
+            // background. `.inactive` is only a transient state (the microphone permission prompt, Control
+            // Center, an incoming call banner); stopping there would cancel a start the user just asked for.
+            if phase == .background { Task { await model.stop() } }
             #endif
         }
         .onChange(of: model.reading?.isInTune == true) { old, new in

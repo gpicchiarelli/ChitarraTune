@@ -81,6 +81,19 @@ struct TunerSettingsTests {
         #expect(settings.referenceA == 466)
     }
 
+    @Test("A NaN A4 falls back to 440 instead of poisoning the engine")
+    func nanReferencePitch() {
+        let store = defaults()
+        store.set(Double.nan, forKey: "A4")
+        let settings = TunerSettings(defaults: store)
+        #expect(settings.referenceA == 440)
+
+        settings.referenceA = 432
+        settings.referenceA = .nan
+        #expect(settings.referenceA == 440)
+        #expect(TunerConfiguration(referenceA: settings.referenceA).referenceA == 440)
+    }
+
     @Test("Automatic notation follows the language", arguments: [
         ("it_IT", NoteNotation.solfege), ("es_ES", .solfege), ("fr_FR", .solfege), ("pt_BR", .solfege),
         ("en_US", .english), ("de_DE", .english), ("ja_JP", .english),

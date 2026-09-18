@@ -41,10 +41,13 @@ public actor EngineAudioCapture: AudioCapturing {
         let (stream, continuation) = AsyncThrowingStream<AudioChunk, any Error>.makeStream(
             bufferingPolicy: .bufferingNewest(8)
         )
-        // Runs on the audio thread: copy channel 0 out of the buffer and hand it over. Nothing here
-        // touches actor state.
+        // Runs on the audio thread: copy the active channel out of the buffer and hand it over. On an
+        // audio interface the guitar is rarely in channel 0, so the selector follows the loudest one.
+        // Nothing here touches actor state.
+        let selector = ChannelSelector()
         inputNode.installTap(onBus: 0, bufferSize: Self.tapFrames, format: format) { buffer, _ in
-            guard let channel = buffer.floatChannelData?[0], buffer.frameLength > 0 else { return }
+            guard let channels = buffer.floatChannelData, buffer.frameLength > 0 else { return }
+            let channel = channels[selector.channel(in: buffer)]
             let samples = Array(UnsafeBufferPointer(start: channel, count: Int(buffer.frameLength)))
             continuation.yield(AudioChunk(samples: samples, sampleRate: sampleRate))
         }

@@ -22,7 +22,7 @@ public struct TunerConfiguration: Sendable, Hashable {
         target: StringTarget = .automatic
     ) {
         self.tuning = tuning
-        self.referenceA = referenceA.clamped(to: PitchMath.referenceARange)
+        self.referenceA = PitchMath.validReferenceA(referenceA)
         self.target = target
     }
 }
@@ -102,6 +102,9 @@ public struct TuningEngine {
     public private(set) var configuration: TunerConfiguration
     public let parameters: EngineParameters
 
+    /// Sample rates the engine accepts (Hz). Everything from telephone-band to 384 kHz interfaces.
+    public static let supportedSampleRates: ClosedRange<Double> = 8_000...384_000
+
     private var sampleRate: Double = 0
     private var detector: PitchDetector?
     private var buffer: [Float] = []
@@ -145,7 +148,9 @@ public struct TuningEngine {
     ///
     /// - Returns: The most recent frame if at least one analysis hop elapsed, otherwise `nil`.
     public mutating func process(_ samples: [Float], sampleRate: Double) -> TunerFrame? {
-        guard sampleRate > 0, !samples.isEmpty else { return nil }
+        // Reject anything a real audio device never reports. Non-finite or absurd rates would otherwise
+        // trap in an `Int` conversion or ask for gigabytes of scratch memory.
+        guard Self.supportedSampleRates.contains(sampleRate), !samples.isEmpty else { return nil }
         if sampleRate != self.sampleRate {
             self.sampleRate = sampleRate
             detector = nil
@@ -296,11 +301,5 @@ public struct TuningEngine {
             let target = tuning.strings[index].frequency(referenceA: referenceA)
             return Selection(frequency: frequency, index: index, cents: PitchMath.cents(from: frequency, to: target))
         }
-    }
-}
-
-extension Double {
-    fileprivate func clamped(to range: ClosedRange<Double>) -> Double {
-        min(max(self, range.lowerBound), range.upperBound)
     }
 }

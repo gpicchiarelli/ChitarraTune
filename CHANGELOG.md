@@ -27,11 +27,24 @@ Version 2.0 is a ground-up rewrite. Work in progress: the package is complete an
 - Low Power Mode and thermal-state awareness (lower analysis rate).
 - `ITSAppUsesNonExemptEncryption = NO`, and a permission text that says audio is never recorded or sent anywhere.
 
+### Fixed
+
+- A `NaN` A4 stored in the preferences no longer crashes the engine (it used to survive the clamp and trap on the first audio chunk); it now falls back to 440 Hz.
+- On an audio interface the tuner now listens to the loudest input channel instead of always channel 0, so a guitar plugged into input 2 is heard.
+- On iOS a start requested from the microphone permission prompt is no longer cancelled: the tuner stops when the app is in the background, not merely inactive.
+- The engine rejects non-finite or absurd sample rates instead of trapping in an integer conversion.
+
 ### Security
 
 - Hardened Runtime and Xcode Enhanced Security, with the sandbox limited to audio input and no network access.
 - The Core Audio input enumeration no longer reads a variable-size `AudioBufferList` into a fixed-size local, and capture no longer parses raw sample-buffer memory.
 - The A4 reference is clamped to 415–466 Hz.
+
+### Quality gate
+
+- Nothing reaches `main` unless the Gate, Lint and CodeQL checks pass. The gate builds without warnings, runs SwiftLint in strict mode, enforces per-module coverage floors and runs every test.
+- New test families: hostile input and fuzzing of the DSP, checks of the documented numbers against the code, smoke tests of the system audio layer, and repository-policy tests (no network APIs, entitlements, privacy manifest, pinned actions, complete translations, README matching the implementation).
+- `Scripts/verify.sh` runs the same checks locally; `.githooks/pre-push` runs it automatically once enabled.
 
 ### Repository
 

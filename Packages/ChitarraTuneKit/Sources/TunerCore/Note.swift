@@ -133,6 +133,15 @@ public enum PitchMath {
     /// Supported A4 calibration range (baroque 415 Hz … 466 Hz).
     public static let referenceARange: ClosedRange<Double> = 415...466
 
+    /// Brings any stored or user-supplied A4 into ``referenceARange``.
+    ///
+    /// Infinite values clamp to the nearest bound. `NaN` (which survives `min`/`max` and would later
+    /// build an invalid frequency range and trap) falls back to ``standardReferenceA``.
+    public static func validReferenceA(_ value: Double) -> Double {
+        guard !value.isNaN else { return standardReferenceA }
+        return min(max(value, referenceARange.lowerBound), referenceARange.upperBound)
+    }
+
     /// `referenceA · 2^((midi − 69) / 12)`
     public static func frequency(midi: Int, referenceA: Double = standardReferenceA) -> Double {
         referenceA * pow(2, Double(midi - 69) / 12)

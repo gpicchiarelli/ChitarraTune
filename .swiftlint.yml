@@ -23,5 +23,28 @@ opt_in_rules:
 disabled_rules:
   - trailing_whitespace
   - line_length
+  # Trailing commas keep diffs small and are what swift-format produces.
+  - trailing_comma
+
+# DSP code is full of conventional single-letter names (x, r, c, tau…); keep the upper bound.
+identifier_name:
+  min_length: 1
+  max_length:
+    warning: 40
+    error: 60
+
+# Length limits sized for numeric code: the detector and engine pipelines are long on purpose.
+function_body_length:
+  warning: 90
+  error: 160
+type_body_length:
+  warning: 350
+  error: 600
+cyclomatic_complexity:
+  warning: 20
+  error: 30
+large_tuple:
+  warning: 3
+  error: 5
 
 reporter: "xcode"

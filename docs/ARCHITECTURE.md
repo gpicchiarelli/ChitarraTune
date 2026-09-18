@@ -31,7 +31,7 @@ Dependencies only point downwards. `TunerCore` imports Foundation and Accelerate
 
 ```
 microphone
-  → AVAudioEngine input tap (1024 frames, channel 0)      TunerAudio
+  → AVAudioEngine input tap (1024 frames, loudest channel) TunerAudio
   → AsyncThrowingStream<AudioChunk>  (newest 8 kept)
   → ring buffer                                           TunerCore
   → noise gate with hysteresis

@@ -18,9 +18,9 @@ concurrency:
 
 jobs:
   kit:
-    name: Kit tests
+    name: Kit tests and coverage
     runs-on: macos-26
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -29,8 +29,10 @@ jobs:
         run: |
           xcodebuild -version
           swift --version
-      - name: Test ChitarraTuneKit
-        run: swift test --package-path Packages/ChitarraTuneKit
+      - name: Build without warnings
+        run: swift build --package-path Packages/ChitarraTuneKit -Xswiftc -warnings-as-errors
+      - name: Test, with the coverage gate
+        run: Scripts/coverage-gate.sh
 
   app:
     name: App · ${{ matrix.name }}
@@ -55,7 +57,7 @@ jobs:
           persist-credentials: false
       - name: Toolchain
         run: xcodebuild -version
-      - name: Build
+      - name: Build without warnings
         env:
           CONFIGURATION: ${{ matrix.configuration }}
           DESTINATION: ${{ matrix.destination }}
@@ -67,5 +69,28 @@ jobs:
             -configuration "$CONFIGURATION" \
             -destination "$DESTINATION" \
             CODE_SIGNING_ALLOWED=NO \
+            SWIFT_TREAT_WARNINGS_AS_ERRORS=YES \
+            GCC_TREAT_WARNINGS_AS_ERRORS=YES \
             GIT_COMMIT="$(git rev-parse --short HEAD)" \
             build
+
+  # One required check that stands for all of the above. Branch protection requires this job (plus
+  # Lint and CodeQL), so adding or renaming a job above never silently drops it from the gate.
+  gate:
+    name: Gate
+    if: always()
+    needs: [kit, app]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every required job must have succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: $RESULTS"
+          for result in $RESULTS; do
+            if [ "$result" != "success" ]; then
+              echo "::error::A required job finished with '$result'"
+              exit 1
+            fi
+          done

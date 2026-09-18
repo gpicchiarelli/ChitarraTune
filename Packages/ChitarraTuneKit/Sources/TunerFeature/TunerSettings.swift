@@ -42,8 +42,8 @@ public final class TunerSettings {
     /// Concert pitch (A4) in hertz, `415…466`.
     public var referenceA: Double {
         didSet {
-            let clamped = min(max(referenceA, PitchMath.referenceARange.lowerBound), PitchMath.referenceARange.upperBound)
-            if clamped != referenceA { referenceA = clamped; return }
+            let valid = PitchMath.validReferenceA(referenceA)
+            if valid != referenceA || referenceA.isNaN { referenceA = valid; return }
             defaults.set(referenceA, forKey: Key.referenceA)
         }
     }
@@ -76,7 +76,7 @@ public final class TunerSettings {
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         let storedA4 = defaults.object(forKey: Key.referenceA) as? Double ?? PitchMath.standardReferenceA
-        referenceA = min(max(storedA4, PitchMath.referenceARange.lowerBound), PitchMath.referenceARange.upperBound)
+        referenceA = PitchMath.validReferenceA(storedA4)
         notation = defaults.string(forKey: Key.notation).flatMap(NotationPreference.init) ?? .automatic
         gaugeStyle = defaults.string(forKey: Key.gauge).flatMap(GaugeStyle.init) ?? .dial
         isHapticsEnabled = defaults.object(forKey: Key.haptics) as? Bool ?? true

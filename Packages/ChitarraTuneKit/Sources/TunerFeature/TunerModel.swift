@@ -22,7 +22,7 @@ public final class TunerModel: Identifiable {
 
     private static let logger = Logger(subsystem: "com.chitarratune.app", category: "Tuner")
 
-    public nonisolated let id: UUID
+    nonisolated public let id: UUID
     public let settings: TunerSettings
 
     // MARK: Per-window configuration

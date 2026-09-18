@@ -1,0 +1,131 @@
+import Foundation
+import Testing
+
+/// The privacy and security promises of README.md, PRIVACY.md and SECURITY.md, as executable checks.
+@Suite("Security and privacy policy")
+struct SecurityPolicyTests {
+    @Test("The repository is found (guards every other test in this target)")
+    func repositoryRoot() {
+        #expect(Repo.exists("Packages/ChitarraTuneKit/Package.swift"), "root resolved to \(Repo.root.path)")
+        #expect(Repo.exists("LICENSE"))
+    }
+
+    @Test("Sandbox, hardened runtime and strict concurrency are on")
+    func hardening() throws {
+        let s = try Repo.xcconfig("Config/Base.xcconfig", "Config/App.xcconfig")
+        #expect(s["ENABLE_APP_SANDBOX[sdk=macosx*]"] == "YES")
+        #expect(s["ENABLE_HARDENED_RUNTIME"] == "YES")
+        #expect(s["ENABLE_ENHANCED_SECURITY"] == "YES")
+        #expect(s["ENABLE_USER_SCRIPT_SANDBOXING"] == "YES")
+        #expect(s["SWIFT_VERSION"] == "6.0")
+        #expect(s["SWIFT_STRICT_CONCURRENCY"] == "complete")
+    }
+
+    @Test("There is no network access, and the microphone is the only resource entitlement")
+    func leastPrivilege() throws {
+        let s = try Repo.xcconfig("Config/Base.xcconfig", "Config/App.xcconfig")
+        #expect(s["ENABLE_INCOMING_NETWORK_CONNECTIONS"] == "NO")
+        #expect(s["ENABLE_OUTGOING_NETWORK_CONNECTIONS"] == "NO")
+        let resources = s.keys.filter { $0.hasPrefix("ENABLE_RESOURCE_ACCESS_") }
+        #expect(resources == ["ENABLE_RESOURCE_ACCESS_AUDIO_INPUT[sdk=macosx*]"], "unexpected resources: \(resources)")
+
+        let entitlements = try Repo.plist("Config/ChitarraTune.entitlements")
+        let forbidden = ["com.apple.security.network.", "com.apple.security.files.", "com.apple.security.personal-information.",
+                         "com.apple.security.device.camera", "com.apple.security.cs.disable-", "com.apple.security.cs.allow-"]
+        for key in entitlements.keys {
+            #expect(!forbidden.contains { key.hasPrefix($0) }, "entitlement \(key) widens the sandbox")
+        }
+        #expect(entitlements["com.apple.security.hardened-process"] as? Bool == true)
+    }
+
+    @Test("No background modes, and the store questions are answered")
+    func metadata() throws {
+        let s = try Repo.xcconfig("Config/Base.xcconfig", "Config/App.xcconfig")
+        #expect(!s.keys.contains { $0.contains("UIBackgroundModes") })
+        #expect(try Repo.plist("Config/Info.plist")["UIBackgroundModes"] == nil)
+        #expect(s["INFOPLIST_KEY_ITSAppUsesNonExemptEncryption"] == "NO")
+        let usage = try #require(s["INFOPLIST_KEY_NSMicrophoneUsageDescription"])
+        #expect(usage.contains("never recorded"), "the permission text must state that audio is not recorded")
+        #expect(s["MACOSX_DEPLOYMENT_TARGET"] == "26.0" && s["IPHONEOS_DEPLOYMENT_TARGET"] == "26.0")
+    }
+
+    @Test("The privacy manifest declares no tracking, no collected data, and only our own UserDefaults")
+    func privacyManifest() throws {
+        let manifest = try Repo.plist("App/Resources/PrivacyInfo.xcprivacy")
+        #expect(manifest["NSPrivacyTracking"] as? Bool == false)
+        #expect((manifest["NSPrivacyCollectedDataTypes"] as? [Any])?.isEmpty == true)
+        // Required-reason APIs the app may use, each with the only reason it may give. Anything new
+        // (or any other reason) must be added here on purpose, in the same change.
+        let allowed: [String: [String]] = [
+            "NSPrivacyAccessedAPICategoryUserDefaults": ["CA92.1"],   // the app's own settings
+            "NSPrivacyAccessedAPICategorySystemBootTime": ["35F9.1"], // measuring elapsed time inside the app
+        ]
+        let accessed = try #require(manifest["NSPrivacyAccessedAPITypes"] as? [[String: Any]])
+        for entry in accessed {
+            let category = try #require(entry["NSPrivacyAccessedAPIType"] as? String)
+            #expect(allowed[category] != nil, "\(category) is not on the allowed list")
+            #expect(entry["NSPrivacyAccessedAPITypeReasons"] as? [String] == allowed[category], "unexpected reason for \(category)")
+        }
+        #expect(accessed.contains { $0["NSPrivacyAccessedAPIType"] as? String == "NSPrivacyAccessedAPICategoryUserDefaults" })
+    }
+
+    @Test("Source code has no networking, tracking, cryptography or audio-file APIs")
+    func forbiddenAPIs() throws {
+        let tokens = ["URLSession", "URLRequest", "NWConnection", "NWPathMonitor", "import Network", "CFNetwork",
+                      "WKWebView", "import WebKit", "import CryptoKit", "CommonCrypto", "AdSupport", "AppTrackingTransparency",
+                      "AVAudioRecorder", "AVAudioFile", "AVAssetWriter", "AVCaptureAudioFileOutput", "SFSpeechRecognizer"]
+        let sources = Repo.files(in: "App", extensions: ["swift"]) + Repo.files(in: "Packages/ChitarraTuneKit/Sources", extensions: ["swift"])
+        #expect(sources.count > 20, "the scan found suspiciously few files")
+        for file in sources {
+            let code = try String(contentsOf: file, encoding: .utf8)
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("//") }
+                .joined(separator: "\n")
+            for token in tokens {
+                #expect(!code.contains(token), "\(Repo.relativePath(file)) uses \(token)")
+            }
+        }
+    }
+
+    @Test("The package has no third-party dependencies")
+    func noDependencies() throws {
+        let manifest = try Repo.text("Packages/ChitarraTuneKit/Package.swift")
+        #expect(!manifest.contains(".package("))
+        #expect(!Repo.exists("Packages/ChitarraTuneKit/Package.resolved"))
+        #expect(!Repo.exists("Package.resolved"))
+    }
+
+    @Test("No secrets or signing material are committed")
+    func noSecrets() throws {
+        let patterns = ["-----BEGIN (RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----", "ghp_[A-Za-z0-9]{36}", "github_pat_[A-Za-z0-9_]{60,}",
+                        "AKIA[0-9A-Z]{16}", "xox[baprs]-[A-Za-z0-9-]{10,}", "AIza[0-9A-Za-z_-]{35}"]
+        let regexes = try patterns.map { try NSRegularExpression(pattern: $0) }
+        let skip: Set<String> = ["png", "jpg", "jpeg", "icns", "ico", "gif", "zip", "bundle", "svg"]
+        let ignored = ["/.git/", "/.build/", "/build/", "/DerivedData/", "/.swiftpm/"]
+        let forbiddenFiles: Set<String> = ["p12", "p8", "cer", "mobileprovision", "provisionprofile", "keychain", "pem"]
+        var scanned = 0
+        let walker = FileManager.default.enumerator(at: Repo.root, includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey])
+        while let url = walker?.nextObject() as? URL {
+            guard !ignored.contains(where: { url.path.contains($0) }),
+                  (try? url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true else { continue }
+            #expect(!forbiddenFiles.contains(url.pathExtension), "signing material committed: \(Repo.relativePath(url))")
+            guard !skip.contains(url.pathExtension),
+                  (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).map({ $0 < 2_000_000 }) ?? false,
+                  let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
+            scanned += 1
+            let range = NSRange(text.startIndex..., in: text)
+            for regex in regexes {
+                #expect(regex.firstMatch(in: text, range: range) == nil, "possible secret in \(Repo.relativePath(url))")
+            }
+        }
+        #expect(scanned > 50)
+    }
+
+    @Test("The licence belongs to the contributors")
+    func licence() throws {
+        let licence = try Repo.text("LICENSE")
+        #expect(licence.contains("BSD 3-Clause License"))
+        #expect(licence.contains("ChitarraTune contributors"))
+        #expect(Repo.exists("CONTRIBUTORS.md") && Repo.exists("PRIVACY.md") && Repo.exists("SECURITY.md"))
+    }
+}

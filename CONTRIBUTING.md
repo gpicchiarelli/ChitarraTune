@@ -32,10 +32,33 @@ DEVELOPMENT_TEAM = YOURTEAMID
 
 Put behaviour in `TunerCore` or `TunerFeature` where it can be tested with synthetic signals and test doubles. Keep `App/` thin.
 
+## The quality gate
+
+Nothing reaches `main` unless the **Gate**, **Lint** and **CodeQL** checks pass. Run the same checks locally before you push:
+
+```bash
+Scripts/verify.sh
+```
+
+It runs SwiftLint in strict mode, builds the package with warnings as errors, runs every test and enforces the coverage thresholds in `Scripts/coverage-thresholds.json`. Add `--app` to build the app too, and run `git config core.hooksPath .githooks` once to run it automatically on every push.
+
+What the gate protects, and how:
+
+| Guard | What it stops |
+| --- | --- |
+| Zero compiler warnings (`-warnings-as-errors`) | Concurrency and API problems creeping in |
+| SwiftLint `--strict` | Style drift and risky constructs |
+| Coverage floors per module | Untested code; the floors only go **up** |
+| Hostile-input and fuzz tests | Crashes on `NaN`, absurd sample rates, garbage audio |
+| Policy tests (`RepositoryPolicyTests`) | A network API, a new entitlement, an unpinned action, a missing translation, or a README that no longer matches the code |
+| CodeQL | Known classes of security bugs |
+
+**Every bug fix ships with a test that fails without the fix.** That is how a mistake stays fixed.
+
 ## Before you open a pull request
 
 ```bash
-swift test --package-path Packages/ChitarraTuneKit
+Scripts/verify.sh
 ```
 
 - Add or update tests for what you changed. `TunerCore` tests use generated signals, so no microphone is needed.

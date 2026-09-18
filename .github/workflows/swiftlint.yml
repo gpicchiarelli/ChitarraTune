@@ -1,18 +1,11 @@
 name: SwiftLint
 
+# No path filters: this check is required by branch protection, so it must run on every change.
 on:
   push:
     branches: [main]
-    paths:
-      - "**/*.swift"
-      - ".swiftlint.yml"
-      - ".github/workflows/swiftlint.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "**/*.swift"
-      - ".swiftlint.yml"
-      - ".github/workflows/swiftlint.yml"
 
 permissions:
   contents: read
@@ -33,5 +26,5 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: SwiftLint
-        run: swiftlint lint --reporter github-actions-logging
+      - name: SwiftLint (strict: warnings fail the build)
+        run: swiftlint lint --strict --reporter github-actions-logging

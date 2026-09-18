@@ -43,6 +43,13 @@ let package = Package(
             dependencies: ["TunerCore"],
             swiftSettings: sharedSettings
         ),
+        // Turns the promises made by the README, SECURITY.md, the build settings and the workflows
+        // into tests that read the repository itself (privacy, entitlements, pinned actions, docs).
+        .testTarget(
+            name: "RepositoryPolicyTests",
+            dependencies: ["TunerCore"],
+            swiftSettings: sharedSettings
+        ),
         .testTarget(
             name: "TunerFeatureTests",
             dependencies: ["TunerFeature", "TunerAudio", "TunerCore"],

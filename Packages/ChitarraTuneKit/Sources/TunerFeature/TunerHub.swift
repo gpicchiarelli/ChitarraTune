@@ -9,7 +9,7 @@ import TunerAudio
 public final class TunerHub {
     public let settings: TunerSettings
     /// Identifier of the model used by the first window (and by scenes that have no explicit id).
-    public nonisolated let primaryID = UUID()
+    nonisolated public let primaryID = UUID()
 
     public private(set) var activeID: UUID?
 

@@ -76,7 +76,6 @@ struct StringSelector: View {
     }
 }
 
-
 /// Toggle between automatic string detection and a pinned string.
 struct AutoChip: View {
     let model: TunerModel

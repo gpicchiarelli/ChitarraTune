@@ -49,7 +49,7 @@ public final class PitchDetector {
         frequencyRange: ClosedRange<Double>,
         threshold: Double = 0.15
     ) {
-        guard sampleRate > 0, frequencyRange.lowerBound > 0,
+        guard sampleRate.isFinite, sampleRate > 0, frequencyRange.lowerBound > 0,
               frequencyRange.upperBound < sampleRate / 4
         else { return nil }
 
