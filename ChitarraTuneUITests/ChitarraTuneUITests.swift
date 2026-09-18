@@ -140,7 +140,7 @@ final class ChitarraTuneUITests: XCTestCase {
         app.launch()
         waitForTuner()
         let readout = element("noteReadout")
-        let hasNote = NSPredicate(format: "value MATCHES %@", "^[A-G][♯♭]?[0-9], .*")
+        let hasNote = NSPredicate(format: "value MATCHES %@", "^[A-G]( sharp| flat)?, octave [0-9], .*")
         expectation(for: hasNote, evaluatedWith: readout)
         waitForExpectations(timeout: 15)
     }
@@ -234,7 +234,7 @@ final class ChitarraTuneUITests: XCTestCase {
         app.launchArguments += ["-autostart"]
         app.launch()
         waitForTuner()
-        let hasNote = NSPredicate(format: "value MATCHES %@", "^[A-G][♯♭]?[0-9], .*")
+        let hasNote = NSPredicate(format: "value MATCHES %@", "^[A-G]( sharp| flat)?, octave [0-9], .*")
         expectation(for: hasNote, evaluatedWith: element("noteReadout"))
         waitForExpectations(timeout: 15)
         try audit("Tuner while listening")
@@ -279,7 +279,7 @@ final class ChitarraTuneUITests: XCTestCase {
         app.launchArguments += ["-autostart"]
         app.launch()
         waitForTuner()
-        let hasNote = NSPredicate(format: "value MATCHES %@", "^[A-G][♯♭]?[0-9], .*")
+        let hasNote = NSPredicate(format: "value MATCHES %@", "^[A-G]( sharp| flat)?, octave [0-9], .*")
         expectation(for: hasNote, evaluatedWith: element("noteReadout"))
         waitForExpectations(timeout: 15)
         element("stringChip.3").tap()
