@@ -22,7 +22,7 @@ struct WorkflowPolicyTests {
         do { try process.run() } catch { return nil }
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
-        return (process.terminationStatus, String(decoding: data, as: UTF8.self))
+        return (process.terminationStatus, String(bytes: data, encoding: .utf8) ?? "")
     }
 
     /// Regression: `- name: X (strict: y)` is not valid YAML, GitHub refused the whole workflow, and
@@ -89,6 +89,17 @@ struct WorkflowPolicyTests {
             let checkouts = text.components(separatedBy: "actions/checkout@").count - 1
             #expect(text.components(separatedBy: "persist-credentials: false").count - 1 == checkouts,
                     "\(file.lastPathComponent): checkout keeps credentials")
+        }
+    }
+
+    @Test("Container images are pinned to an explicit version, never `latest`")
+    func pinnedImages() throws {
+        for file in workflows {
+            for line in try lines(file) where line.trimmingCharacters(in: .whitespaces).hasPrefix("image:") {
+                let reference = line.split(separator: ":", maxSplits: 1).last.map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
+                #expect(reference.contains(":") && !reference.hasSuffix(":latest"),
+                        "\(file.lastPathComponent): '\(reference)' must carry an explicit version tag so the gate is deterministic")
+            }
         }
     }
 
