@@ -47,13 +47,22 @@ final class ChitarraTuneUITests: XCTestCase {
         // measures the screen as the user sees it, not a frame in between.
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "settle")], timeout: 1)
         var problems: [String] = []
-        try app.performAccessibilityAudit(for: XCUIAccessibilityAuditType.all.subtracting(.contrast)) { issue in
-            if self.isAcceptedException(issue) { return true }
-            let element = issue.element.map {
-                "\($0.elementType.rawValue) '\($0.identifier)' '\($0.label)' at \($0.frame)"
-            } ?? "no element"
-            problems.append("\(issue.compactDescription) — \(element)")
-            return true
+        // A slow CI runner can make the audit itself time out (error -56); that is not a finding, so
+        // it gets one more try.
+        for attempt in 1...2 {
+            do {
+                try app.performAccessibilityAudit(for: XCUIAccessibilityAuditType.all.subtracting(.contrast)) { issue in
+                    if self.isAcceptedException(issue) { return true }
+                    let element = issue.element.map {
+                        "\($0.elementType.rawValue) '\($0.identifier)' '\($0.label)' at \($0.frame)"
+                    } ?? "no element"
+                    problems.append("\(issue.compactDescription) — \(element)")
+                    return true
+                }
+                break
+            } catch let error as NSError where error.code == -56 && attempt == 1 {
+                problems.removeAll()
+            }
         }
         if !problems.isEmpty {
             let shot = XCTAttachment(screenshot: app.screenshot())
