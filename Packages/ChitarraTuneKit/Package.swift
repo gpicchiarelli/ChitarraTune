@@ -30,6 +30,7 @@ let package = Package(
         .target(
             name: "TunerAudio",
             dependencies: ["TunerCore"],
+            exclude: ["Hardware/README.md"],
             swiftSettings: sharedSettings
         ),
         // Observable presentation model that wires capture → DSP → UI state.

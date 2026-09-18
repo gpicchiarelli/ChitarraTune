@@ -136,6 +136,18 @@ struct SecurityPolicyTests {
         #expect(scanned > 50)
     }
 
+    @Test("Coverage is held at 100 % and the hardware boundary cannot hide code")
+    func coverageGate() throws {
+        let thresholds = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: Repo.url("Scripts/coverage-thresholds.json"))) as? [String: Int])
+        #expect(thresholds == ["TunerAudio": 100, "TunerCore": 100, "TunerFeature": 100])
+        let gate = try Repo.text("Scripts/coverage-gate.sh")
+        #expect(gate.contains("IGNORE='/Tests/|/\\.build/|DerivedSources|/Sources/TunerAudio/Hardware/'"),
+                "the coverage exclusions changed: they must stay limited to tests, build output and the hardware boundary")
+        let hardware = try FileManager.default.contentsOfDirectory(atPath: Repo.url("Packages/ChitarraTuneKit/Sources/TunerAudio/Hardware").path)
+        #expect(Set(hardware) == ["README.md", "EngineAudioCapture.swift", "MicrophonePrompt.swift", "CoreAudioDevices.swift", "SystemAudioInputs.swift"],
+                "only the listed adapters may live in the uncovered hardware boundary")
+    }
+
     @Test("The licence belongs to the contributors")
     func licence() throws {
         let licence = try Repo.text("LICENSE")

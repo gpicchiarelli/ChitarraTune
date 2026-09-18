@@ -96,9 +96,13 @@ public final class TunerHub {
     }
 
     /// Throw-away defaults so demo mode never touches the user's real preferences.
-    public static func demoDefaults() -> UserDefaults {
-        let suite = "com.chitarratune.demo"
-        let defaults = UserDefaults(suiteName: suite) ?? .standard
+    ///
+    /// If the suite cannot be opened (a reserved name) it falls back to a private suite, never to
+    /// `.standard`: that would write demo values into the real preferences and then wipe them.
+    public static func demoDefaults(suite: String = "com.chitarratune.demo") -> UserDefaults {
+        guard let defaults = UserDefaults(suiteName: suite) else {
+            return demoDefaults(suite: "com.chitarratune.demo.isolated")
+        }
         defaults.removePersistentDomain(forName: suite)
         return defaults
     }

@@ -10,10 +10,12 @@ public enum PowerProfile: Sendable, Hashable {
     case efficient
 
     public static func current(_ processInfo: ProcessInfo = .processInfo) -> PowerProfile {
-        let constrained = processInfo.isLowPowerModeEnabled
-            || processInfo.thermalState == .serious
-            || processInfo.thermalState == .critical
-        return constrained ? .efficient : .standard
+        profile(lowPowerMode: processInfo.isLowPowerModeEnabled, thermalState: processInfo.thermalState)
+    }
+
+    /// The profile for a given power state: efficient in Low Power Mode or under serious thermal pressure.
+    public static func profile(lowPowerMode: Bool, thermalState: ProcessInfo.ThermalState) -> PowerProfile {
+        lowPowerMode || thermalState == .serious || thermalState == .critical ? .efficient : .standard
     }
 
     public var engineParameters: EngineParameters {
@@ -37,4 +39,18 @@ public enum PowerProfile: Sendable, Hashable {
             continuation.onTermination = { _ in tokens.forEach(center.removeObserver) }
         }
     }
+}
+
+/// Where a tuner reads the power state from: the real device by default, a fake in tests.
+public struct PowerSource: Sendable {
+    public var current: @Sendable () -> PowerProfile
+    public var changes: @Sendable () -> AsyncStream<Void>
+
+    public init(current: @escaping @Sendable () -> PowerProfile, changes: @escaping @Sendable () -> AsyncStream<Void>) {
+        self.current = current
+        self.changes = changes
+    }
+
+    /// Low Power Mode and thermal state of this device.
+    public static let system = PowerSource(current: { PowerProfile.current() }, changes: { PowerProfile.changes() })
 }

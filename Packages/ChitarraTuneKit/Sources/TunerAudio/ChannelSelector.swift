@@ -34,6 +34,13 @@ final class ChannelSelector: Sendable {
         }
     }
 
+    /// Copies the active channel of `buffer` into a chunk; `nil` for an empty or non-float buffer.
+    func chunk(from buffer: AVAudioPCMBuffer, sampleRate: Double) -> AudioChunk? {
+        guard let channels = buffer.floatChannelData, buffer.frameLength > 0 else { return nil }
+        let channel = channels[channel(in: buffer)]
+        return AudioChunk(samples: Array(UnsafeBufferPointer(start: channel, count: Int(buffer.frameLength))), sampleRate: sampleRate)
+    }
+
     /// Pure selection rule, separated so it can be tested without audio hardware.
     static func choose(rms: [Float], current: Int?) -> Int {
         guard let loudest = rms.indices.max(by: { rms[$0] < rms[$1] }) else { return 0 }

@@ -49,10 +49,7 @@ public actor EngineAudioCapture: AudioCapturing {
         // Nothing here touches actor state.
         let selector = ChannelSelector()
         inputNode.installTap(onBus: 0, bufferSize: Self.tapFrames, format: format) { buffer, _ in
-            guard let channels = buffer.floatChannelData, buffer.frameLength > 0 else { return }
-            let channel = channels[selector.channel(in: buffer)]
-            let samples = Array(UnsafeBufferPointer(start: channel, count: Int(buffer.frameLength)))
-            continuation.yield(AudioChunk(samples: samples, sampleRate: sampleRate))
+            if let chunk = selector.chunk(from: buffer, sampleRate: sampleRate) { continuation.yield(chunk) }
         }
 
         do {

@@ -24,7 +24,7 @@ public struct Tuning: Sendable, Hashable, Identifiable {
     public let strings: [Note]
 
     public init(id: TuningID, strings: [Note]) {
-        precondition(!strings.isEmpty, "A tuning needs at least one string")
+        precondition(!strings.isEmpty) // a tuning needs at least one string
         self.id = id
         self.strings = strings
     }
@@ -34,9 +34,9 @@ public struct Tuning: Sendable, Hashable, Identifiable {
     /// Frequency range a detector must cover to hear every string of this tuning
     /// (with head-room for strings that are far out of tune).
     public func detectionRange(referenceA: Double = PitchMath.standardReferenceA) -> ClosedRange<Double> {
-        let low = strings.map { $0.frequency(referenceA: referenceA) }.min() ?? 80
-        let high = strings.map { $0.frequency(referenceA: referenceA) }.max() ?? 330
-        return (low * 0.8)...(high * 1.5)
+        // `strings` is never empty (see `init`), so both folds see at least one value.
+        let frequencies = strings.map { $0.frequency(referenceA: referenceA) }
+        return (frequencies.reduce(.infinity, min) * 0.8)...(frequencies.reduce(0, max) * 1.5)
     }
 
     /// The string whose pitch is closest (on a logarithmic scale) to `frequency`.

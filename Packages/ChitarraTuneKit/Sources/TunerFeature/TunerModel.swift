@@ -58,7 +58,7 @@ public final class TunerModel: Identifiable {
     public private(set) var activeInputName: String?
     /// `true` if the last session ended because nothing was played for the idle timeout.
     public private(set) var didStopForInactivity = false
-    public private(set) var powerProfile: PowerProfile = .current()
+    public private(set) var powerProfile: PowerProfile = .standard
 
     // MARK: Dependencies & session state
 
@@ -66,6 +66,7 @@ public final class TunerModel: Identifiable {
     @ObservationIgnored private let authorization: any MicrophoneAuthorizing
     @ObservationIgnored private let inputs: any AudioInputProviding
     @ObservationIgnored private let now: @Sendable () -> ContinuousClock.Instant
+    @ObservationIgnored private let power: PowerSource
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private var sessionTask: Task<Void, Never>?
     @ObservationIgnored private var restartBudget = 3
@@ -81,7 +82,8 @@ public final class TunerModel: Identifiable {
         capture: any AudioCapturing,
         authorization: any MicrophoneAuthorizing,
         inputs: any AudioInputProviding,
-        now: @escaping @Sendable () -> ContinuousClock.Instant = { .now }
+        now: @escaping @Sendable () -> ContinuousClock.Instant = { .now },
+        power: PowerSource = .system
     ) {
         self.id = id
         self.settings = settings
@@ -89,6 +91,8 @@ public final class TunerModel: Identifiable {
         self.authorization = authorization
         self.inputs = inputs
         self.now = now
+        self.power = power
+        self.powerProfile = power.current()
         self.tuning = Tuning.tuning(for: settings.lastTuningID)
         self.inputSelection = settings.lastInputID.map { .device(id: $0) } ?? .systemDefault
     }
@@ -189,10 +193,6 @@ public final class TunerModel: Identifiable {
         endActivity()
         clearOutput()
         status = .failed(failure)
-    }
-
-    private func fail(_ error: any Error, generation mine: Int) {
-        fail(CaptureFailure(error), generation: mine)
     }
 
     private func clearOutput() {
@@ -311,6 +311,7 @@ public final class TunerModel: Identifiable {
         await reconcileSelectedInput()
         let inputChanges = inputs.changes()
         let resumptions = inputs.resumptions()
+        let powerChanges = power.changes()
         await withTaskGroup(of: Void.self) { group in
             group.addTask { [weak self] in
                 for await _ in inputChanges { await self?.reconcileSelectedInput() }
@@ -319,7 +320,7 @@ public final class TunerModel: Identifiable {
                 for await _ in resumptions { await self?.resumeAfterInterruption() }
             }
             group.addTask { [weak self] in
-                for await _ in PowerProfile.changes() { await self?.updatePowerProfile() }
+                for await _ in powerChanges { await self?.updatePowerProfile() }
             }
         }
     }
@@ -342,7 +343,7 @@ public final class TunerModel: Identifiable {
     }
 
     private func updatePowerProfile() {
-        let profile = PowerProfile.current()
+        let profile = power.current()
         if profile != powerProfile { powerProfile = profile }
     }
 

@@ -15,6 +15,13 @@ final class MockCapture: AudioCapturing {
     }
 
     private let state = Mutex(State())
+    private let holdsNextStart = Mutex(false)
+    private let heldStart = Mutex<CheckedContinuation<Void, Never>?>(nil)
+
+    /// The next `start` suspends until ``releaseStart()``, like a slow audio device.
+    func holdNextStart() { holdsNextStart.withLock { $0 = true } }
+    var isHoldingStart: Bool { heldStart.withLock { $0 != nil } }
+    func releaseStart() { heldStart.withLock { $0?.resume(); $0 = nil } }
 
     var startCount: Int { state.withLock { $0.starts } }
     var stopCount: Int { state.withLock { $0.stops } }
@@ -23,6 +30,9 @@ final class MockCapture: AudioCapturing {
     func failNextStart(with failure: CaptureFailure?) { state.withLock { $0.startFailure = failure } }
 
     func start(input: AudioInputSelection) async throws(CaptureFailure) -> AsyncThrowingStream<AudioChunk, any Error> {
+        if holdsNextStart.withLock({ held in defer { held = false }; return held }) {
+            await withCheckedContinuation { continuation in heldStart.withLock { $0 = continuation } }
+        }
         let (stream, continuation) = AsyncThrowingStream<AudioChunk, any Error>.makeStream()
         let failure: CaptureFailure? = state.withLock {
             $0.starts += 1

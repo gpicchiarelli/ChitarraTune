@@ -48,7 +48,7 @@ What the gate protects, and how:
 | --- | --- |
 | Zero compiler warnings (`-warnings-as-errors`) | Concurrency and API problems creeping in |
 | SwiftLint `--strict` | Style drift and risky constructs |
-| Coverage floors per module | Untested code; the floors only go **up** |
+| 100 % line coverage of every module | Untested code. The only exclusion is the hardware boundary, `Packages/ChitarraTuneKit/Sources/TunerAudio/Hardware/` (see its README) |
 | Hostile-input and fuzz tests | Crashes on `NaN`, absurd sample rates, garbage audio |
 | Policy tests (`RepositoryPolicyTests`) | A network API, a new entitlement, an unpinned action, a missing translation, or a README that no longer matches the code |
 | CodeQL | Known classes of security bugs |

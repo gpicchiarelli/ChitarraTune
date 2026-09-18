@@ -37,6 +37,7 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Fixed
 
+- Demo mode could have written into, and then wiped, the real preferences if its settings suite could not be opened; it now falls back to a private suite.
 - Accessibility, found by Xcode's audit now run on every screen: the *Auto* chip had an 18-point touch target; secondary text, white text on tinted glass in Dark Mode and green and amber text did not reach 4.5:1 contrast; the string chips shrank their labels instead of growing with Dynamic Type; the landscape layout and the failure screen clipped text at the largest sizes; a disabled *Reset* button was unreadable.
 - Two sheets on the same view meant the Settings sheet shadowed any other; the explanation screen and Settings now share one.
 - macOS: automatic termination is off, so a relaunch never reuses an invisible, windowless process; the About and License windows no longer reopen at launch. The string chips, the gauge and the input menu keep proper roles and actions for VoiceOver on the Mac.
@@ -54,6 +55,8 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Quality gate
 
+- Line coverage is 100 % in TunerCore, TunerAudio and TunerFeature. The code that drives the real microphone and Core Audio devices lives in `TunerAudio/Hardware/`, is the only exclusion, and a policy test keeps that folder to its four adapters. Buffer conversion and permission mapping moved out of it so they are tested.
+- Removed dead code found on the way (an unreachable `fail` overload, a `rangeChanged` flag that was always true, fallbacks that could never run) and made the power state injectable.
 - UI tests on iPhone, iPad and Mac in CI, with the accessibility audit of every screen in light and dark appearance, landscape and the largest text size; the full DSP accuracy matrix in an optimised build.
 - New policy tests: WCAG contrast of every colour in every appearance, App Store metadata limits and claims, the Controls extension's entitlements, every string catalog complete in both languages.
 - The pre-push hook runs the gate before anything leaves the machine, and CI repeats it (Gate, Lint, CodeQL) on GitHub. The gate builds without warnings, runs SwiftLint in strict mode, enforces per-module coverage floors and runs every test. `main` itself only refuses deletion and force-pushes.

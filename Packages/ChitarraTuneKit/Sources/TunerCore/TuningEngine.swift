@@ -143,15 +143,13 @@ public struct TuningEngine {
         self.parameters = parameters
     }
 
-    /// Applies a new configuration. Changing tuning, A4 or target discards the current reading.
+    /// Applies a new configuration. Changing tuning, A4 or target discards the current reading and
+    /// rebuilds the detector, whose search range depends on all three.
     public mutating func reconfigure(_ newValue: TunerConfiguration) {
         guard newValue != configuration else { return }
-        let rangeChanged = newValue.tuning != configuration.tuning
-            || newValue.referenceA != configuration.referenceA
-            || newValue.target != configuration.target
         configuration = newValue
         resetReading()
-        if rangeChanged { detector = nil }
+        detector = nil
     }
 
     /// Clears smoothing, stability and the held reading (keeps buffered audio).
