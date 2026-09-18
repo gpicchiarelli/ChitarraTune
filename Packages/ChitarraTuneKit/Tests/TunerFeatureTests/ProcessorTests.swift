@@ -107,8 +107,11 @@ struct SimulatedCaptureTests {
     /// Runs the synthetic guitar for `seconds` and measures it with an engine on the same calibration.
     /// `referenceA == nil` uses the capture's default calibration and measures it against 440 Hz.
     private func cents(referenceA: Double?, seconds: Double) async throws -> [Double] {
-        let capture = referenceA.map { value in SimulatedAudioCapture(sampleRate: 44_100, referenceA: { value }) }
-            ?? SimulatedAudioCapture(sampleRate: 44_100)
+        // An already-tuned guitar (no settling sweep), so the result does not depend on *when* the
+        // readings are sampled; a loaded runner may drop chunks and shift that moment.
+        let script = SimulatedAudioCapture.Script(startCents: 0)
+        let capture = referenceA.map { value in SimulatedAudioCapture(script: script, sampleRate: 44_100, referenceA: { value }) }
+            ?? SimulatedAudioCapture(script: script, sampleRate: 44_100)
         var engine = TuningEngine(configuration: TunerConfiguration(referenceA: referenceA ?? 440))
         var readings: [Double] = []
         let stream = try await capture.start(input: .systemDefault)
@@ -130,9 +133,10 @@ struct SimulatedCaptureTests {
         let standard = try await cents(referenceA: 440, seconds: 1.2)
         let baroque = try await cents(referenceA: 415, seconds: 1.2)
         try #require(!standard.isEmpty && !baroque.isEmpty)
-        // Measured against its own reference, the demo reads the same in both calibrations. Had it
-        // stayed at 440 Hz, the 415 Hz run would read about a semitone (100 cents) sharp.
-        #expect(abs(standard[standard.count / 2] - baroque[baroque.count / 2]) < 5)
+        // Measured against its own reference, the in-tune demo reads about 0 in both calibrations. Had
+        // it stayed at 440 Hz, the 415 Hz run would read about a semitone (+100 cents) sharp.
+        #expect(abs(standard[standard.count / 2]) < 5)
+        #expect(abs(baroque[baroque.count / 2]) < 5)
     }
 
     @Test("Without a calibration the synthetic guitar plays at concert pitch")
@@ -140,6 +144,6 @@ struct SimulatedCaptureTests {
         let readings = try await cents(referenceA: nil, seconds: 1.2)
         let explicit = try await cents(referenceA: 440, seconds: 1.2)
         try #require(!readings.isEmpty && !explicit.isEmpty)
-        #expect(abs(readings[readings.count / 2] - explicit[explicit.count / 2]) < 5)
+        #expect(abs(readings[readings.count / 2]) < 5 && abs(explicit[explicit.count / 2]) < 5)
     }
 }
