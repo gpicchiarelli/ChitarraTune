@@ -39,7 +39,7 @@ struct DocumentationSpecTests {
         let implemented = Set(
             try NSRegularExpression(pattern: #"struct (\w+): AppIntent"#)
                 .matches(in: source, range: NSRange(source.startIndex..., in: source))
-                .map { String(source[Range($0.range(at: 1), in: source)!]) }
+                .compactMap { Range($0.range(at: 1), in: source).map { String(source[$0]) } }
         )
         #expect(implemented == ["StartTuningIntent", "StopTuningIntent", "SetTuningIntent", "SetReferencePitchIntent", "PickStringIntent", "ChooseInputIntent"])
         let readme = try Repo.text("README.md")
@@ -61,7 +61,8 @@ struct DocumentationSpecTests {
 
     @Test("Each platform behaviour claimed in docs/ACCESSIBILITY.md has code behind it")
     func accessibilityClaims() throws {
-        let app = try (Repo.files(in: "App", extensions: ["swift"]) + Repo.files(in: "Shared", extensions: ["swift"])).map { try String(contentsOf: $0, encoding: .utf8) }.joined(separator: "\n")
+        let sources = Repo.files(in: "App", extensions: ["swift"]) + Repo.files(in: "Shared", extensions: ["swift"])
+        let app = try sources.map { try String(contentsOf: $0, encoding: .utf8) }.joined(separator: "\n")
         for evidence in ["accessibilityReduceMotion", "AccessibilityNotification.Announcement", ".updatesFrequently",
                          "accessibilityHint", ".isSelected", "accessibilityValue", "accessibilityLabel", "sensoryFeedback",
                          "dynamicTypeSize"] {

@@ -98,11 +98,11 @@ struct RobustnessTests {
         let targets: [StringTarget] = [.automatic, .string(0), .string(5), .string(99), .string(-3), .string(.max), .string(.min)]
         let references: [Double] = [415, 432, 440, 466, .nan, -1, .infinity]
         for chunk in signal.chunked(1_024) {
-            let tuning = Tuning.catalog.randomElement(using: &rng)!
+            let tuning = Tuning.catalog[Int.random(in: Tuning.catalog.indices, using: &rng)]
             let configuration = TunerConfiguration(
                 tuning: tuning,
-                referenceA: references.randomElement(using: &rng)!,
-                target: targets.randomElement(using: &rng)!
+                referenceA: references[Int.random(in: references.indices, using: &rng)],
+                target: targets[Int.random(in: targets.indices, using: &rng)]
             )
             engine.reconfigure(configuration)
             if let reading = engine.process(chunk, sampleRate: 44_100)?.reading {

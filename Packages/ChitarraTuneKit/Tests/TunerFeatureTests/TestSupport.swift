@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import Synchronization
 import TunerAudio
 import TunerCore
@@ -100,25 +101,38 @@ final class TestClock: Sendable {
     func advance(by duration: Duration) { offset.withLock { $0 += duration } }
 }
 
-/// Polls until `condition` holds; fails the test with a clear message on timeout.
+/// Waits until `condition` holds and returns whether it did.
+///
+/// Event-driven: the condition is evaluated under Observation tracking, so any change to a model
+/// property it reads wakes the wait at once. State that is not observable (a mock's counters) is
+/// re-checked on a short tick. `timeout` only bounds a failing test; a passing one returns as soon
+/// as the condition becomes true.
 @MainActor
 func eventually(
-    timeout: Duration = .seconds(5),
+    timeout: Duration = .seconds(10),
     _ message: @autoclosure () -> String = "condition not met in time",
     _ condition: @MainActor () -> Bool
 ) async -> Bool {
     let deadline = ContinuousClock.now + timeout
-    while ContinuousClock.now < deadline {
-        if condition() { return true }
-        try? await Task.sleep(for: .milliseconds(5))
+    while true {
+        let (changed, wake) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        let satisfied = withObservationTracking { condition() } onChange: { wake.yield() }
+        if satisfied { return true }
+        if ContinuousClock.now >= deadline { return false }
+        let tick = Task {
+            try? await Task.sleep(for: .milliseconds(20))
+            wake.yield()
+        }
+        var iterator = changed.makeAsyncIterator()
+        _ = await iterator.next()
+        tick.cancel()
     }
-    return condition()
 }
 
 @MainActor
 func makeSettings(_ name: String = #function) -> TunerSettings {
     let suite = "test.\(name).\(UUID().uuidString)"
-    return TunerSettings(defaults: UserDefaults(suiteName: suite)!)
+    return TunerSettings(defaults: UserDefaults(suiteName: suite) ?? { preconditionFailure("cannot open test defaults \(suite)") }())
 }
 
 func pluckSamples(midi: Int, cents: Double = 0, duration: Double = 0.1, amplitude: Double = 0.3) -> [Float] {

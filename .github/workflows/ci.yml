@@ -45,12 +45,21 @@ jobs:
           - name: macOS Debug
             configuration: Debug
             destination: platform=macOS
-          - name: macOS Release
+            shipping: ""
+          # Built exactly like a release: every architecture, pointer authentication (arm64e) on for
+          # the app, its extension and the local packages.
+          - name: macOS Release (arm64e)
             configuration: Release
-            destination: platform=macOS
+            destination: generic/platform=macOS
+            shipping: ENABLE_POINTER_AUTHENTICATION=YES
+          - name: iOS Release (arm64e)
+            configuration: Release
+            destination: generic/platform=iOS
+            shipping: ENABLE_POINTER_AUTHENTICATION=YES
           - name: iOS Simulator
             configuration: Debug
             destination: generic/platform=iOS Simulator
+            shipping: ""
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -61,18 +70,34 @@ jobs:
         env:
           CONFIGURATION: ${{ matrix.configuration }}
           DESTINATION: ${{ matrix.destination }}
+          SHIPPING: ${{ matrix.shipping }}
         run: |
           set -euo pipefail
+          # SHIPPING is a fixed build setting from the matrix above (or empty); word splitting intended.
+          # shellcheck disable=SC2086
           xcodebuild \
             -project ChitarraTune.xcodeproj \
             -scheme ChitarraTune \
             -configuration "$CONFIGURATION" \
             -destination "$DESTINATION" \
+            -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             SWIFT_TREAT_WARNINGS_AS_ERRORS=YES \
             GCC_TREAT_WARNINGS_AS_ERRORS=YES \
             GIT_COMMIT="$(git rev-parse --short HEAD)" \
+            $SHIPPING \
             build
+      - name: Shipping binaries carry pointer authentication
+        if: matrix.shipping != ''
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r binary; do
+            found=1
+            echo "$binary: $(lipo -archs "$binary")"
+            lipo -archs "$binary" | grep -qw arm64e || { echo "::error::$binary is not arm64e"; exit 1; }
+          done < <(find build/Build/Products -type f -perm -u+x \( -name ChitarraTune -o -name ChitarraTuneControls \) -not -path '*dSYM*')
+          [ "$found" = 1 ] || { echo "::error::no app binary found"; exit 1; }
 
   # The realistic-signal accuracy matrix in full (every tuning × string × detuning × scenario). Too
   # slow for a debug build on every push, fast in an optimised one.

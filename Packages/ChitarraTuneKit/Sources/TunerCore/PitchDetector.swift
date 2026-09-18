@@ -243,12 +243,13 @@ public final class PitchDetector {
     private func loadDemeanedTail(of samples: [Float]) {
         let count = requiredSampleCount
         samples.withUnsafeBufferPointer { source in
-            let tail = UnsafeBufferPointer(rebasing: source[(source.count - count)...])
+            guard let tail = UnsafeBufferPointer(rebasing: source[(source.count - count)...]).baseAddress else { return }
             var mean: Float = 0
-            vDSP_meanv(tail.baseAddress!, 1, &mean, vDSP_Length(count))
+            vDSP_meanv(tail, 1, &mean, vDSP_Length(count))
             var negated = -mean
             work.withUnsafeMutableBufferPointer { work in
-                vDSP_vsadd(tail.baseAddress!, 1, &negated, work.baseAddress!, 1, vDSP_Length(count))
+                guard let destination = work.baseAddress else { return }
+                vDSP_vsadd(tail, 1, &negated, destination, 1, vDSP_Length(count))
             }
         }
     }

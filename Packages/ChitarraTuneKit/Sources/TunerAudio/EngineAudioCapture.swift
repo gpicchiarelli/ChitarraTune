@@ -10,8 +10,12 @@ import os
 ///   voice processing (less DSP work, untouched signal) and a long I/O buffer duration.
 /// - The stream buffers only the newest chunks: a slow consumer never accumulates a backlog.
 /// - Everything not needed is torn down in ``stop()``; nothing runs while the tuner is idle.
+///
+/// Everything here is tested with an engine in manual rendering mode fed with a synthetic signal.
+/// The calls that need real hardware (audio session, device routing, starting the engine) are in
+/// `Hardware/EngineAudioCapture+System.swift`.
 public actor EngineAudioCapture: AudioCapturing {
-    private static let logger = TunerLog.capture
+    static let logger = TunerLog.capture
     /// Frames per tap callback.
     private static let tapFrames: AVAudioFrameCount = 1_024
 
@@ -22,7 +26,13 @@ public actor EngineAudioCapture: AudioCapturing {
     /// session has started), so it must only tear down the session it belongs to.
     private var sessionToken: UUID?
 
-    public init() {}
+    private let makeEngine: @Sendable () -> AVAudioEngine
+
+    /// `makeEngine` builds the engine for each session: the system's (see `init()` in
+    /// `Hardware/EngineAudioCapture+System.swift`) or, in tests, one in manual rendering mode.
+    init(makeEngine: @escaping @Sendable () -> AVAudioEngine) {
+        self.makeEngine = makeEngine
+    }
 
     public func start(
         input selection: AudioInputSelection
@@ -31,14 +41,14 @@ public actor EngineAudioCapture: AudioCapturing {
 
         try Self.configureSession(for: selection)
 
-        let engine = AVAudioEngine()
+        let engine = makeEngine()
         let inputNode = engine.inputNode
         #if os(macOS)
         try Self.route(inputNode, to: selection)
         #endif
 
         let format = inputNode.outputFormat(forBus: 0)
-        guard format.sampleRate > 0, format.channelCount > 0 else { throw .noInputAvailable }
+        try Self.requireInput(format)
         let sampleRate = format.sampleRate
 
         let (stream, continuation) = AsyncThrowingStream<AudioChunk, any Error>.makeStream(
@@ -49,18 +59,12 @@ public actor EngineAudioCapture: AudioCapturing {
         // Nothing here touches actor state.
         let selector = ChannelSelector()
         inputNode.installTap(onBus: 0, bufferSize: Self.tapFrames, format: format) { buffer, when in
-            let sampleTime = when.isSampleTimeValid ? when.sampleTime : nil
-            if let chunk = selector.chunk(from: buffer, sampleRate: sampleRate, sampleTime: sampleTime) { continuation.yield(chunk) }
+            if let chunk = selector.chunk(from: buffer, sampleRate: sampleRate, sampleTime: Self.sampleTime(of: when)) {
+                continuation.yield(chunk)
+            }
         }
 
-        do {
-            engine.prepare()
-            try engine.start()
-        } catch {
-            inputNode.removeTap(onBus: 0)
-            Self.logger.error("engine start failed: \(error.localizedDescription, privacy: .public)")
-            throw .engineFailed(code: (error as NSError).code)
-        }
+        try Self.startEngine(engine)
 
         let token = UUID()
         self.engine = engine
@@ -98,10 +102,7 @@ public actor EngineAudioCapture: AudioCapturing {
             self.engine = nil
             Self.logger.info("capture stopped")
         }
-        #if os(iOS)
-        // Give the audio hardware back to the system (lets other apps resume playback).
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
-        #endif
+        Self.releaseSession()
     }
 
     private func fail(_ failure: CaptureFailure) {
@@ -135,44 +136,8 @@ public actor EngineAudioCapture: AudioCapturing {
         #endif
     }
 
-    // MARK: - Platform configuration
-
-    private static func configureSession(for selection: AudioInputSelection) throws(CaptureFailure) {
-        #if os(iOS)
-        let session = AVAudioSession.sharedInstance()
-        do {
-            try session.setCategory(.record, mode: .measurement, options: [])
-            // Long buffers → fewer wake-ups; the analysis window dominates latency anyway.
-            try session.setPreferredIOBufferDuration(0.023)
-            try session.setActive(true)
-            if let id = selection.deviceID {
-                guard let port = session.availableInputs?.first(where: { $0.uid == id }) else {
-                    throw CaptureFailure.inputUnavailable
-                }
-                try session.setPreferredInput(port)
-            } else {
-                try session.setPreferredInput(nil)
-            }
-        } catch let failure as CaptureFailure {
-            throw failure
-        } catch {
-            logger.error("audio session setup failed: \(error.localizedDescription, privacy: .public)")
-            throw .engineFailed(code: (error as NSError).code)
-        }
-        guard session.isInputAvailable else { throw .noInputAvailable }
-        #endif
+    /// The device timeline position of a tap buffer, when the engine provides one.
+    nonisolated static func sampleTime(of time: AVAudioTime) -> Int64? {
+        time.isSampleTimeValid ? time.sampleTime : nil
     }
-
-    #if os(macOS)
-    private static func route(_ inputNode: AVAudioInputNode, to selection: AudioInputSelection) throws(CaptureFailure) {
-        guard let uid = selection.deviceID else { return }
-        guard let deviceID = CoreAudioDevices.deviceID(forUID: uid) else { throw .inputUnavailable }
-        do {
-            try inputNode.auAudioUnit.setDeviceID(deviceID)
-        } catch {
-            logger.error("cannot select input \(uid, privacy: .private): \(error.localizedDescription, privacy: .public)")
-            throw .inputUnavailable
-        }
-    }
-    #endif
 }

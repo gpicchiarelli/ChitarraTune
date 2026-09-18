@@ -1,5 +1,7 @@
 // Base.xcconfig — build settings shared by every configuration and target.
-// Local, untracked overrides (signing team, bundle id…) go in Config/Local.xcconfig.
+// Local, untracked overrides go in Config/Local.xcconfig (git-ignored). The signing team below is the
+// maintainer's and is only a default: a Team ID is public (it is in every signed binary), and anyone
+// else sets their own DEVELOPMENT_TEAM in Local.xcconfig.
 
 // MARK: Versioning (CI overrides MARKETING_VERSION from the tag, CURRENT_PROJECT_VERSION from the run number)
 MARKETING_VERSION = 2.0.0

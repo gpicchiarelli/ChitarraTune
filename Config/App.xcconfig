@@ -26,9 +26,13 @@ INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPo
 INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
 
 // MARK: Enhanced Security
-// Pointer authentication would make the app arm64e, but the local SwiftPM targets are arm64-only and
-// cannot be linked into an arm64e binary. Everything else in Enhanced Security stays on (security
-// compiler warnings, typed allocators, hardened heap / dyld-ro / platform restrictions entitlements).
+// Pointer authentication makes a target arm64e, and an arm64e target can only import arm64e modules.
+// Build settings in an xcconfig never reach local SwiftPM targets, so here it stays off and Xcode's own
+// builds work. The builds that ship pass ENABLE_POINTER_AUTHENTICATION=YES on the xcodebuild command
+// line, which applies to every target including the packages: both release channels in
+// .github/workflows/release.yml, verified with lipo, and the arm64e jobs of ci.yml on every push
+// (macOS x86_64/arm64/arm64e, iOS arm64/arm64e). Everything else in Enhanced Security is always on
+// (security compiler warnings, typed allocators, hardened heap / dyld-ro / platform restrictions).
 ENABLE_POINTER_AUTHENTICATION = NO
 
 // MARK: Entitlements & sandbox

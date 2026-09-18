@@ -16,6 +16,13 @@ struct SecurityPolicyTests {
         #expect(s["ENABLE_APP_SANDBOX[sdk=macosx*]"] == "YES")
         #expect(s["ENABLE_HARDENED_RUNTIME"] == "YES")
         #expect(s["ENABLE_ENHANCED_SECURITY"] == "YES")
+        // Shipping builds get pointer authentication from the command line (an xcconfig cannot reach the
+        // SwiftPM targets): both release channels and CI must pass it, and CI must check the result.
+        let release = try Repo.text(".github/workflows/release.yml")
+        #expect(release.components(separatedBy: "ENABLE_POINTER_AUTHENTICATION=YES").count - 1 >= 2, "both release channels must build arm64e")
+        #expect(release.contains("grep -qw arm64e"), "the release must verify the binaries are arm64e")
+        let ci = try Repo.text(".github/workflows/ci.yml")
+        #expect(ci.contains("shipping: ENABLE_POINTER_AUTHENTICATION=YES") && ci.contains("grep -qw arm64e"), "CI must build and check arm64e")
         #expect(s["ENABLE_USER_SCRIPT_SANDBOXING"] == "YES")
         #expect(s["SWIFT_VERSION"] == "6.0")
         #expect(s["SWIFT_STRICT_CONCURRENCY"] == "complete")
@@ -144,7 +151,8 @@ struct SecurityPolicyTests {
         #expect(gate.contains("IGNORE='/Tests/|/\\.build/|DerivedSources|/Sources/TunerAudio/Hardware/'"),
                 "the coverage exclusions changed: they must stay limited to tests, build output and the hardware boundary")
         let hardware = try FileManager.default.contentsOfDirectory(atPath: Repo.url("Packages/ChitarraTuneKit/Sources/TunerAudio/Hardware").path)
-        #expect(Set(hardware) == ["README.md", "EngineAudioCapture.swift", "MicrophonePrompt.swift", "CoreAudioDevices.swift", "SystemAudioInputs.swift"],
+        let allowed: Set = ["README.md", "EngineAudioCapture+System.swift", "MicrophonePrompt.swift", "CoreAudioDevices.swift", "SystemAudioInputs.swift"]
+        #expect(Set(hardware) == allowed,
                 "only the listed adapters may live in the uncovered hardware boundary")
     }
 

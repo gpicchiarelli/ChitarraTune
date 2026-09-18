@@ -12,7 +12,8 @@ INFOPLIST_FILE = Config/Controls-Info.plist
 INFOPLIST_KEY_CFBundleDisplayName = ChitarraTune
 INFOPLIST_KEY_NSHumanReadableCopyright = Copyright © 2025–2026 ChitarraTune contributors. BSD 3-Clause License.
 
-// Same hardening as the app (see App.xcconfig for why pointer authentication is off).
+// Same hardening as the app (see App.xcconfig: pointer authentication is enabled for shipping builds
+// from the command line, because an xcconfig cannot reach the local SwiftPM targets).
 ENABLE_POINTER_AUTHENTICATION = NO
 CODE_SIGN_ENTITLEMENTS = Config/ChitarraTuneControls.entitlements
 ENABLE_APP_SANDBOX[sdk=macosx*] = YES

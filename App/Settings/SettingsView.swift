@@ -18,6 +18,7 @@ struct SettingsView: View {
             #endif
         }
         .formStyle(.grouped)
+        .accessibilityIdentifier("settingsForm")
         .navigationTitle(Text(.settingsTitle))
         #if os(macOS)
         .frame(width: 480)

@@ -41,9 +41,9 @@ struct SpecConformanceTests {
     }
 
     @Test("Detection range reaches the lowest string of every tuning at every supported A4", arguments: [415.0, 440.0, 466.0])
-    func lowestStringIsAudible(referenceA: Double) {
+    func lowestStringIsAudible(referenceA: Double) throws {
         for tuning in Tuning.catalog {
-            let lowest = tuning.strings.map { $0.frequency(referenceA: referenceA) }.min()!
+            let lowest = try #require(tuning.strings.map { $0.frequency(referenceA: referenceA) }.min())
             #expect(tuning.detectionRange(referenceA: referenceA).contains(lowest), "\(tuning.id) @ \(referenceA)")
         }
     }

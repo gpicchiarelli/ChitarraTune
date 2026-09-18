@@ -60,7 +60,8 @@ struct LocalizationTests {
         let pattern = #"%(?:\d+\$)?(?:ll|l|hh|h)?[@dfsuxXcCi]|\$\{[A-Za-z]+\}"#
         let regex = try NSRegularExpression(pattern: pattern)
         return regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
-            .map { String(text[Range($0.range, in: text)!]).replacingOccurrences(of: #"\d+\$"#, with: "", options: .regularExpression) }
+            .compactMap { Range($0.range, in: text).map { String(text[$0]) } }
+            .map { $0.replacingOccurrences(of: #"\d+\$"#, with: "", options: .regularExpression) }
             .sorted()
     }
 

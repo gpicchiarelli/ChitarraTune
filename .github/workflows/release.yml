@@ -177,6 +177,9 @@ jobs:
             MARKETING_VERSION="${VERSION%%-*}"
             CURRENT_PROJECT_VERSION="$BUILD"
             GIT_COMMIT="$(git rev-parse --short HEAD)"
+            # Pointer authentication (arm64e) for every target, local packages included; an xcconfig
+            # cannot reach SwiftPM targets, the command line can. See Config/App.xcconfig.
+            ENABLE_POINTER_AUTHENTICATION=YES
           )
           if [ "$SIGNED" = "true" ]; then
             xcodebuild "${COMMON[@]}" \
@@ -190,6 +193,11 @@ jobs:
           else
             xcodebuild "${COMMON[@]}" CODE_SIGNING_ALLOWED=NO build
           fi
+          for binary in build/Build/Products/Release/ChitarraTune.app/Contents/MacOS/ChitarraTune \
+                        build/Build/Products/Release/ChitarraTune.app/Contents/PlugIns/*.appex/Contents/MacOS/*; do
+            [ -f "$binary" ] || continue
+            lipo -archs "$binary" | grep -qw arm64e || { echo "::error::$binary is not arm64e"; exit 1; }
+          done
           test -d build/Build/Products/Release/ChitarraTune.app
 
       - name: Verify signature, hardened runtime and entitlements
@@ -332,6 +340,7 @@ jobs:
             -authenticationKeyIssuerID "$ASC_API_ISSUER_ID" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CODE_SIGN_STYLE=Automatic \
+            ENABLE_POINTER_AUTHENTICATION=YES \
             MARKETING_VERSION="$VERSION" \
             CURRENT_PROJECT_VERSION="$BUILD" \
             GIT_COMMIT="$(git rev-parse --short HEAD)"

@@ -28,7 +28,7 @@ xcodebuild -project ChitarraTune.xcodeproj -scheme ChitarraTune \
 
 Note that the sandbox and audio-input entitlements come from **build settings**, so Xcode generates the final entitlement set at build time. Signing must therefore go through `xcodebuild` (as the release workflow does), not through a separate `codesign --entitlements Config/ChitarraTune.entitlements` step, which would leave those two out.
 
-Pointer Authentication is currently switched off (`ENABLE_POINTER_AUTHENTICATION = NO` in `Config/App.xcconfig`).
+Pointer Authentication is on in every build that ships. An `arm64e` target can only import `arm64e` modules, and xcconfig settings never reach local SwiftPM targets, so `Config/App.xcconfig` leaves it off (Xcode's own builds keep working) and the release workflow passes `ENABLE_POINTER_AUTHENTICATION=YES` on the `xcodebuild` command line, where it applies to every target, packages included. The result, `arm64e` next to `arm64` (and `x86_64` on the Mac), is checked with `lipo` in the release and on every push in CI.
 
 ## Release signing (CI)
 

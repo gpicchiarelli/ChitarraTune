@@ -73,7 +73,8 @@ final class AppStoreScreenshots: XCTestCase {
         launch()
         XCTAssertTrue(element("tuningPicker").waitForExistence(timeout: 15))
         element("tuningPicker").tap()
-        Thread.sleep(forTimeInterval: 0.8)
+        // The menu is open once its last tuning is on screen (names like DADGAD are not translated).
+        XCTAssertTrue(app.descendants(matching: .any)["DADGAD"].waitForExistence(timeout: 5), "tuning menu did not open")
         snapshot("03-tunings")
     }
 
@@ -84,7 +85,6 @@ final class AppStoreScreenshots: XCTestCase {
         #if os(iOS)
         // Set once the app runs, so the running scene picks the change up.
         XCUIDevice.shared.appearance = .dark
-        Thread.sleep(forTimeInterval: 1)
         #endif
         XCTAssertTrue(element("stringChip.5").waitForExistence(timeout: 15))
         element("stringChip.5").tap()
@@ -101,7 +101,7 @@ final class AppStoreScreenshots: XCTestCase {
         #else
         element("settingsButton").tap()
         #endif
-        Thread.sleep(forTimeInterval: 1)
+        XCTAssertTrue(element("settingsForm").waitForExistence(timeout: 10), "Settings did not appear")
         #if os(macOS)
         let window = app.windows.element(boundBy: 0)
         let attachment = XCTAttachment(screenshot: window.screenshot())

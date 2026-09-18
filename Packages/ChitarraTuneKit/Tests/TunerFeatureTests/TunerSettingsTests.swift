@@ -9,7 +9,7 @@ import TunerAudio
 struct TunerSettingsTests {
     private func defaults(_ name: String = #function) -> UserDefaults {
         let suite = "test.\(name).\(UUID().uuidString)"
-        return UserDefaults(suiteName: suite)!
+        return UserDefaults(suiteName: suite) ?? { preconditionFailure("cannot open test defaults \(suite)") }()
     }
 
     @Test("Fresh install defaults")
@@ -128,7 +128,8 @@ struct TunerHubTests {
     func reuse() {
         let hub = makeHub()
         let id = UUID()
-        #expect(hub.model(for: id) === hub.model(for: id))
+        let first = hub.model(for: id)
+        #expect(hub.model(for: id) === first)
         #expect(hub.model(for: id).id == id)
         #expect(hub.primary === hub.model(for: hub.primaryID))
     }

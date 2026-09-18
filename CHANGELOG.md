@@ -66,6 +66,10 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Quality gate
 
+- Microphone capture is now tested without a microphone: `AVAudioEngine` in manual rendering mode feeds it a synthetic signal, so the tap, channel selection, sample times, teardown and route changes run in CI. Only system calls (session setup, device routing, starting the real engine) remain in the uncovered hardware boundary.
+- `eventually` in the tests is event-driven (Observation) instead of polling every 5 ms; the feature tests went from about 60 s to 2.5 s. The UI tests wait on the screen they need instead of sleeping.
+- SwiftLint is stricter (force unwrapping, implicit returns, line length 160, shorter functions and more) and now also covers the Controls extension and the shared sources.
+- Pointer authentication (arm64e) for everything that ships: both release channels pass it on the xcodebuild command line, where it also reaches the SwiftPM targets, and verify the binaries with `lipo`; CI builds and checks macOS and iOS arm64e on every push.
 - A golden-readings test freezes every frame the engine produces for 132 reference signals (every string of every tuning, detuned, at 44.1, 48 and 96 kHz, harmonic and inharmonic plucked), and an independent accuracy envelope requires the right string everywhere, a median error of at most 2 cents per note and 0.5 cent overall (today: 0.34 cent). A refactor must reproduce the golden readings exactly; a deliberate change must regenerate them and say why.
 - Line coverage is 100 % in TunerCore, TunerAudio and TunerFeature. The code that drives the real microphone and Core Audio devices lives in `TunerAudio/Hardware/`, is the only exclusion, and a policy test keeps that folder to its four adapters. Buffer conversion and permission mapping moved out of it so they are tested.
 - Removed dead code found on the way (an unreachable `fail` overload, a `rangeChanged` flag that was always true, fallbacks that could never run) and made the power state injectable.
