@@ -12,6 +12,11 @@ cd "$ROOT"
 APP=false
 [ "${1:-}" = "--app" ] && APP=true
 
+# Build outside the repository: folders synced by iCloud (~/Documents) gain extended attributes that
+# make codesign fail. Override with SCRATCH=/some/dir.
+export SCRATCH="${SCRATCH:-$HOME/Library/Caches/ChitarraTune/kit-build}"
+mkdir -p "$SCRATCH"
+
 step() { printf '\n\033[1m▸ %s\033[0m\n' "$1"; }
 
 step "SwiftLint (strict)"
@@ -26,7 +31,7 @@ else
 fi
 
 step "Package builds without warnings"
-swift build --package-path Packages/ChitarraTuneKit -Xswiftc -warnings-as-errors
+swift build --package-path Packages/ChitarraTuneKit --scratch-path "$SCRATCH" -Xswiftc -warnings-as-errors
 
 step "Tests and coverage gate"
 Scripts/coverage-gate.sh
