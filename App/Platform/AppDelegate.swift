@@ -9,6 +9,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Opens the primary tuner window (provided by the menu commands, which own `openWindow`).
     static var openTunerWindow: (() -> Void)?
 
+    /// Demo mode (UI tests, screenshots) brings itself forward: a test runner may launch it behind
+    /// its own window, where synthesised clicks would land on something else.
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        if LaunchOptions.isDemo { NSApp.activate() }
+    }
+
     /// Launched in the background (a login item, a test runner), AppKit opens no window and later
     /// activation does not open one either. Closing the last window quits the app, so "active with
     /// no window" only happens then: open the tuner, as a click on the Dock icon would.

@@ -17,6 +17,7 @@ struct InputMenu: View {
         }
         .pickerStyle(.menu)
         .help(Text(.inputTitle))
+        .accessibilityLabel(Text(.inputA11Y(model.activeInputName ?? String(localized: .inputMicrophone))))
         .accessibilityIdentifier("inputMenu")
         #else
         // iPhone and iPad: a toolbar menu whose button shows the input in use.

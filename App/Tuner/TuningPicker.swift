@@ -8,12 +8,35 @@ struct TuningPicker: View {
     let notation: NoteNotation
 
     var body: some View {
+        #if os(macOS)
+        // The Mac's own pop-up button: current tuning, check mark, keyboard and VoiceOver actions.
+        Picker(selection: tuningBinding) {
+            options
+        } label: {
+            Text(.tunerTuning)
+        }
+        .pickerStyle(.menu)
+        .labelsHidden()
+        .frame(maxWidth: .infinity)
+        .accessibilityLabel(Text(.tunerTuning))
+        .accessibilityIdentifier("tuningPicker")
+        #else
+        menu
+        #endif
+    }
+
+    private var options: some View {
+        ForEach(Tuning.catalog) { tuning in
+            Text("\(Text(tuning.id.title)) — \(tuning.stringSummary(notation))")
+                .tag(tuning.id)
+        }
+    }
+
+    /// iPhone and iPad: a glass capsule that opens the list of tunings.
+    private var menu: some View {
         Menu {
             Picker(selection: tuningBinding) {
-                ForEach(Tuning.catalog) { tuning in
-                    Text("\(Text(tuning.id.title)) — \(tuning.stringSummary(notation))")
-                        .tag(tuning.id)
-                }
+                options
             } label: {
                 Text(.tunerTuning)
             }

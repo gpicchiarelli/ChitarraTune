@@ -13,6 +13,8 @@ struct ProminentCapsuleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
             .foregroundStyle(.white)
             .padding(.horizontal, 20)
             .padding(.vertical, 14)
@@ -32,6 +34,8 @@ struct SecondaryCapsuleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
             .foregroundStyle(Color.tuneAccentText)
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
