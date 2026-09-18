@@ -4,7 +4,27 @@ import Testing
 /// English and Italian must be complete and consistent in every string catalog.
 @Suite("Localization")
 struct LocalizationTests {
-    private static let catalogs = ["App/Resources/Localizable.xcstrings", "App/Resources/InfoPlist.xcstrings", "App/Resources/AppShortcuts.xcstrings"]
+    /// Every string catalog in the app and its extensions.
+    private static let catalogs = ["App", "Controls", "Shared"]
+        .flatMap { Repo.files(in: $0, extensions: ["xcstrings"]) }
+        .map(Repo.relativePath)
+
+    @Test("The catalogs are found")
+    func found() {
+        #expect(Set(Self.catalogs).isSuperset(of: ["App/Resources/Localizable.xcstrings", "App/Resources/InfoPlist.xcstrings",
+                                                   "App/Resources/AppShortcuts.xcstrings", "Controls/Localizable.xcstrings"]))
+    }
+
+    @Test("Strings shared with the Controls extension read the same in both catalogs")
+    func sharedStrings() throws {
+        let app = try catalog("App/Resources/Localizable.xcstrings").strings
+        let controls = try catalog("Controls/Localizable.xcstrings").strings
+        for key in controls.keys where key.hasPrefix("intent.") {
+            let a = try #require(app[key], "\(key) is missing from the app catalog")
+            #expect(NSDictionary(dictionary: a["localizations"] as? [String: Any] ?? [:])
+                    == NSDictionary(dictionary: controls[key]?["localizations"] as? [String: Any] ?? [:]), "\(key) differs")
+        }
+    }
 
     /// All translated values of one localization, including plural and device variations.
     private func values(_ node: Any) -> [String] {

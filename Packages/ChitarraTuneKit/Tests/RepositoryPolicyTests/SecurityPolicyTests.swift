@@ -29,13 +29,28 @@ struct SecurityPolicyTests {
         let resources = s.keys.filter { $0.hasPrefix("ENABLE_RESOURCE_ACCESS_") }
         #expect(resources == ["ENABLE_RESOURCE_ACCESS_AUDIO_INPUT[sdk=macosx*]"], "unexpected resources: \(resources)")
 
-        let entitlements = try Repo.plist("Config/ChitarraTune.entitlements")
         let forbidden = ["com.apple.security.network.", "com.apple.security.files.", "com.apple.security.personal-information.",
-                         "com.apple.security.device.camera", "com.apple.security.cs.disable-", "com.apple.security.cs.allow-"]
-        for key in entitlements.keys {
-            #expect(!forbidden.contains { key.hasPrefix($0) }, "entitlement \(key) widens the sandbox")
+                         "com.apple.security.device.", "com.apple.security.cs.disable-", "com.apple.security.cs.allow-",
+                         "com.apple.security.application-groups", "com.apple.security.temporary-exception"]
+        for file in ["Config/ChitarraTune.entitlements", "Config/ChitarraTuneControls.entitlements"] {
+            let entitlements = try Repo.plist(file)
+            for key in entitlements.keys {
+                #expect(!forbidden.contains { key.hasPrefix($0) }, "\(file): entitlement \(key) widens the sandbox")
+            }
+            #expect(entitlements["com.apple.security.hardened-process"] as? Bool == true, "\(file) lacks Enhanced Security")
         }
-        #expect(entitlements["com.apple.security.hardened-process"] as? Bool == true)
+    }
+
+    @Test("The Controls extension is sandboxed, offline and needs no resource at all")
+    func controlsExtension() throws {
+        let s = try Repo.xcconfig("Config/Base.xcconfig", "Config/Controls.xcconfig")
+        #expect(s["ENABLE_APP_SANDBOX[sdk=macosx*]"] == "YES")
+        #expect(s["ENABLE_INCOMING_NETWORK_CONNECTIONS"] == "NO" && s["ENABLE_OUTGOING_NETWORK_CONNECTIONS"] == "NO")
+        #expect(!s.keys.contains { $0.hasPrefix("ENABLE_RESOURCE_ACCESS_") }, "the extension must not reach the microphone")
+        #expect(s["APPLICATION_EXTENSION_API_ONLY"] == "YES")
+        #expect(s["PRODUCT_BUNDLE_IDENTIFIER"] == "com.chitarratune.app.controls", "extension ids must be prefixed by the app's")
+        let info = try Repo.plist("Config/Controls-Info.plist")
+        #expect((info["NSExtension"] as? [String: Any])?["NSExtensionPointIdentifier"] as? String == "com.apple.widgetkit-extension")
     }
 
     @Test("No background modes, and the store questions are answered")
@@ -74,7 +89,7 @@ struct SecurityPolicyTests {
         let tokens = ["URLSession", "URLRequest", "NWConnection", "NWPathMonitor", "import Network", "CFNetwork",
                       "WKWebView", "import WebKit", "import CryptoKit", "CommonCrypto", "AdSupport", "AppTrackingTransparency",
                       "AVAudioRecorder", "AVAudioFile", "AVAssetWriter", "AVCaptureAudioFileOutput", "SFSpeechRecognizer"]
-        let sources = Repo.files(in: "App", extensions: ["swift"]) + Repo.files(in: "Packages/ChitarraTuneKit/Sources", extensions: ["swift"])
+        let sources = ["App", "Shared", "Controls", "Packages/ChitarraTuneKit/Sources"].flatMap { Repo.files(in: $0, extensions: ["swift"]) }
         #expect(sources.count > 20, "the scan found suspiciously few files")
         for file in sources {
             let code = try String(contentsOf: file, encoding: .utf8)

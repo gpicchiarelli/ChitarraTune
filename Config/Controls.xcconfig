@@ -1,0 +1,23 @@
+// Controls.xcconfig — the WidgetKit extension with the system controls (Control Center, Lock Screen,
+// Action Button, Mac menu bar). Embedded in the app; the intents it triggers run in the app.
+
+PRODUCT_NAME = ChitarraTuneControls
+PRODUCT_BUNDLE_IDENTIFIER = com.chitarratune.app.controls
+SKIP_INSTALL = YES
+APPLICATION_EXTENSION_API_ONLY = YES
+SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor
+
+GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_FILE = Config/Controls-Info.plist
+INFOPLIST_KEY_CFBundleDisplayName = ChitarraTune
+INFOPLIST_KEY_NSHumanReadableCopyright = Copyright © 2025–2026 ChitarraTune contributors. BSD 3-Clause License.
+
+// Same hardening as the app (see App.xcconfig for why pointer authentication is off).
+ENABLE_POINTER_AUTHENTICATION = NO
+CODE_SIGN_ENTITLEMENTS = Config/ChitarraTuneControls.entitlements
+ENABLE_APP_SANDBOX[sdk=macosx*] = YES
+ENABLE_INCOMING_NETWORK_CONNECTIONS = NO
+ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO
+
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks @executable_path/../../Frameworks
+LD_RUNPATH_SEARCH_PATHS[sdk=macosx*] = $(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks

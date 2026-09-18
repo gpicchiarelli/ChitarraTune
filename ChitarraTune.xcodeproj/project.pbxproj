@@ -11,6 +11,8 @@
 		B00000000000000000000002 /* TunerAudio in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000002 /* TunerAudio */; };
 		B00000000000000000000003 /* TunerFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000003 /* TunerFeature */; };
 		B00000000000000000000004 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000001 /* LICENSE */; };
+		B00000000000000000000005 /* TunerFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000004 /* TunerFeature */; };
+		B00000000000000000000006 /* ChitarraTuneControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000C /* ChitarraTuneControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -21,7 +23,28 @@
 			remoteGlobalIDString = 10000000000000000000000A;
 			remoteInfo = ChitarraTune;
 		};
+		C00000000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A00000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 10000000000000000000000C;
+			remoteInfo = ChitarraTuneControls;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		21000000000000000000000A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B00000000000000000000006 /* ChitarraTuneControls.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		F00000000000000000000001 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -35,6 +58,10 @@
 		F00000000000000000000009 /* ChitarraTune.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChitarraTune.entitlements; sourceTree = "<group>"; };
 		F0000000000000000000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F0000000000000000000000B /* ChitarraTuneKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ChitarraTuneKit; path = Packages/ChitarraTuneKit; sourceTree = "<group>"; };
+		F0000000000000000000000C /* ChitarraTuneControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ChitarraTuneControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0000000000000000000000D /* Controls.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Controls.xcconfig; sourceTree = "<group>"; };
+		F0000000000000000000000E /* Controls-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Controls-Info.plist"; sourceTree = "<group>"; };
+		F0000000000000000000000F /* ChitarraTuneControls.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChitarraTuneControls.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -46,6 +73,16 @@
 		E00000000000000000000002 /* ChitarraTuneUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ChitarraTuneUITests;
+			sourceTree = "<group>";
+		};
+		E00000000000000000000003 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		E00000000000000000000004 /* Controls */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Controls;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -68,6 +105,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		20000000000000000000000C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00000000000000000000005 /* TunerFeature in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -76,6 +121,8 @@
 			children = (
 				E00000000000000000000001 /* App */,
 				E00000000000000000000002 /* ChitarraTuneUITests */,
+				E00000000000000000000003 /* Shared */,
+				E00000000000000000000004 /* Controls */,
 				F0000000000000000000000B /* ChitarraTuneKit */,
 				91000000000000000000000A /* Config */,
 				F00000000000000000000001 /* LICENSE */,
@@ -93,6 +140,9 @@
 				F00000000000000000000008 /* UITests.xcconfig */,
 				F0000000000000000000000A /* Info.plist */,
 				F00000000000000000000009 /* ChitarraTune.entitlements */,
+				F0000000000000000000000D /* Controls.xcconfig */,
+				F0000000000000000000000E /* Controls-Info.plist */,
+				F0000000000000000000000F /* ChitarraTuneControls.entitlements */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -102,6 +152,7 @@
 			children = (
 				F00000000000000000000002 /* ChitarraTune.app */,
 				F00000000000000000000003 /* ChitarraTuneUITests.xctest */,
+				F0000000000000000000000C /* ChitarraTuneControls.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -116,13 +167,16 @@
 				30000000000000000000000A /* Sources */,
 				20000000000000000000000A /* Frameworks */,
 				40000000000000000000000A /* Resources */,
+				21000000000000000000000A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				70000000000000000000000B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E00000000000000000000001 /* App */,
+				E00000000000000000000003 /* Shared */,
 			);
 			name = ChitarraTune;
 			packageProductDependencies = (
@@ -157,6 +211,30 @@
 			productReference = F00000000000000000000003 /* ChitarraTuneUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		10000000000000000000000C /* ChitarraTuneControls */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 60000000000000000000000C /* Build configuration list for PBXNativeTarget "ChitarraTuneControls" */;
+			buildPhases = (
+				30000000000000000000000C /* Sources */,
+				20000000000000000000000C /* Frameworks */,
+				40000000000000000000000C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E00000000000000000000004 /* Controls */,
+				E00000000000000000000003 /* Shared */,
+			);
+			name = ChitarraTuneControls;
+			packageProductDependencies = (
+				D00000000000000000000004 /* TunerFeature */,
+			);
+			productName = ChitarraTuneControls;
+			productReference = F0000000000000000000000C /* ChitarraTuneControls.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -173,6 +251,9 @@
 					10000000000000000000000B = {
 						CreatedOnToolsVersion = 27.0;
 						TestTargetID = 10000000000000000000000A;
+					};
+					10000000000000000000000C = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -196,6 +277,7 @@
 			targets = (
 				10000000000000000000000A /* ChitarraTune */,
 				10000000000000000000000B /* ChitarraTuneUITests */,
+				10000000000000000000000C /* ChitarraTuneControls */,
 			);
 		};
 /* End PBXProject section */
@@ -210,6 +292,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		40000000000000000000000B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		40000000000000000000000C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -233,6 +322,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		30000000000000000000000C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -240,6 +336,11 @@
 			isa = PBXTargetDependency;
 			target = 10000000000000000000000A /* ChitarraTune */;
 			targetProxy = C00000000000000000000001 /* PBXContainerItemProxy */;
+		};
+		70000000000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 10000000000000000000000C /* ChitarraTuneControls */;
+			targetProxy = C00000000000000000000002 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -286,6 +387,20 @@
 			};
 			name = Release;
 		};
+		80000000000000000000001A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F0000000000000000000000D /* Controls.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		80000000000000000000001B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F0000000000000000000000D /* Controls.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -316,6 +431,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		60000000000000000000000C /* Build configuration list for PBXNativeTarget "ChitarraTuneControls" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				80000000000000000000001A /* Debug */,
+				80000000000000000000001B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -335,6 +459,10 @@
 			productName = TunerAudio;
 		};
 		D00000000000000000000003 /* TunerFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TunerFeature;
+		};
+		D00000000000000000000004 /* TunerFeature */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TunerFeature;
 		};
