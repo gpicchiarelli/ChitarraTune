@@ -27,14 +27,14 @@ struct AboutView: View {
             Text(.appName)
                 .font(.title.weight(.bold))
             Text(.aboutTagline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.tuneSecondaryLabel)
                 .multilineTextAlignment(.center)
 
             VStack(spacing: 2) {
                 Text(.aboutVersion(BuildInfo.version))
                 Text(.aboutBuild(BuildInfo.build, BuildInfo.commit))
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.tuneSecondaryLabel)
                     .monospacedDigit()
             }
             .textSelection(.enabled)

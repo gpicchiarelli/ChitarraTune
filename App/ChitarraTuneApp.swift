@@ -12,7 +12,7 @@ struct ChitarraTuneApp: App {
     @State private var hub: TunerHub
 
     init() {
-        let hub = LaunchOptions.isDemo ? TunerHub.demo() : TunerHub.live()
+        let hub = LaunchOptions.isDemo ? TunerHub.demo(permission: LaunchOptions.demoPermission) : TunerHub.live()
         _hub = State(initialValue: hub)
         // Siri, Shortcuts and the Action Button reach the running tuner through this dependency.
         AppDependencyManager.shared.add(dependency: hub)

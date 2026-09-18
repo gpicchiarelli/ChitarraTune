@@ -5,10 +5,12 @@ import TunerFeature
 /// and iPad keyboards.
 struct ListenButton: View {
     let model: TunerModel
+    /// Starts listening. The screen decides whether to explain the microphone first.
+    let start: () -> Void
 
     var body: some View {
         Button {
-            Task { await model.toggle() }
+            if model.isBusy { Task { await model.stop() } } else { start() }
         } label: {
             Label {
                 Text(model.isBusy ? .tunerStop : .tunerStart)
@@ -16,12 +18,9 @@ struct ListenButton: View {
                 Image(systemName: model.isBusy ? "stop.fill" : "mic.fill")
                     .contentTransition(.symbolEffect(.replace))
             }
-            .font(.headline)
-            .frame(maxWidth: .infinity, minHeight: 32)
+            .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.glassProminent)
-        .controlSize(.extraLarge)
-        .tint(model.isBusy ? Color.tuneRed : Color.accentColor)
+        .buttonStyle(.prominentCapsule(fill: model.isBusy ? .tuneRedFill : .tuneAccentFill))
         .keyboardShortcut(.space, modifiers: [])
         .accessibilityHint(Text(model.isBusy ? .a11YStopHint : .a11YStartHint))
         .accessibilityIdentifier("listenButton")

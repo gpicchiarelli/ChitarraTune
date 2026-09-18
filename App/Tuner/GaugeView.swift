@@ -25,7 +25,7 @@ struct GaugeView: View {
                 Text(.gaugeSharpEnd)
             }
             .font(.title2.weight(.semibold))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Color.tuneSecondaryLabel)
             .padding(.horizontal, 4)
             .accessibilityHidden(true)
         }

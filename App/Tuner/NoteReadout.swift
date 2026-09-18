@@ -53,18 +53,21 @@ struct NoteReadout: View {
                         .frame(height: letterSize * 0.42)
                     Text(parts.octave)
                         .font(.system(size: letterSize * 0.30, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.tuneSecondaryLabel)
                 }
                 .offset(y: -letterSize * 0.28)
             }
             .lineLimit(1)
             .minimumScaleFactor(0.5)
             .foregroundStyle(state == .inTune ? Color.tuneGreen : .primary)
-            .opacity(isDimmed ? 0.45 : 1)
+            .opacity(isDimmed ? 0.6 : 1)
+            // Already 88 pt at the default size: capped so it always fits. Everything else scales.
+            .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         } else {
             Text(verbatim: "—")
                 .font(.system(size: letterSize, weight: .bold, design: .rounded))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Color.tuneSecondaryLabel)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         }
     }
 
@@ -74,7 +77,7 @@ struct NoteReadout: View {
             Label {
                 Text(title)
                 if let advice = state.advice {
-                    Text(advice).foregroundStyle(.secondary).font(.subheadline)
+                    Text(advice).foregroundStyle(Color.tuneSecondaryLabel).font(.subheadline)
                 }
             } icon: {
                 Image(systemName: state.symbol)
@@ -82,12 +85,13 @@ struct NoteReadout: View {
             .font(.headline)
             .foregroundStyle(state.tint)
             .labelStyle(.titleAndIcon)
-            .opacity(reading?.isHeld == true ? 0.5 : 1)
+            .opacity(reading?.isHeld == true ? 0.7 : 1)
         } else {
             Text(hint)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.tuneSecondaryLabel)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -98,7 +102,7 @@ struct NoteReadout: View {
                 measurement(Text(reading.frequency, format: .frequency), unit: Text(.unitHz))
                 measurement(Text(verbatim: reading.displayedCents.signedText), unit: Text(.unitCents), tint: state.tint)
             }
-            .opacity(reading.isHeld ? 0.5 : 1)
+            .opacity(reading.isHeld ? 0.7 : 1)
         }
     }
 
@@ -110,7 +114,7 @@ struct NoteReadout: View {
                 .contentTransition(reduceMotion ? .identity : .numericText())
             unit
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         }
     }
 

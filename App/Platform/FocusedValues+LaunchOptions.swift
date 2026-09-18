@@ -1,4 +1,5 @@
 import SwiftUI
+import TunerAudio
 import TunerFeature
 
 extension FocusedValues {
@@ -14,4 +15,13 @@ enum LaunchOptions {
     static let isDemo = arguments.contains("-demo")
     /// Begin listening as soon as the window appears.
     static let autostart = arguments.contains("-autostart")
+    /// Demo mode only: the microphone permission to pretend (`-demoPermission notDetermined|denied`),
+    /// so UI tests can reach the explanation screen and the failure screen.
+    static var demoPermission: MicrophoneAuthorization {
+        switch UserDefaults.standard.string(forKey: "demoPermission") {
+        case "notDetermined": .notDetermined
+        case "denied": .denied
+        default: .authorized
+        }
+    }
 }

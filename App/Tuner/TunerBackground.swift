@@ -13,7 +13,8 @@ struct TunerBackground: View {
         ZStack {
             Rectangle().fill(.background)
             RadialGradient(
-                colors: [wash.opacity(isLuminanceReduced ? 0.08 : 0.24), .clear],
+                // Kept faint so secondary text on top of it keeps its contrast.
+                colors: [wash.opacity(isLuminanceReduced ? 0.06 : 0.14), .clear],
                 center: .init(x: 0.5, y: 0.22),
                 startRadius: 0,
                 endRadius: 520

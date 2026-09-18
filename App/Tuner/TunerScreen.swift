@@ -12,9 +12,18 @@ struct TunerScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.locale) private var locale
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @State private var isShowingSettings = false
-    #endif
+    @State private var sheet: Sheet?
+    @State private var visibleHeight: CGFloat = 0
+
+    private enum Sheet: Identifiable {
+        /// Why the tuner needs the microphone, before the system prompt.
+        case microphone
+        #if os(iOS)
+        case settings
+        #endif
+
+        var id: Self { self }
+    }
 
     private var settings: TunerSettings { model.settings }
     private var notation: NoteNotation { settings.resolvedNotation(for: locale) }
@@ -76,45 +85,79 @@ struct TunerScreen: View {
         }
         .sensoryFeedback(.selection, trigger: model.target) { _, _ in settings.isHapticsEnabled }
         .sensoryFeedback(.impact(weight: .light), trigger: model.isBusy) { _, _ in settings.isHapticsEnabled }
-        #if os(iOS)
-        .sheet(isPresented: $isShowingSettings) {
-            NavigationStack {
-                SettingsView(settings: settings)
-                    .toolbar {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button(.settingsDone) { isShowingSettings = false }
+        // One sheet modifier per view: SwiftUI presents only one of several stacked `.sheet`s.
+        .sheet(item: $sheet) { sheet in
+            switch sheet {
+            case .microphone:
+                MicrophonePrimer(
+                    onContinue: {
+                        self.sheet = nil
+                        Task { await model.start() }
+                    },
+                    onCancel: { self.sheet = nil }
+                )
+            #if os(iOS)
+            case .settings:
+                NavigationStack {
+                    SettingsView(settings: settings)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button(.settingsDone) { self.sheet = nil }
+                                    .fontWeight(.semibold)
+                            }
                         }
-                    }
+                }
+            #endif
             }
-            .presentationDetents([.medium, .large])
         }
-        #endif
     }
 
     // MARK: Layout
 
-    @ViewBuilder
+    /// Centred when it fits; scrolls when it does not (large Dynamic Type, small windows, a phone
+    /// on its side). One scroll view whose content is at least as tall as the screen, so the same
+    /// views are always on screen whatever the text size.
     private var tuner: some View {
-        if isLandscapePhone {
-            HStack(alignment: .center, spacing: 24) {
-                display
-                    .frame(maxWidth: .infinity)
-                VStack(spacing: 16) {
-                    controls
-                    ListenButton(model: model)
+        ScrollView {
+            Group {
+                if isLandscapePhone {
+                    HStack(alignment: .center, spacing: 24) {
+                        display
+                            .frame(maxWidth: .infinity)
+                        VStack(spacing: 16) {
+                            controls
+                            ListenButton(model: model, start: start)
+                        }
+                        .frame(maxWidth: 420)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 8)
+                } else if dynamicTypeSize.isAccessibilitySize {
+                    // At accessibility sizes the button is too tall to pin over the content.
+                    VStack(spacing: 20) {
+                        portraitContent
+                        ListenButton(model: model, start: start)
+                            .frame(maxWidth: 640)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 16)
+                    }
+                } else {
+                    portraitContent
                 }
-                .frame(maxWidth: 420)
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 8)
-        } else {
-            // Centred when it fits (iPad, Mac, tall iPhones); scrolls at large Dynamic Type sizes.
-            ViewThatFits(in: .vertical) {
-                portraitContent.frame(maxHeight: .infinity)
-                ScrollView { portraitContent }
-            }
-            .safeAreaInset(edge: .bottom) {
-                ListenButton(model: model)
+            .frame(minHeight: visibleHeight)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        // The height actually visible between the bars and the pinned button: content at least
+        // this tall is centred, and only scrolls when it is taller.
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.containerSize.height - geometry.contentInsets.top - geometry.contentInsets.bottom
+        } action: { _, height in
+            visibleHeight = max(0, height)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if !isLandscapePhone, !dynamicTypeSize.isAccessibilitySize {
+                ListenButton(model: model, start: start)
                     .frame(maxWidth: 640)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
@@ -141,14 +184,13 @@ struct TunerScreen: View {
     private var display: some View {
         VStack(spacing: 14) {
             NoteReadout(model: model, note: displayedNote, notation: notation, hint: hint)
-                .dynamicTypeSize(...DynamicTypeSize.accessibility2)
 
             GaugeView(model: model)
 
             if model.didStopForInactivity {
                 Label(.tunerNoticeInactivity, systemImage: "battery.100percent.bolt")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.tuneSecondaryLabel)
                     .multilineTextAlignment(.center)
             }
             LevelMeter(model: model)
@@ -157,7 +199,10 @@ struct TunerScreen: View {
 
     private var controls: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 10) {
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(spacing: 10))
+                : AnyLayout(HStackLayout(spacing: 10))
+            layout {
                 TuningPicker(model: model, notation: notation)
                 AutoChip(model: model)
             }
@@ -172,7 +217,7 @@ struct TunerScreen: View {
         #if os(iOS)
         ToolbarItem(placement: .topBarLeading) { InputMenu(model: model) }
         ToolbarItem(placement: .topBarTrailing) {
-            Button(.settingsTitle, systemImage: "gearshape") { isShowingSettings = true }
+            Button(.settingsTitle, systemImage: "gearshape") { sheet = .settings }
                 .accessibilityIdentifier("settingsButton")
         }
         #else
@@ -181,6 +226,15 @@ struct TunerScreen: View {
     }
 
     // MARK: Actions
+
+    /// Explains the microphone before the first system prompt; afterwards starts straight away.
+    private func start() {
+        if model.needsMicrophonePermission {
+            sheet = .microphone
+        } else {
+            Task { await model.start() }
+        }
+    }
 
     private func announceInTune() {
         guard let note = model.detectedNote else { return }

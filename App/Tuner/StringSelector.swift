@@ -19,13 +19,28 @@ struct StringSelector: View {
         }
     }
 
+    /// One row of six at normal sizes, two rows of three at large sizes, a column at accessibility
+    /// sizes: the labels always grow with Dynamic Type instead of shrinking to fit.
+    @ViewBuilder
     private var strings: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(spacing: 8))
-            : AnyLayout(HStackLayout(spacing: 8))
-        return layout {
-            ForEach(Array(model.tuning.strings.enumerated()), id: \.offset) { index, note in
-                chip(index: index, note: note)
+        let chips = Array(model.tuning.strings.enumerated())
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(spacing: 8) {
+                ForEach(chips, id: \.offset) { index, note in chip(index: index, note: note) }
+            }
+        } else if dynamicTypeSize >= .xxLarge {
+            Grid(horizontalSpacing: 8, verticalSpacing: 8) {
+                ForEach(Array(stride(from: 0, to: chips.count, by: 3)), id: \.self) { row in
+                    GridRow {
+                        ForEach(chips[row..<min(row + 3, chips.count)], id: \.offset) { index, note in
+                            chip(index: index, note: note)
+                        }
+                    }
+                }
+            }
+        } else {
+            HStack(spacing: 8) {
+                ForEach(chips, id: \.offset) { index, note in chip(index: index, note: note) }
             }
         }
     }
@@ -42,16 +57,23 @@ struct StringSelector: View {
                 Text(note.chipLabel(notation))
                     .font(.headline.monospacedDigit())
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .fixedSize()
                 Text(verbatim: "\(index + 1)")
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(emphasised ? Color.white.opacity(0.85) : Color.secondary)
+                    .foregroundStyle(emphasised ? Color.white : Color.tuneSecondaryLabel)
             }
             .frame(maxWidth: .infinity, minHeight: 56)
             .padding(.horizontal, 4)
         }
         .buttonStyle(.plain)
-        .glassEffect(glass(pinned: isPinned, detected: isDetected), in: .rect(cornerRadius: 16))
+        // Emphasised chips get an opaque fill under their white text: a tinted glass alone lets the
+        // background through and white on it can fall below 4.5:1.
+        .background {
+            if let fill = fill(pinned: isPinned, detected: isDetected) {
+                RoundedRectangle(cornerRadius: 16).fill(fill)
+            }
+        }
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
         .glassEffectID(index, in: glassNamespace)
         .foregroundStyle(emphasised ? Color.white : Color.primary)
         .overlay(alignment: .topTrailing) {
@@ -71,10 +93,10 @@ struct StringSelector: View {
         .accessibilityIdentifier("stringChip.\(index + 1)")
     }
 
-    private func glass(pinned: Bool, detected: Bool) -> Glass {
-        if pinned { return .regular.tint(.accentColor).interactive() }
-        if detected { return .regular.tint(state == .inTune ? .tuneGreen : .accentColor.opacity(0.7)).interactive() }
-        return .regular.interactive()
+    private func fill(pinned: Bool, detected: Bool) -> Color? {
+        if pinned { return .tuneAccentFill }
+        if detected { return state == .inTune ? .tuneGreenFill : .tuneAccentFill }
+        return nil
     }
 }
 
@@ -91,11 +113,17 @@ struct AutoChip: View {
                 .font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 16)
                 .frame(minHeight: 44)
+                .contentShape(.capsule)
         }
         .buttonStyle(.plain)
-        .glassEffect(isAuto ? .regular.tint(.accentColor).interactive() : .regular.interactive(), in: .capsule)
+        .background {
+            if isAuto { Capsule().fill(Color.tuneAccentFill) }
+        }
+        .glassEffect(.regular.interactive(), in: .capsule)
         .foregroundStyle(isAuto ? Color.white : Color.primary)
-        .accessibilityAddTraits(isAuto ? .isSelected : [])
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(.tunerAuto))
+        .accessibilityAddTraits(isAuto ? [.isButton, .isSelected] : .isButton)
         .accessibilityHint(Text(.a11YAutoHint))
         .accessibilityIdentifier("autoChip")
     }

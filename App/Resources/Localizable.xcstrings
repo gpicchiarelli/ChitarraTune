@@ -576,18 +576,19 @@
       }
     },
     "failure.interrupted.message": {
+      "comment": "Message when a call or another app interrupted listening",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A call or another app took over the microphone. Start again when you're ready."
+            "value": "A call or another app took over the microphone. Listening resumes by itself when it ends, or you can start again now."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Una chiamata o un'altra app ha preso il controllo del microfono. Riavvia quando sei pronto."
+            "value": "Una chiamata o un'altra app ha preso il microfono. L'ascolto riprende da solo quando finisce, oppure puoi riavviarlo subito."
           }
         }
       }
@@ -1572,6 +1573,96 @@
           "stringUnit": {
             "state": "translated",
             "value": "Do Re Mi Fa Sol La Si"
+          }
+        }
+      }
+    },
+    "primer.body": {
+      "comment": "Body of the screen shown before the system microphone prompt",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To measure the pitch of your guitar, the tuner listens through the microphone. Next, your device will ask you to allow it."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per misurare l'intonazione della chitarra, l'accordatore ascolta dal microfono. Tra un attimo il dispositivo ti chiederà di consentirlo."
+          }
+        }
+      }
+    },
+    "primer.continue": {
+      "comment": "Button that continues to the system microphone prompt",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua"
+          }
+        }
+      }
+    },
+    "primer.notNow": {
+      "comment": "Button that dismisses the microphone explanation without asking",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Now"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non ora"
+          }
+        }
+      }
+    },
+    "primer.privacy": {
+      "comment": "Privacy promise on the screen shown before the microphone prompt",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound is analysed on this device as you play. It is never recorded, stored or sent anywhere."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il suono viene analizzato su questo dispositivo mentre suoni. Non viene mai registrato, salvato né inviato."
+          }
+        }
+      }
+    },
+    "primer.title": {
+      "comment": "Title of the screen shown before the system microphone prompt",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChitarraTune needs the microphone"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChitarraTune ha bisogno del microfono"
           }
         }
       }

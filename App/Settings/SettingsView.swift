@@ -32,7 +32,7 @@ struct SettingsView: View {
             LabeledContent {
                 Text(.settingsReferencePitchValue(Int(settings.referenceA)))
                     .monospacedDigit()
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.tuneSecondaryLabel)
             } label: {
                 Text(.settingsReferencePitch)
             }
@@ -44,12 +44,16 @@ struct SettingsView: View {
                 Text(verbatim: "466")
             }
             .accessibilityValue(Text(.settingsReferencePitchValue(Int(settings.referenceA))))
-            Button(.settingsReset) { settings.referenceA = PitchMath.standardReferenceA }
-                .disabled(settings.referenceA == PitchMath.standardReferenceA)
+            // Offered only when there is something to reset (a disabled button would be unreadable).
+            if settings.referenceA != PitchMath.standardReferenceA {
+                Button(.settingsReset) { settings.referenceA = PitchMath.standardReferenceA }
+            }
         } header: {
             Text(.settingsCalibration)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         } footer: {
             Text(.settingsReferencePitchFooter)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         }
     }
 
@@ -71,6 +75,7 @@ struct SettingsView: View {
             .pickerStyle(.segmented)
         } header: {
             Text(.settingsDisplay)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         }
     }
 
@@ -79,8 +84,10 @@ struct SettingsView: View {
             Toggle(isOn: $settings.isHapticsEnabled) { Text(.settingsHaptics) }
         } header: {
             Text(.settingsFeedback)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         } footer: {
             Text(.settingsHapticsFooter)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         }
     }
 
@@ -96,8 +103,10 @@ struct SettingsView: View {
             }
         } header: {
             Text(.settingsBattery)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         } footer: {
             Text(.settingsAutoStopFooter)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         }
     }
 
@@ -110,6 +119,7 @@ struct SettingsView: View {
             }
         } header: {
             Text(.settingsPrivacy)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         }
     }
 
@@ -128,6 +138,7 @@ struct SettingsView: View {
             }
         } header: {
             Text(.settingsAbout)
+                .foregroundStyle(Color.tuneSecondaryLabel)
         }
     }
     #endif
