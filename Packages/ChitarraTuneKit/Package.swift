@@ -41,6 +41,8 @@ let package = Package(
         .testTarget(
             name: "TunerCoreTests",
             dependencies: ["TunerCore"],
+            // Recordings are read from the source tree by path (see RecordingCorpusTests).
+            exclude: ["Fixtures"],
             swiftSettings: sharedSettings
         ),
         // Turns the promises made by the README, SECURITY.md, the build settings and the workflows

@@ -16,7 +16,8 @@ public struct PitchEstimate: Sendable, Hashable {
 
 /// Monophonic fundamental-frequency estimator based on the YIN algorithm
 /// (de Cheveigné & Kawahara, 2002): difference function → cumulative mean normalised
-/// difference (CMNDF) → absolute threshold → parabolic interpolation.
+/// difference (CMNDF) → absolute threshold → parabolic interpolation. ``refine(_:lowPassed:)``
+/// then removes the sharp bias that inharmonic strings give YIN.
 ///
 /// Create one detector per (sample rate, frequency range) pair and feed it the most recent
 /// ``requiredSampleCount`` samples. The correlation is evaluated in the frequency domain with
@@ -108,41 +109,7 @@ public final class PitchDetector {
 
     /// Runs YIN on `work` using only preallocated scratch memory (no per-call allocation).
     private func analyse() -> PitchEstimate? {
-        let window = integrationLength
-        let lagCount = maxLag + 1 // lags 1…maxLag+1 (one extra for interpolation at the edge)
-
-        // Prefix sums of x² give the energy of any shifted window in O(1).
-        prefix[0] = 0
-        for i in 0..<requiredSampleCount {
-            let sample = Double(work[i])
-            prefix[i + 1] = prefix[i] + sample * sample
-        }
-        let energy0 = prefix[window]
-        // Below ≈ −100 dBFS RMS there is nothing but rounding noise (e.g. a pure DC input).
-        guard energy0 / Double(window) > 1e-10 else { return nil }
-
-        // Step 1–2: difference function d(τ) = E₀ + E_τ − 2·c(τ)  (c = cross-correlation).
-        work.withUnsafeBufferPointer { x in
-            correlation.withUnsafeMutableBufferPointer { output in
-                correlator.correlate(
-                    UnsafeBufferPointer(rebasing: x[0..<window]),
-                    x,
-                    lagCount: lagCount + 1,
-                    into: output
-                )
-            }
-        }
-        for lag in 1...lagCount {
-            let shifted = prefix[lag + window] - prefix[lag]
-            difference[lag] = max(0, energy0 + shifted - 2 * correlation[lag])
-        }
-
-        // Step 3: cumulative mean normalised difference.
-        var running = 0.0
-        for lag in 1...lagCount {
-            running += difference[lag]
-            cmnd[lag] = running > 0 ? difference[lag] * Double(lag) / running : 1
-        }
+        guard computeCMNDF() else { return nil }
 
         // Step 4: first dip under the threshold, followed down to its local minimum.
         var lag = minLag
@@ -175,22 +142,114 @@ public final class PitchDetector {
         }
 
         // Step 5: parabolic interpolation around the minimum.
-        var refined = Double(best)
-        if best > 1, best < lagCount {
-            let left = cmnd[best - 1], mid = cmnd[best], right = cmnd[best + 1]
+        let refined = interpolatedLag(best)
+        guard refined > 0 else { return nil }
+
+        let periodic = sampleRate / refined
+        guard periodic.isFinite, periodic >= minFrequency * 0.9, periodic <= maxFrequency * 1.1 else {
+            return nil
+        }
+        let clarity = min(1, max(0, 1 - cmnd[best]))
+        return PitchEstimate(frequency: periodic, clarity: clarity)
+    }
+
+    /// Fills `cmnd` for the samples in `work`. Returns `false` for a silent window.
+    private func computeCMNDF() -> Bool {
+        let window = integrationLength
+        let lagCount = maxLag + 1 // lags 1…maxLag+1 (one extra for interpolation at the edge)
+
+        // Prefix sums of x² give the energy of any shifted window in O(1).
+        prefix[0] = 0
+        for i in 0..<requiredSampleCount {
+            let sample = Double(work[i])
+            prefix[i + 1] = prefix[i] + sample * sample
+        }
+        let energy0 = prefix[window]
+        // Below ≈ −100 dBFS RMS there is nothing but rounding noise (e.g. a pure DC input).
+        guard energy0 / Double(window) > 1e-10 else { return false }
+
+        // Step 1–2: difference function d(τ) = E₀ + E_τ − 2·c(τ)  (c = cross-correlation).
+        work.withUnsafeBufferPointer { x in
+            correlation.withUnsafeMutableBufferPointer { output in
+                correlator.correlate(
+                    UnsafeBufferPointer(rebasing: x[0..<window]),
+                    x,
+                    lagCount: lagCount + 1,
+                    into: output
+                )
+            }
+        }
+        for lag in 1...lagCount {
+            let shifted = prefix[lag + window] - prefix[lag]
+            difference[lag] = max(0, energy0 + shifted - 2 * correlation[lag])
+        }
+
+        // Step 3: cumulative mean normalised difference.
+        var running = 0.0
+        for lag in 1...lagCount {
+            running += difference[lag]
+            cmnd[lag] = running > 0 ? difference[lag] * Double(lag) / running : 1
+        }
+        return true
+    }
+
+    /// Parabolic interpolation of the minimum of `curve` (the CMNDF or the raw difference) at `lag`.
+    private func interpolatedLag(_ lag: Int, in curve: [Double]? = nil) -> Double {
+        let curve = curve ?? cmnd
+        var refined = Double(lag)
+        if lag > 1, lag < maxLag + 1 {
+            let left = curve[lag - 1], mid = curve[lag], right = curve[lag + 1]
             let denominator = left - 2 * mid + right
             if abs(denominator) > 1e-12 {
                 refined += 0.5 * (left - right) / denominator
             }
         }
-        guard refined > 0 else { return nil }
+        return refined
+    }
 
-        let frequency = sampleRate / refined
-        guard frequency.isFinite, frequency >= minFrequency * 0.9, frequency <= maxFrequency * 1.1 else {
-            return nil
+    // MARK: - Low-partial refinement
+
+    /// Largest correction the refinement may apply, in cents. Inharmonicity moves the first pass
+    /// by a few cents; anything larger means the refinement found something else.
+    public static let maximumRefinement = 15.0
+    /// Highest CMNDF value at which the band-limited period is trusted.
+    public static let refinementClarity = 0.1
+
+    /// Measures the period again on `lowPassed` — the same audio after a low-pass that keeps only
+    /// the fundamental and part of the second partial (see ``PartialFilter``) — around `estimate`.
+    ///
+    /// Stiff strings are slightly inharmonic: overtone `k` sits about `866·B·k²` cents sharp of
+    /// `k·f0`, so the full waveform is not quite periodic and the first pass is pulled sharp by the
+    /// upper partials (one to four cents on a steel string). Without them the shift is a fraction
+    /// of a cent. Returns `estimate` unchanged whenever the refinement is not trustworthy.
+    public func refine(_ estimate: Double, lowPassed samples: [Float]) -> Double {
+        guard samples.count >= requiredSampleCount, estimate.isFinite, estimate > 0 else { return estimate }
+        let count = requiredSampleCount
+        samples.withUnsafeBufferPointer { source in
+            let tail = UnsafeBufferPointer(rebasing: source[(source.count - count)...])
+            var mean: Float = 0
+            vDSP_meanv(tail.baseAddress!, 1, &mean, vDSP_Length(count))
+            var negated = -mean
+            work.withUnsafeMutableBufferPointer { work in
+                vDSP_vsadd(tail.baseAddress!, 1, &negated, work.baseAddress!, 1, vDSP_Length(count))
+            }
         }
-        let clarity = min(1, max(0, 1 - cmnd[best]))
-        return PitchEstimate(frequency: frequency, clarity: clarity)
+        guard computeCMNDF() else { return estimate }
+
+        // The raw difference, not the CMNDF: on a smooth two-partial signal the dip is broad, and
+        // the CMNDF's running-mean normalisation would tilt it and move its minimum.
+        let lag = Int((sampleRate / estimate).rounded())
+        let span = max(2, lag / 8)
+        let lower = max(minLag, lag - span), upper = min(maxLag, lag + span)
+        guard lower < upper,
+              let best = (lower...upper).min(by: { difference[$0] < difference[$1] }),
+              best != lower, best != upper,
+              // Too noisy to be periodic (the band may hold little more than hum and rumble).
+              cmnd[best] <= Self.refinementClarity
+        else { return estimate }
+        let frequency = sampleRate / interpolatedLag(best, in: difference)
+        let correction = abs(1200 * log2(frequency / estimate))
+        return frequency.isFinite && correction <= Self.maximumRefinement ? frequency : estimate
     }
 
     /// How much deeper (in CMNDF units) a multiple-lag dip must be to replace the primary one.

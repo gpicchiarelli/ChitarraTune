@@ -52,6 +52,13 @@ public struct EngineParameters: Sendable, Hashable {
     public var stableHopsRequired: Int = 6
     /// How long the last reading stays visible after the signal fades.
     public var holdDuration: Double = 0.8
+    /// A level rise by this factor counts as a new pluck (which may be a different string).
+    public var attackRatio: Double = 1.5
+    /// Within this many cents of an exact octave of the note being followed, a detection without a
+    /// new pluck is treated as an octave error and folded back.
+    public var octaveContinuityWindow: Double = 35
+    /// Weight of each new measurement in the running inharmonicity correction.
+    public var correctionSmoothing: Double = 0.15
 
     public static let standard = EngineParameters()
 
@@ -93,7 +100,8 @@ public struct TunerFrame: Sendable, Hashable {
 // MARK: - Engine
 
 /// Deterministic, hardware-independent tuning pipeline:
-/// ring buffer → noise gate → YIN → string selection → smoothing → stability → hold.
+/// ring buffer → noise gate → YIN → string selection → low-partial refinement → smoothing →
+/// stability → hold.
 ///
 /// Feed it consecutive audio chunks with ``process(_:sampleRate:)``. It performs no I/O, so the
 /// whole behaviour is unit-testable with synthetic signals. It owns a ``PitchDetector`` and is
@@ -108,6 +116,11 @@ public struct TuningEngine {
     private var sampleRate: Double = 0
     private var detector: PitchDetector?
     private var buffer: [Float] = []
+    /// One streaming low-pass per string and the matching history, for the refinement pass.
+    private var partialFilters: [PartialFilter?] = []
+    private var filtered: [[Float]] = []
+    /// Samples the filters have processed since they were created; they need a moment to settle.
+    private var filteredSampleCount = 0
     private var samplesSinceAnalysis = 0
 
     private var gateOpen = false
@@ -116,6 +129,12 @@ public struct TuningEngine {
     private var stableCount = 0
     private var inTune = false
     private var lastReading: TunerReading?
+    /// Level of the previous analysis, to tell a new pluck from a decaying one.
+    private var previousLevel = 0.0
+    /// Inharmonicity correction (cents) of the string being followed. It is a property of the
+    /// string, stable over a pluck, while each single measurement of it is noisy (hum and rumble
+    /// share the fundamental's band), so it is averaged over time.
+    private var inharmonicCorrection: (string: Int, cents: Double)?
     private var silentSamples = 0
     private var lastFrame = TunerFrame(level: 0, isSignalPresent: false, reading: nil)
 
@@ -142,6 +161,7 @@ public struct TuningEngine {
         inTune = false
         lastReading = nil
         silentSamples = 0
+        inharmonicCorrection = nil
     }
 
     /// Consumes a chunk of mono samples.
@@ -160,12 +180,23 @@ public struct TuningEngine {
         }
         if detector == nil {
             detector = PitchDetector(sampleRate: sampleRate, frequencyRange: searchRange())
+            partialFilters = configuration.tuning.strings.map {
+                PartialFilter(frequency: $0.frequency(referenceA: configuration.referenceA), sampleRate: sampleRate)
+            }
+            filtered = Array(repeating: [], count: partialFilters.count)
+            filteredSampleCount = 0
         }
         guard let detector else { return nil }
 
         buffer.append(contentsOf: samples)
         let capacity = detector.requiredSampleCount
         if buffer.count > capacity { buffer.removeFirst(buffer.count - capacity) }
+        for index in partialFilters.indices {
+            guard let filter = partialFilters[index] else { continue }
+            filtered[index].append(contentsOf: filter.process(samples))
+            if filtered[index].count > capacity { filtered[index].removeFirst(filtered[index].count - capacity) }
+        }
+        filteredSampleCount += samples.count
         samplesSinceAnalysis += samples.count
 
         let hop = max(1, Int(sampleRate * parameters.hopDuration))
@@ -188,6 +219,8 @@ public struct TuningEngine {
 
         gateOpen = gateOpen ? level > parameters.gateCloseLevel : level > parameters.gateOpenLevel
         let elapsed = hops * hop
+        let isNewPluck = level > previousLevel * parameters.attackRatio
+        previousLevel = level
 
         guard gateOpen else {
             return finish(withDetection: nil, elapsedSamples: elapsed)
@@ -195,10 +228,22 @@ public struct TuningEngine {
 
         guard let estimate = detector.estimate(in: buffer),
               estimate.clarity >= parameters.minimumClarity,
-              let selection = select(for: estimate.frequency),
+              var selection = select(for: followingOctave(of: estimate.frequency, isNewPluck: isNewPluck)),
               abs(selection.cents) <= parameters.maximumDeviation
         else {
             return finish(withDetection: nil, elapsedSamples: elapsed)
+        }
+        // Measure the fundamental itself, free of the upper partials' inharmonic pull.
+        // The filters' start-up transient must have left the window before it can be measured.
+        if filtered.indices.contains(selection.index), filteredSampleCount >= 2 * detector.requiredSampleCount {
+            let correction = inharmonicityCorrection(
+                measured: detector.refine(selection.frequency, lowPassed: filtered[selection.index]),
+                estimate: selection.frequency,
+                string: selection.index
+            )
+            let target = configuration.tuning.strings[selection.index].frequency(referenceA: configuration.referenceA)
+            selection.frequency *= pow(2, correction / 1200)
+            selection.cents = PitchMath.cents(from: selection.frequency, to: target)
         }
 
         // Smooth the deviation; restart on string change or a large jump.
@@ -261,6 +306,38 @@ public struct TuningEngine {
             lastFrame = TunerFrame(level: level, isSignalPresent: gateOpen, reading: nil)
         }
         return lastFrame
+    }
+
+    /// Running inharmonicity correction, in cents, for `string`, updated with one refined measurement.
+    private mutating func inharmonicityCorrection(measured: Double, estimate: Double, string: Int) -> Double {
+        let sample = PitchMath.cents(from: measured, to: estimate)
+        let refinementFailed = measured == estimate
+        guard let current = inharmonicCorrection, current.string == string else {
+            let initial = refinementFailed ? 0 : sample
+            inharmonicCorrection = (string, initial)
+            return initial
+        }
+        guard !refinementFailed else { return current.cents }
+        let updated = current.cents + parameters.correctionSmoothing * (sample - current.cents)
+        inharmonicCorrection = (string, updated)
+        return updated
+    }
+
+    /// A string that is dying away keeps its octave. As the note decays into noise and hum, YIN can
+    /// latch onto two to four times the period (or a half to a quarter of it), which in automatic
+    /// mode would jump to another string. Without a new pluck, a detection at such a ratio from the note
+    /// being followed is folded back onto it.
+    private func followingOctave(of frequency: Double, isNewPluck: Bool) -> Double {
+        guard !isNewPluck, let last = lastReading else { return frequency }
+        for ratio in 2...4 {
+            for factor in [Double(ratio), 1 / Double(ratio)] {
+                let folded = frequency * factor
+                if abs(PitchMath.cents(from: folded, to: last.frequency)) < parameters.octaveContinuityWindow {
+                    return folded
+                }
+            }
+        }
+        return frequency
     }
 
     /// Frequencies the detector has to cover. When a string is pinned the search is narrowed
