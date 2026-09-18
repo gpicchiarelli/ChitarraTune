@@ -1,8 +1,10 @@
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
 
-# Swift / Xcode
-.build/
+# Xcode
 build/
 DerivedData/
 *.xcworkspace/
@@ -11,14 +13,27 @@ DerivedData/
 *.xcodeproj/project.xcworkspace/
 *.xcodeproj/xcuserdata/
 *.xcuserstate
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+*.ipa
 
 # SwiftPM
+.build/
 .swiftpm/
 
-# Logs
+# Local, per-developer configuration (signing team and similar)
+Config/Local.xcconfig
+
+# Signing and notarization material: never commit
+*.p12
+*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+.env
+.env.*
+
+# Logs and CI artifacts
 *.log
-
-# CI artifacts
 coverage.txt
-
-

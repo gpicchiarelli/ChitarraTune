@@ -1,0 +1,6 @@
+* @gpicchiarelli
+
+# Anything that changes what ships, how it is signed, or what the app may access.
+/.github/    @gpicchiarelli
+/Config/     @gpicchiarelli
+/SECURITY.md @gpicchiarelli

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability · Segnala una vulnerabilità
+    url: https://github.com/gpicchiarelli/ChitarraTune/security/advisories/new
+    about: Please report security problems privately. Do not open a public issue. · Segnala i problemi di sicurezza in privato, non in una issue pubblica.

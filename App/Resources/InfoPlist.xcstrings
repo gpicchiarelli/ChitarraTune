@@ -24,13 +24,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copyright © 2025–2026 Giacomo Picchiarelli. BSD 3-Clause License."
+            "value": "Copyright © 2025–2026 ChitarraTune contributors. BSD 3-Clause License."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copyright © 2025–2026 Giacomo Picchiarelli. Licenza BSD 3-Clause."
+            "value": "Copyright © 2025–2026 ChitarraTune contributors. Licenza BSD 3-Clause."
           }
         }
       }

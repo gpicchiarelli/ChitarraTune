@@ -1,29 +1,50 @@
 # Changelog
 
-All notable changes to the project are documented in this file.
+All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-
----
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-
-- **TunerConfig** (`ChitarraTuneCore/TunerConfig.swift`): costanti centralizzate per DSP e soglie (finestra di analisi, range frequenze, in-tune, smoothing, noise gate).
-- **TuningError** (`Apps/Shared/TuningError.swift`): enum di errori tipizzati (microfono negato/limitato, nessun dispositivo, cattura fallita) con messaggi localizzati (en/it).
-- **Logging**: `Logger` in `AudioEngineManager` (avvio/arresto cattura, errori) e negli App Intents (Start/Stop tuner).
-- **Unit tests** (target ChitarraTuneTests): test per PitchDetector, TuningPresets (`frequency`, `nearestString`), GuitarNotes (`scaledFrequency`, `nearestGuitarString`), NoteLabelLocalization (`localizedNoteLabelItalian`), TunerConfig.
-- **Documentation**: `docs/ARCHITECTURE.md` (flusso dati e ruoli moduli), `.swiftlint.yml`, `CHANGELOG.md`.
+Version 2.0 is a ground-up rewrite. Work in progress: the package is complete and tested, the app layer is being finished.
 
 ### Changed
 
-- **AudioEngineManager**: costanti DSP/soglie sostituite con `TunerConfig.*`; gestione errori in `start()` tramite `TuningError` e `localizedMessage`.
-- **Localizable.strings**: nuove chiavi per messaggi di errore (`error.microphone.denied`, `error.microphone.restricted`, `error.no.audio.device`, `error.capture.failed`).
-- **CI**: unit test eseguiti in pipeline; SwiftLint reso bloccante (rimosso `continue-on-error`).
+- **Architecture.** The code is now a local Swift package, `ChitarraTuneKit` (`TunerCore`, `TunerAudio`, `TunerFeature`), under a single multiplatform SwiftUI app. It replaces `ChitarraTuneCore`, `Apps/Shared` and the separate macOS and iOS targets.
+- **Pitch detection.** YIN now evaluates the difference function through an FFT cross-correlation (Accelerate) instead of a direct `O(N · lags)` loop, with octave-error correction and a search range that follows the tuning and A4.
+- **Capture.** `AVAudioEngine` replaces `AVCaptureSession`; capture is an actor, samples arrive in order through an `AsyncThrowingStream`, and a slow consumer never builds a backlog.
+- **Input devices.** Hot-plug detection is event-driven (Core Audio listener blocks on macOS, route-change notifications on iOS) instead of polling every two seconds.
+- **Session control.** A generation counter cancels stale starts, and route changes restart capture automatically (up to three times).
+- **Siri and Shortcuts.** App Intents reach the running tuner through `AppDependencyManager`. *Start tuning* opens the app, because a microphone needs the foreground.
+- **Requirements.** macOS 26, iOS 26 and iPadOS 26; Xcode 26. Build settings moved to `Config/*.xcconfig`.
+- **Tests.** Moved to Swift Testing inside the package, covering the signal path with synthetic signals and the presentation layer with test doubles.
 
----
+### Added
+
+- Ten tunings (Standard, Half step down, Full step down, Drop D, Drop C, DADGAD, Open D, Open G, Open E, Open A).
+- Dial and bar gauges; English or fixed-do solfège note names; haptic feedback; an idle timeout that stops listening after a period of silence.
+- One tuner per window on macOS, each with its own input and tuning.
+- Low Power Mode and thermal-state awareness (lower analysis rate).
+- `ITSAppUsesNonExemptEncryption = NO`, and a permission text that says audio is never recorded or sent anywhere.
+
+### Security
+
+- Hardened Runtime and Xcode Enhanced Security, with the sandbox limited to audio input and no network access.
+- The Core Audio input enumeration no longer reads a variable-size `AudioBufferList` into a fixed-size local, and capture no longer parses raw sample-buffer memory.
+- The A4 reference is clamped to 415–466 Hz.
+
+### Repository
+
+- CI rebuilt for the new layout: package tests, macOS and iOS Simulator builds, CodeQL, SwiftLint. Every action is pinned to a full commit SHA, workflows run read-only unless they must write, and Dependabot keeps the pins current.
+- The release workflow now signs inside `xcodebuild`, verifies the Hardened Runtime flag and the entitlements, notarizes a real archive, publishes a build-provenance attestation, and refuses to release from a commit that is not on `main`.
+- Added a security policy, contributing guide, issue forms, pull request template and code owners.
+- Rewrote the architecture, platforms, signing, compliance and accessibility documents to match the code.
+
+### Removed
+
+- The legacy `ChitarraTuneCore` and `Apps/` sources, the XCTest unit-test target and the generated `VersionInfo.swift` (version data now comes from build settings).
 
 ## [1.0.0] and earlier
 
-- Release iniziale: accordatore chitarra per macOS e iOS, preset multipli, calibrazione A4, Siri/Shortcuts, localizzazione it/en, note italiane Do/Re/Mi.
+Initial releases: guitar tuner for macOS and iOS with several tunings, A4 calibration, Siri and Shortcuts, English and Italian localization, and Italian note names (Do, Re, Mi).
+

@@ -1,44 +1,36 @@
-# Piattaforme supportate · Supported Platforms
+# Supported platforms
 
-ChitarraTune è un’app **multipiattaforma** (macOS, iPhone, iPad) con codice condiviso e target nativi separati.
+ChitarraTune is **one multiplatform target** with a shared code base. There is no separate iOS target.
 
-ChitarraTune is a **multi‑platform** app (macOS, iPhone, iPad) with shared code and separate native targets.
+| Platform | Minimum OS | Notes |
+| --- | --- | --- |
+| **macOS** | 26 (Tahoe) | App Sandbox |
+| **iPhone** | iOS 26 | Portrait and both landscapes |
+| **iPad** | iPadOS 26 | All four orientations |
 
-## Riepilogo · Summary
+Mac Catalyst and "Designed for iPhone/iPad" on Mac and Vision are switched off (`SUPPORTS_MACCATALYST`, `SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD`, `SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD`). The bundle identifier is `com.chitarratune.app` on every platform.
 
-| Piattaforma | Target Xcode | Deployment | Device family |
-|-------------|--------------|------------|----------------|
-| **macOS**   | ChitarraTune (macOS) | 12.0+ | Mac |
-| **iPhone**  | ChitarraTune iOS     | 16.0+ | iPhone (1) |
-| **iPad**    | ChitarraTune iOS     | 16.0+ | iPad (2) |
-
-- **TARGETED_DEVICE_FAMILY** per il target iOS: `1,2` (iPhone + iPad).
-- Stesso bundle ID per iOS e iPadOS: `com.chitarratune.app` (configurabile in Xcode).
-- Codice condiviso: `Apps/Shared/`, `ChitarraTuneCore/`, `ChitarraTune.xcassets/`.
-- Configurazione per target: `Apps/macOS/` (Info.plist, entitlements), `Apps/ios/` (Info.plist, entitlements).
+Requires **Xcode 26 or later**. The deployment targets are set in `Config/Base.xcconfig`.
 
 ## Build
 
-- **macOS**: scheme **ChitarraTune** → destinazione macOS.
-- **iPhone / iPad**: scheme **ChitarraTune iOS** → destinazione iPhone o iPad (simulatore o dispositivo).
+Open `ChitarraTune.xcodeproj`, choose the **ChitarraTune** scheme and a destination: *My Mac*, an iPhone or an iPad (simulator or device).
 
-## Comportamento per piattaforma
+## Behaviour by platform
 
-- **macOS**: finestra principale + pannello Preferenze (NSPanel), menu, shortcut ⌘,.
-- **iPhone**: layout compatto, sheet impostazioni con detent .medium/.large, orientamenti Portrait + Landscape.
-- **iPad**: layout regolare (max width 560 pt), sheet impostazioni in stile form, supporto Split View / Slide Over (UIRequiresFullScreen = false), orientamenti tutti e quattro, supporto input indiretto (tastiera/trackpad).
+| | macOS | iOS / iPadOS |
+| --- | --- | --- |
+| Windows | One window per tuner (⌘N opens another, each with its own input and tuning); a Settings window; About and License windows | One window; Settings in a sheet |
+| Commands | Menu bar commands and keyboard shortcuts | Hardware-keyboard shortcuts on iPad |
+| Microphone | Any Core Audio input, chosen from the toolbar, with hot-plug detection | The system route, or one of the available input ports |
+| Leaving the app | Keeps listening while the window is open; holds an activity assertion so App Nap does not throttle analysis | Stops listening as soon as the app leaves the foreground (iOS may not record in the background) |
+| Screen | Normal | Kept awake while listening |
+| Feedback | Visual | Visual and haptic |
 
-## Info.plist
+## Localization
 
-- **macOS**: `Apps/macOS/Info.plist` — LSMinimumSystemVersion 12.0, categoria Musica, descrizione microfono.
-- **iOS/iPadOS**: `Apps/ios/Info.plist` — UISupportedInterfaceOrientations (iPhone + ~ipad), UIRequiresFullScreen false, UIApplicationSupportsIndirectInputEvents true, NSMicrophoneUsageDescription, capacità microfono.
+English and Italian, in string catalogs: `App/Resources/Localizable.xcstrings` (app), `InfoPlist.xcstrings` (permission text) and `AppShortcuts.xcstrings` (Siri phrases). Note names follow the chosen notation (English or fixed-do solfège).
 
-## Localizzazione
+## Icons and assets
 
-- Lingue: Italiano (it), English (en).  
-- Stringhe: `Apps/Shared/Localization/{en,it}.lproj/Localizable.strings`.  
-- Info.plist macOS: `Apps/macOS/{en,it}.lproj/InfoPlist.strings` (nome app, ecc.).
-
-## Icone
-
-- **AppIcon** (ChitarraTune.xcassets): slot per iPhone, iPad, iOS Marketing (1024), e Mac; tutte le dimensioni richieste sono presenti.
+`App/Resources/Assets.xcassets` holds the app icon (all iPhone, iPad and Mac sizes plus the 1024 pt marketing icon), the accent colour and the tuner colours (`TuneGreen`, `TuneAmber`, `TuneRed`), each with light, dark and high-contrast variants.

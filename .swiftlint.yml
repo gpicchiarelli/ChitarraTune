@@ -1,6 +1,17 @@
 # SwiftLint configuration for ChitarraTune
 # https://github.com/realm/SwiftLint
 
+included:
+  - App
+  - Packages/ChitarraTuneKit/Sources
+  - Packages/ChitarraTuneKit/Tests
+  - ChitarraTuneUITests
+
+excluded:
+  - "**/.build"
+  - DerivedData
+  - build
+
 opt_in_rules:
   - empty_count
   - explicit_init
@@ -12,12 +23,5 @@ opt_in_rules:
 disabled_rules:
   - trailing_whitespace
   - line_length
-
-excluded:
-  - Apps/Shared/Generated
-  - ChitarraTune.xcodeproj
-  - .build
-  - DerivedData
-  - build
 
 reporter: "xcode"

@@ -2,22 +2,36 @@ name: SwiftLint
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
+    paths:
+      - "**/*.swift"
+      - ".swiftlint.yml"
+      - ".github/workflows/swiftlint.yml"
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
+    paths:
+      - "**/*.swift"
+      - ".swiftlint.yml"
+      - ".github/workflows/swiftlint.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: swiftlint-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
-    runs-on: macos-14
+    name: Lint
+    # SwiftLint only parses source, so the (much cheaper) Linux image is enough.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: ghcr.io/realm/swiftlint:latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          xcode-version: '16.2'
-      - name: Install SwiftLint
-        run: |
-          brew update
-          brew install swiftlint
-      - name: Run SwiftLint
-        run: swiftlint lint --quiet
+          persist-credentials: false
+      - name: SwiftLint
+        run: swiftlint lint --reporter github-actions-logging

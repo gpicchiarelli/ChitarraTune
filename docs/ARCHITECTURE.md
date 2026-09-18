@@ -1,58 +1,78 @@
-# Architettura – ChitarraTune
+# Architecture
 
-Documento che descrive il flusso dati e i ruoli dei componenti principali.
+ChitarraTune is a single multiplatform SwiftUI app (macOS, iPhone, iPad) on top of a local Swift package, **ChitarraTuneKit**, that holds everything that is not user interface.
 
----
+```
+┌───────────────────────────────────────────────────────────────┐
+│ App/                  SwiftUI screens · App Intents · resources │
+├───────────────────────────────────────────────────────────────┤
+│ TunerFeature          @Observable models · settings · hub       │
+├───────────────────────────────────────────────────────────────┤
+│ TunerAudio            capture · permission · input discovery    │
+├───────────────────────────────────────────────────────────────┤
+│ TunerCore             pitch maths · tunings · YIN · engine      │  ← pure, no I/O
+└───────────────────────────────────────────────────────────────┘
+```
 
-## Panoramica
+Dependencies only point downwards. `TunerCore` imports Foundation and Accelerate and nothing else, so the whole signal path can be tested with synthetic sine waves and no microphone.
 
-ChitarraTune è un’app multipiattaforma (macOS, iOS, iPadOS) per l’accordatura della chitarra. Il codice è organizzato in:
+## Modules
 
-- **ChitarraTuneCore**: logica DSP, preset di accordatura, costanti (senza dipendenze da UI o AVFoundation).
-- **Apps/Shared**: UI, gestione audio, Intents, localizzazione, errori.
-- **Apps/macOS** e **Apps/ios**: entry point e asset specifici per piattaforma.
+| Module | Responsibility | Key types |
+| --- | --- | --- |
+| **TunerCore** | Notes, tunings, frequency ↔ cents maths, pitch detection and the tuning pipeline. | `Note`, `Tuning`, `PitchMath`, `PitchDetector`, `CrossCorrelator`, `TuningEngine` |
+| **TunerAudio** | Turns a microphone into a stream of mono audio chunks; microphone permission; the list of inputs and its changes. | `EngineAudioCapture`, `SystemMicrophoneAuthorization`, `SystemAudioInputs`, `CaptureFailure` |
+| **TunerFeature** | The state the UI renders and the user's preferences. | `TunerModel`, `TunerHub`, `TunerSettings`, `PowerProfile`, `TunerProcessor` |
+| **App** | Screens (dial, bar, note read-out, string selector), menu commands, Settings, About, Siri and Shortcuts. | `TunerScreen`, `TunerCommands`, `TunerIntents` |
 
----
+`TunerAudio` exposes protocols (`AudioCapturing`, `MicrophoneAuthorizing`, `AudioInputProviding`) so `TunerModel` can be driven by test doubles and by a synthetic guitar (`SimulatedAudioCapture`).
 
-## Flusso dati (tuning)
+## Signal path
 
-1. **Input**: L’utente avvia l’ascolto (pulsante Start o Siri/Shortcuts). `AudioEngineManager.start()` richiede il permesso microfono, configura `AVCaptureSession` con il dispositivo audio scelto e avvia la cattura.
-2. **Cattura**: `AVCaptureAudioDataOutput` invia buffer PCM al delegate su una coda dedicata. I campioni vengono accodati nel `SessionAudioBuffer` dell’istanza di `AudioEngineManager`.
-3. **Elaborazione**: Un task periodico (`startAudioProcessing`) preleva campioni dal buffer della sessione, applica una finestra di analisi (`TunerConfig.analysisWindowSize`), gate sul RMS (`TunerConfig.noiseGateRMS`) e chiama `estimatePresetTuning` (che usa `PitchDetector` YIN e `nearestString` / `frequency(for:referenceA:)` da Core).
-4. **Output**: Il risultato (`TuningEstimate`: frequenza, cents, etichetta corda, chiarezza) viene pubblicato su `AudioEngineManager.latestEstimate`. La UI (`ContentView`, `UniversalTuningBar`) osserva queste proprietà e aggiorna indicatore, nota e stato “in tune”.
-5. **Stabilità**: La logica “in tune” richiede un numero consecutivo di letture entro la soglia (`TunerConfig.inTuneThresholdCents`, `stableReadingsRequired`).
+```
+microphone
+  → AVAudioEngine input tap (1024 frames, channel 0)      TunerAudio
+  → AsyncThrowingStream<AudioChunk>  (newest 8 kept)
+  → ring buffer                                           TunerCore
+  → noise gate with hysteresis
+  → YIN: FFT cross-correlation (Accelerate) → CMNDF → parabolic interpolation
+  → string selection (automatic, or pinned to one string)
+  → smoothing → in-tune stability with hysteresis → hold
+  → TunerFrame → TunerModel → SwiftUI
+```
 
----
+- **Detector.** The difference function is computed as `E₀ + E_τ − 2·c(τ)` with `c` obtained through the frequency domain, so one analysis costs `O(N log N)` instead of `O(W · lags)`. The search range follows the tuning and A4; pinning a string narrows it to 0.7×–1.5× of that string, which rules out octave errors by construction.
+- **Engine parameters.** Noise gate opens at 0.004 RMS and closes at 0.0025; minimum clarity 0.55; deviations beyond ±300 cents are ignored; "in tune" is ±5 cents with 2 cents of exit margin and six consecutive stable analyses; the last reading is held for 0.8 s after the signal fades.
+- **Cadence.** One analysis every 25 ms (~40 Hz). In Low Power Mode or under serious thermal pressure `PowerProfile` relaxes this to 45 ms.
 
-## Ruolo dei moduli
+## Concurrency model
 
-| Modulo | Ruolo |
-|--------|--------|
-| **ChitarraTuneCore** | `PitchDetector` (YIN), `GuitarNotes` (corde standard), `TuningPresets` (preset + `frequency(for:referenceA:)`, `nearestString`), `TunerConfig` (costanti DSP/soglie). Nessuna dipendenza da AVFoundation o SwiftUI. |
-| **Apps/Shared** | `AudioEngineManager`: sessione AV, buffer, smoothing, noise gate, pubblicazione stima. `ContentView` / `PreferencesView` / `UniversalTuningBar`: UI. `ChitarraTuneIntents`: Start/Stop/SetMicrophone/SetMode/SetPreset/Calibrate. `NoteLabelLocalization`: note in italiano (Do/Re/Mi). `TuningError`: errori tipizzati e messaggi localizzati. |
-| **SessionAudioBuffer** | Actor per sessione: ogni `AudioEngineManager` ha il proprio buffer; i campioni AVCapture vengono accodati lì e consumati dal relativo manager. |
-| **SessionStore / TunerSession** | Gestione multi-sessione: più tab/finestre, ognuna con un proprio `AudioEngineManager` (input e preset indipendenti). Siri/Shortcuts agiscono sulla sessione attiva. |
+The package is built in Swift 6 language mode; the app with `SWIFT_STRICT_CONCURRENCY = complete`.
 
----
+- `EngineAudioCapture` is an **actor**. The audio-thread tap closure touches no actor state; it copies the samples and yields them into a stream.
+- `TunerProcessor` is an **actor** that owns the non-`Sendable` `TuningEngine`, so the DSP runs off the main thread with no locks.
+- `TunerModel`, `TunerHub` and `TunerSettings` are `@MainActor @Observable`. Properties are written only when the value changes, which keeps SwiftUI redraws to a minimum.
+- Session control uses a **generation counter**: every `start()` and `stop()` bumps it, and every asynchronous continuation checks that it still belongs to the current generation before acting. A permission prompt or a slow start that finishes after the user stopped is therefore ignored.
+- A route or hardware-format change ends the stream with `CaptureFailure.configurationChanged`; the model restarts capture up to three times before reporting the failure.
 
-## Dipendenze
+## State
 
-- **UI → AudioEngineManager**: La vista principale e le preferenze usano `@EnvironmentObject AudioEngineManager` (o equivalente) per start/stop, preset, stima, errore.
-- **Intents → AudioEngineManager**: Gli App Intents usano `AudioEngineManager.sharedForIntents` (impostato all’avvio dell’app) per avviare/fermare l’accordatura e cambiare preset/microfono/modalità.
-- **AudioEngineManager → Core**: Usa `PitchDetector`, `estimatePresetTuning`, `TunerConfig`; non dipende da SwiftUI (salvo `@MainActor` e `@Published`).
+`TunerModel.Status` is `idle → starting → listening`, or `failed(CaptureFailure)`. The UI maps failures to text; `CaptureFailure` carries no user-facing strings.
 
----
+`TunerHub` owns one `TunerModel` per window and remembers which was focused last, so Siri, Shortcuts and menu commands act on the tuner you are looking at. Models are created lazily (which also makes window restoration work) and released, with their audio, when a window closes.
 
-## Configurazione e costanti
+## Preferences
 
-- **TunerConfig** (in Core): finestra di analisi, range di frequenza, soglie “in tune”, smoothing, noise gate, letture stabili. Unico punto per modificare i parametri DSP.
-- **TuningError**: errori tipizzati (microfono negato, nessun dispositivo, cattura fallita) con messaggi localizzati in `Localizable.strings`.
+`TunerSettings` persists to `UserDefaults`. The keys `A4`, `tuningPresetID` and `preferredInputUID` are the ones used by 1.x, so calibration and tuning survive the upgrade. A4 is clamped to 415–466 Hz.
 
----
+## Siri and Shortcuts
+
+App Intents reach the running tuner through `AppDependencyManager` (`@Dependency var hub: TunerHub`). Available actions: start tuning (opens the app, because a microphone needs the foreground), stop tuning, set tuning, set reference pitch, pick a string, choose an input.
+
+## Build configuration
+
+Build settings live in `Config/*.xcconfig`, not in the project file: `Base` (platforms, Swift, security), `Debug`, `Release`, `App`, `UITests`. Signing material and sandbox entitlements are described in [CODE_SIGNING.md](../CODE_SIGNING.md).
 
 ## Testing
 
-- **ChitarraTuneTests** (unit test): testano `PitchDetector`, `frequency(for:referenceA:)`, `nearestString`, `scaledFrequency` / `nearestGuitarString`, `localizedNoteLabelItalian`, `TunerConfig`. Il target dipende dall’app macOS e usa `@testable import ChitarraTune` con TEST_HOST/BUNDLE_LOADER.
-- **ChitarraTuneUITests**: UI test su macOS (avvio, presenza elementi).
-
-Per maggiori dettagli su gap e miglioramenti si veda [SOFTWARE_ENGINEERING_ASSESSMENT.md](SOFTWARE_ENGINEERING_ASSESSMENT.md).
+`swift test --package-path Packages/ChitarraTuneKit` runs the Swift Testing suites for `TunerCore` (notes, tunings, correlator, detector, engine) and `TunerFeature` (model and settings, using test doubles). Anything that needs a real microphone is exercised manually.
