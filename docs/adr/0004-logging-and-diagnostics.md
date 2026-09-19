@@ -13,7 +13,7 @@ Logs are how a tuner that misbehaves on someone's device gets fixed: *Copy Diagn
 3. Errors MUST be logged publicly as domain and code only (`EngineAudioCapture.describe(_:)`); `localizedDescription` MUST NOT be logged publicly, because it can quote device names or paths.
 4. Device names and UIDs MUST be `.private`.
 5. Audio content MUST NOT be logged in any form (ADR 0002).
-6. Diagnostics MUST stay on the device: MetricKit payloads are summarised into the log, never sent anywhere; the user decides whether to paste a report.
+6. Diagnostics MUST stay on the device: MetricKit payloads are summarized into the log, never sent anywhere; the user decides whether to paste a report.
 
 ## Consequences
 

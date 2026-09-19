@@ -14,7 +14,7 @@ Binding decisions for the whole project. They are enforced by tests and CI (see 
 | [0008](0008-measurement-integrity.md) | Measurement integrity | Accepted |
 | [0009](0009-quality-gate-and-change-process.md) | Quality gate and change process | Accepted |
 | [0010](0010-supply-chain-and-repository-security.md) | Supply chain and repository security | Accepted |
-| [0011](0011-localisation-and-accessibility.md) | Localisation and accessibility | Accepted |
+| [0011](0011-localisation-and-accessibility.md) | Localization and accessibility | Accepted |
 | [0012](0012-windows-and-listening-sessions.md) | Windows and listening sessions | Accepted |
 | [0013](0013-release-readiness.md) | Release readiness on every push | Accepted |
 | [0014](0014-disk-image-distribution.md) | Disk image distribution outside the App Store | Accepted |

@@ -1744,7 +1744,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sound is analysed on this device as you play. It is never recorded, stored or sent anywhere."
+            "value": "Sound is analyzed on this device as you play. It is never recorded, stored or sent anywhere."
           }
         },
         "it": {
@@ -2006,7 +2006,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "ChitarraTune uses the microphone only to measure pitch. Audio is analysed on your device and is never recorded, stored or sent anywhere."
+            "value": "ChitarraTune uses the microphone only to measure pitch. Audio is analyzed on your device and is never recorded, stored or sent anywhere."
           }
         },
         "it": {

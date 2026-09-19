@@ -22,9 +22,9 @@ Dependencies only point downwards. `TunerCore` imports Foundation and Accelerate
 
 | Module | Responsibility | Key types |
 | --- | --- | --- |
-| **TunerCore** | Notes, tunings, frequency ↔ cents maths, pitch detection and the tuning pipeline. | `Note`, `Tuning`, `PitchMath`, `PitchDetector`, `CrossCorrelator`, `TuningEngine` |
+| **TunerCore** | Notes, tunings, frequency ↔ cents math, pitch detection and the tuning pipeline. | `Note`, `Tuning`, `PitchMath`, `PitchDetector`, `CrossCorrelator`, `PartialFilter`, `NoiseGate`, `InharmonicityTracker`, `TuningEngine` |
 | **TunerAudio** | Turns a microphone into a stream of mono audio chunks; microphone permission; the list of inputs and its changes. | `EngineAudioCapture`, `SystemMicrophoneAuthorization`, `SystemAudioInputs`, `CaptureFailure` |
-| **TunerFeature** | The state the UI renders and the user's preferences. | `TunerModel`, `TunerHub`, `TunerSettings`, `PowerProfile`, `TunerProcessor` |
+| **TunerFeature** | The state the UI renders, the user's preferences, and what the device delivers (for diagnostics). | `TunerModel`, `TunerHub`, `TunerSettings`, `PowerProfile`, `TunerProcessor`, `StreamStatistics` |
 | **App** | Screens (dial, bar, note read-out, string selector), the microphone explanation, menu commands, Settings, About, Siri and Shortcuts. | `TunerScreen`, `MicrophonePrimer`, `TunerCommands`, `TunerIntents` |
 | **Shared** | Code compiled into both the app and the extension. | `StartTuningIntent` |
 | **Controls** (extension) | The *Start Tuning* control for Control Center, the Lock Screen and the Action Button (iPhone, iPad) and Control Center and the menu bar (Mac). | `StartTuningControl` |
@@ -39,7 +39,7 @@ microphone
   → AsyncThrowingStream<AudioChunk>  (newest 8 kept, each stamped with its sample time)
   → TunerProcessor actor: the whole loop runs here, off the main actor   TunerFeature
   → analysis window (history discarded on a sample-time gap)            TunerCore
-  → noise gate with hysteresis
+  → noise gate with hysteresis, adapted to the room's noise floor
   → YIN: FFT cross-correlation (Accelerate) → CMNDF → parabolic interpolation
   → octave continuity (no jump while a string dies away)
   → string selection (automatic, or pinned to one string)
@@ -52,9 +52,9 @@ microphone
 - **Inharmonicity.** Real steel strings are stiff: overtone `k` sits about `866·B·k²` cents sharp of `k·f0`, which pulls YIN's period sharp by one to four cents on a typical string (up to eight on a stiff one). Each string has a streaming band-pass (`PartialFilter`: 4th-order Butterworth low-pass at 1.6× the string, 2nd-order high-pass at 0.5×, and a notch (Q 4) at every mains frequency of the 50 and 60 Hz families inside the band except within 300 cents of the string, all in double precision) running on the continuous stream, so it has no edge transients. After YIN has found the period, `PitchDetector.refine(_:lowPassed:)` measures it again on that string's filtered window, where only the fundamental and part of the second partial remain. The difference is averaged over time (it is a property of the string) and applied to the reading. A measurement that is not clearly periodic is ignored.
 - **Mains hum.** Hum inside a low string's band beats with the fundamental: the refined period oscillates at the beat frequency and hum below the fundamental pulls it flat. Averaging only cancels the oscillation when the analyses fall on different phases of the beat; at one beat per analysis it becomes a bias (a low D read 10 cents flat at the Low Power rate). The notches remove the hum instead. After every attack the filter rings, its notches longest, so the refinement waits five time constants of the slowest section (`PartialFilter.settlingSamples`) before measuring, and meanwhile keeps the correction it already knows for the string. When the correction changes, the averaged history moves with it: it is an offset of the instrument, not an observation.
 - **Octave continuity.** As a note decays into noise and hum, YIN can latch onto two to four times the period (or a fraction of it). Without a new pluck — a level rise by 1.5× — a detection at such a ratio from the note being followed is folded back onto it.
-- **Accuracy.** `RealisticSignalTests` plays a physically informed string model (inharmonicity, pluck position, partial decay, phone-microphone roll-off, pick noise, room noise, mains hum) through the engine for every tuning and string: the typical error of the reading is under 1 cent for an interface, a stiff string or a phone in a quiet room. Real recordings can be added to `Tests/TunerCoreTests/Fixtures/Recordings` and become regression tests.
+- **Accuracy.** A physically informed string model (inharmonicity, pluck position, partial decay, microphone roll-off, pick and room noise, mains hum) is played through the engine for every tuning and string; the numbers, the method and the limits are in [ACCURACY.md](ACCURACY.md). Real recordings added to `Tests/TunerCoreTests/Fixtures/Recordings` become regression tests.
 - **Engine parameters.** Noise gate opens at 0.004 RMS and closes at 0.0025 in a noisy room; in a quieter one it opens 4× (+12 dB) above the measured noise floor, down to 0.0006 RMS (−64 dBFS), so a soft source needs no extra input gain. The floor estimate falls at once to anything quieter, rises at most 3 dB per second while nothing is played, and stands still while a note sounds; minimum clarity 0.55; deviations beyond ±300 cents are ignored; "in tune" is ±5 cents with 2 cents of exit margin and six consecutive stable analyses; the last reading is held for 0.8 s after the signal fades.
-- **Cadence.** One analysis every 25 ms (~40 Hz), at fixed positions in the stream: a chunk that spans several hops is analysed at each of them, so the device's callback size changes how often the screen updates, never the readings, the stability count or the hold time. In Low Power Mode or under serious thermal pressure `PowerProfile` relaxes this to 45 ms. Smoothing weights are defined per 25 ms and converted to the actual interval, so the needle settles in the same time at either rate; the Low Power rate is held to the same accuracy envelope.
+- **Cadence.** One analysis every 25 ms (~40 Hz), at fixed positions in the stream: a chunk that spans several hops is analyzed at each of them, so the device's callback size changes how often the screen updates, never the readings, the stability count or the hold time. In Low Power Mode or under serious thermal pressure `PowerProfile` relaxes this to 45 ms. Smoothing weights are defined per 25 ms and converted to the actual interval, so the needle settles in the same time at either rate; the Low Power rate is held to the same accuracy envelope.
 
 ## Concurrency model
 
@@ -87,10 +87,10 @@ App Intents reach the running tuner through `AppDependencyManager` (`@Dependency
 
 ## Build configuration
 
-Build settings live in `Config/*.xcconfig`, not in the project file: `Base` (platforms, Swift, security), `Debug`, `Release`, `App`, `Controls`, `UITests`. The app icon is an Icon Composer document (`App/Resources/AppIcon.icon`), rendered by the system in the default, dark, clear and tinted appearances. Signing material and sandbox entitlements are described in [CODE_SIGNING.md](../CODE_SIGNING.md).
+Build settings live in `Config/*.xcconfig`, not in the project file: `Base` (platforms, Swift, security), `Debug`, `Release`, `App`, `Controls`, `UITests`. The app icon is an Icon Composer document (`App/Resources/AppIcon.icon`), rendered by the system in the default, dark, clear and tinted appearances. Signing material and sandbox entitlements are described in [CODE_SIGNING.md](CODE_SIGNING.md).
 
 ## Testing
 
-`swift test --package-path Packages/ChitarraTuneKit` runs the Swift Testing suites for `TunerCore` (notes, tunings, correlator, detector, engine, realistic signals, recorded corpus), `TunerFeature` (model and settings, using test doubles) and the repository policies (privacy, entitlements, workflows, localization, colour contrast, App Store metadata).
+`swift test --package-path Packages/ChitarraTuneKit` runs the Swift Testing suites for `TunerCore` (notes, tunings, correlator, detector, engine, realistic signals, recorded corpus), `TunerFeature` (model and settings, using test doubles) and the repository policies (privacy, entitlements, workflows, localization, color contrast, App Store metadata, architecture decisions).
 
-The UI tests (`ChitarraTuneUITests`) drive the app in demo mode on iPhone, iPad and Mac, and run Xcode's accessibility audit on every screen in light and dark appearance, landscape and the largest text size. CI runs all of them; the full DSP matrix runs in an optimised build. What only real hardware can show is in the [device test plan](DEVICE_TEST_PLAN.md).
+The UI tests (`ChitarraTuneUITests`) drive the app in demo mode on iPhone, iPad and Mac, and run Xcode's accessibility audit on every screen in light and dark appearance, landscape and the largest text size. CI runs all of them; the full DSP matrix runs in an optimized build. What only real hardware can show is in the [device test plan](DEVICE_TEST_PLAN.md).

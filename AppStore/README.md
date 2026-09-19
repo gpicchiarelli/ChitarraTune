@@ -24,7 +24,7 @@ AppStore/
 
 ## One-time setup
 
-1. **Apple Developer account**, team `7722WYMVXU` (see `Config/Base.xcconfig`).
+1. **A paid Apple Developer Program membership.** The team in `Config/Base.xcconfig`, `7722WYMVXU`, is today a personal team, which cannot sign this app ([release readiness](../docs/RELEASE_READINESS.md#b1-a-paid-apple-developer-program-team)); put the program team's ID there and in the secrets below.
 2. **Identifiers** (Certificates, Identifiers & Profiles). Automatic signing registers them on the first archive, or create them by hand:
    - `com.chitarratune.app`: App ID for iOS and macOS. No extra capability is needed.
    - `com.chitarratune.app.controls`: App ID for the Controls extension.
@@ -61,9 +61,10 @@ AppStore/
 1. Update `CHANGELOG.md`, then `Scripts/bump-version.sh X.Y.Z` and `AppStore/metadata/*/release_notes.txt`. Push.
 2. Tag: `git tag vX.Y.Z && git push origin vX.Y.Z`. The release workflow tests, archives and uploads iOS/iPadOS and macOS builds to App Store Connect, and publishes the notarized Developer ID disk image `ChitarraTune-X.Y.Z.dmg` with its SHA-256 checksum.
 3. **TestFlight**: when the builds finish processing, install them and run the [device test plan](../docs/DEVICE_TEST_PLAN.md).
-4. **Screenshots** (the first time, and whenever the interface changes): `Scripts/screenshots.sh` produces them for iPhone 6.9″, iPad 13″ and Mac, in English and Italian, in `AppStore/screenshots/`. Upload the whole set per locale.
+4. **Screenshots** (the first time, and whenever the interface changes): `Scripts/screenshots.sh` produces them for iPhone 6.9″, iPad 13″ and Mac, in English and Italian, in `AppStore/screenshots/`. Upload the whole set per locale; the Mac App Store needs the Mac ones.
 5. **Version page**, per platform and locale: paste promotional text, description, keywords, support and marketing URLs, and *What's New* from `metadata/`. Select the build.
 6. **App Review Information**: sign-in not required; contact details of the maintainer; notes from `review/notes.txt`.
+   **Accessibility** (App Store Connect → App Accessibility): declare, per device, only the features the device test plan confirmed on that device — VoiceOver, Voice Control, Larger Text, Dark Interface, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion.
 7. **Version Release**: choose **Manually release this version**, so nothing becomes public before unlisted distribution is in place. For updates, **Phased release** for automatic updates is recommended.
 8. **Submit for Review**, iOS and macOS.
 

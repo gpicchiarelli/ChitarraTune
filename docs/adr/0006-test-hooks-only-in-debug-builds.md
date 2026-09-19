@@ -8,7 +8,7 @@ UI tests and App Store screenshots run the app with a synthetic guitar and a fak
 
 ## Decision
 
-1. Launch arguments that change behaviour (`-demo`, `-autostart`, `-demoPermission`, `-demoAppearance`) MUST be honoured only in Debug builds; a Release build MUST ignore them.
+1. Launch arguments that change behavior (`-demo`, `-autostart`, `-demoPermission`, `-demoAppearance`) MUST be honoured only in Debug builds; a Release build MUST ignore them.
 2. The scheme MUST test with the Debug configuration and archive with Release.
 3. No other test-only switch (environment variable, user default, hidden gesture) MAY exist in the app.
 

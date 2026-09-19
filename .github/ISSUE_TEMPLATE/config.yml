@@ -3,3 +3,6 @@ contact_links:
   - name: Report a security vulnerability · Segnala una vulnerabilità
     url: https://github.com/gpicchiarelli/ChitarraTune/security/advisories/new
     about: Please report security problems privately. Do not open a public issue. · Segnala i problemi di sicurezza in privato, non in una issue pubblica.
+  - name: A question about using the app · Una domanda sull'uso dell'app
+    url: https://github.com/gpicchiarelli/ChitarraTune/blob/main/SUPPORT.md
+    about: Common questions and how to reach a person. · Domande frequenti e come contattare una persona.

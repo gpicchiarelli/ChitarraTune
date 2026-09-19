@@ -73,10 +73,8 @@ struct DocumentationSpecTests {
 
     @Test("Relative links in the Markdown files all resolve")
     func links() throws {
-        let files = ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "PRIVACY.md", "CONTRIBUTORS.md", "PLATFORMS.md",
-                     "CODE_SIGNING.md", "APPLE_COMPLIANCE.md", "SUPPORT.md", "docs/ARCHITECTURE.md", "docs/ACCESSIBILITY.md",
-                     "docs/DEVICE_TEST_PLAN.md", "AppStore/README.md", "Packages/ChitarraTuneKit/Tests/TunerCoreTests/Fixtures/Recordings/README.md",
-                     ".github/PULL_REQUEST_TEMPLATE.md"]
+        let files = Repo.files(in: ".", extensions: ["md"]).map(Repo.relativePath).filter { !$0.contains("/.build/") }
+        #expect(files.count > 25, "found only \(files.count) Markdown files")
         let link = try NSRegularExpression(pattern: ##"\]\(([^)#\s]+)(?:#[^)]*)?\)|(?:src|href)="([^"#]+)""##)
         for file in files {
             let text = try Repo.text(file)
@@ -89,7 +87,7 @@ struct DocumentationSpecTests {
         }
     }
 
-    @Test("The platform table in PLATFORMS.md matches the build settings")
+    @Test("The platform table in docs/PLATFORMS.md matches the build settings")
     func platforms() throws {
         let s = try Repo.xcconfig("Config/Base.xcconfig", "Config/App.xcconfig")
         #expect(s["MACOSX_DEPLOYMENT_TARGET"] == "26.0" && s["IPHONEOS_DEPLOYMENT_TARGET"] == "26.0")

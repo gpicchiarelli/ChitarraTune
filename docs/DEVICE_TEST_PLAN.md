@@ -1,6 +1,6 @@
 # Device test plan
 
-Automated tests cover the signal path (synthetic and modelled strings), the presentation model, every screen in demo mode and Xcode's accessibility audit on iPhone, iPad and Mac. What they cannot cover is real hardware: a real microphone, a real guitar, a phone call, VoiceOver on a device. Run this plan on the TestFlight build of every release candidate, before submitting for review. Record the build number, the device and the result of each line in the release issue.
+Automated tests cover the signal path (synthetic and modeled strings), the presentation model, every screen in demo mode and Xcode's accessibility audit on iPhone, iPad and Mac. What they cannot cover is real hardware: a real microphone, a real guitar, a phone call, VoiceOver on a device. Run this plan on the TestFlight build of every release candidate, before submitting for review. Record the build number, the device and the result of each line in the release issue.
 
 ## Field session (debug build from Xcode)
 
@@ -32,6 +32,7 @@ A useful first set: every open string of standard tuning in tune (0 ¢), the low
 - [ ] A4 = 432 Hz and 415 Hz: the targets move accordingly.
 - [ ] Let a string ring out completely: the reading holds, dims, and never flips to another note.
 - [ ] Electric guitar into an audio interface on the Mac (input 2 of a two-input interface): heard and measured.
+- [ ] Electric guitar through an amplifier at low volume, heard by a Mac's or an iPhone's built-in microphone in a quiet room: every string, the top two included, moves the needle without raising the input gain. If one does not, *Copy Diagnostics* says why (`no reading: … below the gate, … unclear, … out of range`).
 
 ## Microphone permission
 
@@ -55,7 +56,7 @@ A useful first set: every open string of standard tuning in tune (0 ¢), the low
 - [ ] *"Start tuning in ChitarraTune"* and *"Stop tuning in ChitarraTune"* with Siri, in English and Italian.
 - [ ] Shortcuts app: every ChitarraTune action runs.
 - [ ] Mac: Dock menu *Start*/*Stop*, ⌘L, ⌘0, ⌘1–⌘6, ⌘N (two windows with different inputs), ⌘, (Settings).
-- [ ] iPad with a hardware keyboard: the same shortcuts and Space to start and stop.
+- [ ] iPad with a hardware keyboard: the same shortcuts; with Full Keyboard Access, Space activates the focused control.
 
 ## Accessibility (on device)
 
@@ -63,7 +64,7 @@ A useful first set: every open string of standard tuning in tune (0 ¢), the low
 - [ ] Voice Control: "Tap Start Listening", "Tap Auto", "Tap String 3" work.
 - [ ] Switch Control reaches every control.
 - [ ] Largest accessibility text size: nothing is clipped; the screen scrolls.
-- [ ] Increase Contrast, Reduce Transparency, Reduce Motion, Differentiate Without Colour, Smart Invert: everything stays legible, nothing animates with Reduce Motion.
+- [ ] Increase Contrast, Reduce Transparency, Reduce Motion, Differentiate Without Color, Smart Invert: everything stays legible, nothing animates with Reduce Motion.
 - [ ] Mac: Full Keyboard Access reaches every control.
 
 ## Energy and performance
@@ -72,7 +73,7 @@ A useful first set: every open string of standard tuning in tune (0 ¢), the low
 - [ ] Low Power Mode: the tuner keeps working (at a lower analysis rate).
 - [ ] Leaving the app idle with the auto-stop set to one minute: listening stops, and the notice explains why.
 
-## Localisation
+## Localization
 
 - [ ] Device in Italian: the whole app, the permission text, the control and Siri phrases are in Italian; note names use solfège by default.
 - [ ] Device in English: English everywhere, letter names by default.

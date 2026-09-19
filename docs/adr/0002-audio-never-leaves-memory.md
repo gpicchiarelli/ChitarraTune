@@ -4,7 +4,7 @@ Status: Accepted (2026-09-19)
 
 ## Context
 
-The app listens to the microphone. Users hand it that access on the promise in [PRIVACY.md](../../PRIVACY.md): audio is analysed in memory and discarded. A tuner has no reason to keep sound, and any file, export or upload of audio would break that promise, the App Store privacy label and the user's trust, whatever the intent (a debug aid, a test fixture, a support request).
+The app listens to the microphone. Users hand it that access on the promise in [PRIVACY.md](../../PRIVACY.md): audio is analyzed in memory and discarded. A tuner has no reason to keep sound, and any file, export or upload of audio would break that promise, the App Store privacy label and the user's trust, whatever the intent (a debug aid, a test fixture, a support request).
 
 ## Decision
 

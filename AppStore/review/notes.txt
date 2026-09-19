@@ -6,6 +6,6 @@ How to review:
 3. Tap a string chip (1–6) to tune only that string; tap "Auto" to return to automatic detection.
 4. Settings (gear icon on iPhone/iPad, ChitarraTune ▸ Settings on the Mac) holds the A4 reference pitch, note names, gauge style, haptics and the automatic stop after silence.
 
-The microphone is only used while the tuner is listening. Audio is analysed in memory and never recorded, stored or transmitted. On iPhone and iPad listening stops when the app goes to the background; the app declares no background modes.
+The microphone is only used while the tuner is listening. Audio is analyzed in memory and never recorded, stored or transmitted. On iPhone and iPad listening stops when the app goes to the background; the app declares no background modes.
 
 Siri and Shortcuts: "Start tuning in ChitarraTune" opens the app and starts listening.

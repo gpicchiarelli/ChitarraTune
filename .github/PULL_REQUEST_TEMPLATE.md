@@ -14,13 +14,15 @@
 - [ ] `Scripts/verify.sh` passes (lint, no warnings, tests, coverage floors)
 - [ ] A bug fix comes with a test that fails without it
 - [ ] The app builds for macOS and for the iOS Simulator
-- [ ] Tried with a real microphone (if audio, DSP or permissions are involved)
+- [ ] Tried with a real instrument (if audio, the engine or permissions are involved)
+- [ ] No measurement changed, or the golden readings were regenerated and the commit explains why the new numbers are more correct
 
 ## Invariants · Invarianti
 
 - [ ] No network access, no audio recording or persistence
 - [ ] No new entitlement, permission or third-party dependency (or it is explained above)
 - [ ] User-facing text is in the string catalogs, in English and Italian
+- [ ] Nothing contradicts an [architecture decision](../docs/adr/README.md), or the ADR is superseded in this change
 
 ## Screenshots · Schermate
 

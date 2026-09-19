@@ -30,4 +30,4 @@ The Mac download outside the App Store was a zip of the notarized app. A zip is 
 - `Scripts/make-dmg.sh`, run by the `release` job of `.github/workflows/ci.yml` on every push and by `.github/workflows/release.yml` on a tagged release.
 - `Packages/ChitarraTuneKit/Tests/RepositoryPolicyTests/DiskImagePolicyTests.swift` (the recipe in the script, the signing identifier).
 - `Packages/ChitarraTuneKit/Tests/RepositoryPolicyTests/WorkflowPolicyTests.swift` (both workflows build the image; the release notarizes, staples and publishes it; the zip is gone).
-- `CODE_SIGNING.md` (the disk image section).
+- `docs/CODE_SIGNING.md` (the disk image section).

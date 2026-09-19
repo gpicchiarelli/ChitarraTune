@@ -9,7 +9,7 @@
 
 <br>
 
-[Features](#features) &nbsp;·&nbsp; [Tunings](#tunings) &nbsp;·&nbsp; [How it works](#how-it-works) &nbsp;·&nbsp; [Siri & Shortcuts](#siri--shortcuts) &nbsp;·&nbsp; [Install](#install) &nbsp;·&nbsp; [Getting started](#getting-started) &nbsp;·&nbsp; [Privacy & security](#privacy--security) &nbsp;·&nbsp; [Italiano](#italiano)
+[Features](#features) · [Tunings](#tunings) · [Accuracy](#accuracy) · [Privacy](#privacy-and-security) · [Siri & Shortcuts](#siri-and-shortcuts) · [Install](#install) · [Build](#build-from-source) · [Italiano](#italiano)
 
 <br>
 
@@ -20,46 +20,11 @@
 <p>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/gpicchiarelli/ChitarraTune/ci.yml?branch=main&style=flat-square&logo=github&label=CI"></a>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://img.shields.io/github/actions/workflow/status/gpicchiarelli/ChitarraTune/codeql.yml?branch=main&style=flat-square&logo=github&label=CodeQL"></a>
-  <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/swiftlint.yml"><img alt="SwiftLint" src="https://img.shields.io/github/actions/workflow/status/gpicchiarelli/ChitarraTune/swiftlint.yml?branch=main&style=flat-square&logo=github&label=SwiftLint"></a>
-  <a href="https://github.com/gpicchiarelli/ChitarraTune/releases"><img alt="Release" src="https://img.shields.io/github/v/release/gpicchiarelli/ChitarraTune?include_prereleases&style=flat-square&label=release"></a>
-  <a href="https://github.com/gpicchiarelli/ChitarraTune/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/gpicchiarelli/ChitarraTune/total?style=flat-square&label=downloads"></a>
-</p>
-
-<p>
   <img alt="Version 2.0.0" src="https://img.shields.io/badge/version-2.0.0-4F46E5?style=flat-square">
+  <img alt="macOS, iOS and iPadOS 26 or later" src="https://img.shields.io/badge/macOS_·_iOS_·_iPadOS-26%2B-000000?style=flat-square&logo=apple&logoColor=white">
   <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?style=flat-square&logo=swift&logoColor=white">
-  <img alt="Xcode 26+" src="https://img.shields.io/badge/Xcode-26%2B-147EFB?style=flat-square&logo=xcode&logoColor=white">
-  <img alt="macOS 26+" src="https://img.shields.io/badge/macOS-26%2B-000000?style=flat-square&logo=apple&logoColor=white">
-  <img alt="iOS 26+" src="https://img.shields.io/badge/iOS-26%2B-000000?style=flat-square&logo=apple&logoColor=white">
-  <img alt="iPadOS 26+" src="https://img.shields.io/badge/iPadOS-26%2B-000000?style=flat-square&logo=apple&logoColor=white">
-  <img alt="SwiftUI" src="https://img.shields.io/badge/UI-SwiftUI-0A84FF?style=flat-square">
-  <img alt="Swift Package Manager" src="https://img.shields.io/badge/Swift_Package-ChitarraTuneKit-F05138?style=flat-square&logo=swift&logoColor=white">
-  <img alt="App Intents" src="https://img.shields.io/badge/Siri_%26_Shortcuts-App_Intents-8E8E93?style=flat-square">
-  <img alt="Strict concurrency" src="https://img.shields.io/badge/Concurrency-strict-F05138?style=flat-square">
-  <img alt="Swift Testing" src="https://img.shields.io/badge/Tests-Swift_Testing-30B94D?style=flat-square">
-</p>
-
-<p>
-  <img alt="On-device audio" src="https://img.shields.io/badge/Audio-on--device_only-2EA44F?style=flat-square">
-  <img alt="No network" src="https://img.shields.io/badge/Network-none-2EA44F?style=flat-square">
-  <img alt="No recording" src="https://img.shields.io/badge/Recording-never-2EA44F?style=flat-square">
-  <img alt="Third-party dependencies: 0" src="https://img.shields.io/badge/Third--party_dependencies-0-2EA44F?style=flat-square">
-  <img alt="App Sandbox" src="https://img.shields.io/badge/App_Sandbox-enabled-0A84FF?style=flat-square&logo=apple&logoColor=white">
-  <img alt="Hardened Runtime" src="https://img.shields.io/badge/Hardened_Runtime-enabled-0A84FF?style=flat-square">
-  <img alt="Enhanced Security" src="https://img.shields.io/badge/Enhanced_Security-enabled-0A84FF?style=flat-square">
-  <img alt="Privacy manifest" src="https://img.shields.io/badge/Privacy_manifest-included-0A84FF?style=flat-square">
-  <img alt="Accessibility" src="https://img.shields.io/badge/Accessibility-VoiceOver-5856D6?style=flat-square">
-  <img alt="Languages" src="https://img.shields.io/badge/Languages-English_%26_Italiano-FF9500?style=flat-square">
-</p>
-
-<p>
+  <img alt="No network, no recording, no third-party code" src="https://img.shields.io/badge/privacy-no_network_·_no_recording-2EA44F?style=flat-square">
   <a href="LICENSE"><img alt="License: BSD 3-Clause" src="https://img.shields.io/badge/license-BSD_3--Clause-4F46E5?style=flat-square"></a>
-  <a href="https://github.com/gpicchiarelli/ChitarraTune/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/gpicchiarelli/ChitarraTune?style=flat-square"></a>
-  <a href="https://github.com/gpicchiarelli/ChitarraTune/graphs/commit-activity"><img alt="Commit activity" src="https://img.shields.io/github/commit-activity/m/gpicchiarelli/ChitarraTune?style=flat-square"></a>
-  <a href="https://github.com/gpicchiarelli/ChitarraTune/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/gpicchiarelli/ChitarraTune?style=flat-square"></a>
-  <a href="https://github.com/gpicchiarelli/ChitarraTune/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/gpicchiarelli/ChitarraTune?style=flat-square"></a>
-  <img alt="Top language" src="https://img.shields.io/github/languages/top/gpicchiarelli/ChitarraTune?style=flat-square">
-  <img alt="Repository size" src="https://img.shields.io/github/repo-size/gpicchiarelli/ChitarraTune?style=flat-square">
 </p>
 
 <br>
@@ -71,49 +36,35 @@
 <br>
 
 > [!NOTE]
-> **Version 2.0** is a ground-up rewrite for iOS 26, iPadOS 26 and macOS 26, free on the App Store (as an unlisted app: it is not in search results, only reachable through its direct link) and as a notarized disk image for the Mac on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). See the [changelog](CHANGELOG.md).
+> **Version 2.0** is a ground-up rewrite for macOS 26, iOS 26 and iPadOS 26. It is not released yet: it will be free on the App Store, as an unlisted app reachable only through its direct link, and on the Mac also as a notarized disk image on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). What is left before release is tracked in [docs/RELEASE_READINESS.md](docs/RELEASE_READINESS.md).
 
 <table>
   <tr>
     <td width="33%" valign="top">
-      <h3>Fast and steady</h3>
-      YIN pitch detection on an FFT, about forty readings a second. The needle glides, and "in tune" only lights up once the note has really settled.
+      <h3>Precise</h3>
+      Measures the fundamental of the string itself, so the sharp overtones of steel strings do not pull the reading. "In tune" lights up only once the note has settled.
     </td>
     <td width="33%" valign="top">
-      <h3>Yours alone</h3>
-      Audio is analysed on the device and never recorded or sent anywhere. The app has no network access at all, and no third-party code.
+      <h3>Private</h3>
+      Sound is analyzed on the device and discarded a fraction of a second later. No recording, no network access, no third-party code.
     </td>
     <td width="33%" valign="top">
-      <h3>Everywhere you play</h3>
-      One app for Mac, iPhone and iPad, with Siri, Shortcuts, keyboard shortcuts and full Dynamic Type support.
+      <h3>At home on every device</h3>
+      One app for Mac, iPhone and iPad, with Siri, Shortcuts, keyboard shortcuts, VoiceOver and Dynamic Type.
     </td>
   </tr>
 </table>
 
 ## Features
 
-**Tuning**
-
-- Ten tunings, from Standard to Open A, with automatic string detection or a string you pin yourself
-- A4 calibration from 415 to 466 Hz, for baroque pitch, 432 or a friend's out-of-tune piano
-- Note names in English (`C D E F G A B`) or fixed-do solfège (`Do Re Mi Fa Sol La Si`); *Automatic* follows your language
-- Dial or bar gauge, with a green zone of ±5 cents
-
-**Inputs**
-
-- Pick any microphone or audio interface on the Mac; plug and unplug live without restarting
-- One tuner per window on the Mac, each with its own input and tuning
-
-**Considerate**
-
-- Relaxes the analysis rate in Low Power Mode or under thermal pressure
-- Stops listening after a period of silence (one, three or five minutes, or never)
-- No timers or polling while idle; the mic is released the moment you stop
-
-**Accessible**
-
-- VoiceOver labels, values and hints; an announcement when a string is in tune
-- Dynamic Type, Reduce Motion, and a haptic tick where the hardware supports it
+- **Ten tunings**, with automatic string detection or a string you pin yourself.
+- **Reference pitch** from 415 to 466 Hz: baroque pitch, 432 Hz, or a piano that has drifted.
+- **Note names** in English (`C D E F G A B`) or fixed-do solfège (`Do Re Mi Fa Sol La Si`); *Automatic* follows your language.
+- **Dial or bar**, with a green zone of ±5 cents.
+- **Any input on the Mac**, a microphone or an audio interface, plugged in while you tune; one tuner per window, each with its own input and tuning.
+- **Soft sources** such as an amplifier at low volume are heard without raising the input gain: the tuner learns how quiet your room is.
+- **Considerate:** it slows its analysis in Low Power Mode, stops after a period of silence, and releases the microphone the moment you stop.
+- **Accessible:** VoiceOver speaks notes as words and announces when a string is in tune; Dynamic Type up to the largest sizes, Reduce Motion, Increase Contrast and full keyboard control.
 
 ## Tunings
 
@@ -130,28 +81,23 @@
 | Open E | E · B · E · G♯ · B · E |
 | Open A | E · A · E · A · C♯ · E |
 
-## How it works
+## Accuracy
 
-```
-microphone → input tap → sliding window → noise gate → YIN (FFT) → string → smoothing → stability → hold → gauge
-```
+On 132 reference signals, every string of every tuning, the median error is **0.16 cent** and the worst note is off by half a cent. On modeled real-world conditions (a pickup into an interface, an acoustic guitar in front of a phone, mains hum, Low Power Mode) the typical error stays between 0.3 and 0.4 cent. Every one of these numbers is a test that runs on every push; the method and the limits are in [docs/ACCURACY.md](docs/ACCURACY.md).
 
-A pitch detector that costs almost nothing is what makes a tuner feel instant. ChitarraTune computes the YIN difference function through the frequency domain with Accelerate: about 16 µs per analysis on an Apple M4, roughly 65 times faster than the direct loop it replaced (about 1.06 ms). When you pin a string, the search narrows to a window around it, which rules out octave errors by construction.
+## Privacy and security
 
-Real steel strings are slightly inharmonic, and that pulls a period detector a few cents sharp. So once YIN has found the period, ChitarraTune measures it again on a band-passed copy of the signal that keeps only the fundamental and part of the second partial, one filter per string, running on the live stream. The whole reading stays well under a tenth of a millisecond, and on a modelled steel string the typical error is below one cent.
+ChitarraTune listens to your guitar to measure its pitch, and that is all it does with the microphone.
 
-The code is split so that the interesting part can be tested without a microphone:
+- **Nothing leaves the device.** Sound lives only in the analysis window and is overwritten as new audio arrives. It is never recorded, stored or sent, in any build.
+- **No network.** No networking code, and the sandbox has no network entitlement.
+- **Least privilege.** App Sandbox with a single resource: audio input. Hardened Runtime, Enhanced Security and pointer authentication.
+- **Nothing to inherit.** No third-party dependencies; every GitHub Action is pinned to a commit.
+- **A privacy manifest** declares no tracking and no collected data.
 
-| Layer | What it does |
-| :-- | :-- |
-| **TunerCore** | Pitch maths, tunings, the YIN detector and the tuning engine. Pure Swift, no I/O. |
-| **TunerAudio** | Microphone capture, permission and input discovery, behind protocols. |
-| **TunerFeature** | The observable state the interface renders, and your preferences. |
-| **App** | SwiftUI screens, menu commands, Settings and App Intents. |
+Each of these is a [binding decision](docs/adr/README.md) that a test enforces. The policy is in [PRIVACY.md](PRIVACY.md); to report a vulnerability privately, see [SECURITY.md](SECURITY.md).
 
-Concurrency is explicit: capture and DSP are actors, the interface is `@MainActor`, and a generation counter makes sure a slow permission prompt can never start a session you already cancelled. The details are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-
-## Siri & Shortcuts
+## Siri and Shortcuts
 
 | Action | What it does |
 | :-- | :-- |
@@ -162,37 +108,27 @@ Concurrency is explicit: capture and DSP are actors, the interface is `@MainActo
 | **Pick a string** | Pins string 1–6, or returns to automatic |
 | **Choose input** | Selects a microphone or interface |
 
-Try *"Start tuning in ChitarraTune"* or add the actions to your own shortcuts. The **Start Tuning** control can go in Control Center, on the Lock Screen or on the Action Button (iPhone, iPad), and in Control Center or the menu bar (Mac).
+Say *"Start tuning in ChitarraTune"*, or use the actions in your own shortcuts. The **Start Tuning** control fits in Control Center, on the Lock Screen and on the Action Button (iPhone, iPad), and in Control Center or the menu bar (Mac).
 
-## Keyboard shortcuts <sub>macOS</sub>
-
-| Shortcut | Action |
-| :-- | :-- |
-| <kbd>⌘</kbd> <kbd>L</kbd> | Start or stop listening |
-| <kbd>⌘</kbd> <kbd>0</kbd> | Automatic string detection |
-| <kbd>⌘</kbd> <kbd>1</kbd> … <kbd>⌘</kbd> <kbd>6</kbd> | Pin a string |
-| <kbd>⌘</kbd> <kbd>N</kbd> | New tuner window |
-| <kbd>⌘</kbd> <kbd>,</kbd> | Settings |
-
-## Requirements
-
-- **macOS 26** (Tahoe), **iOS 26** or **iPadOS 26**
-- **Xcode 26** or later to build
+**Keyboard on the Mac:** <kbd>⌘</kbd> <kbd>L</kbd> start or stop · <kbd>⌘</kbd> <kbd>0</kbd> automatic string · <kbd>⌘</kbd> <kbd>1</kbd>…<kbd>6</kbd> pin a string · <kbd>⌘</kbd> <kbd>N</kbd> new tuner window · <kbd>⌘</kbd> <kbd>,</kbd> Settings.
 
 ## Install
 
-**iPhone and iPad** are on the App Store, free (an unlisted app: it is not in search results, only reachable through its direct link).
+Requires **macOS 26**, **iOS 26** or **iPadOS 26**.
 
-**Mac**, outside the store: download `ChitarraTune-<version>.dmg` from the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases), open it, and drag **ChitarraTune** onto **Applications**. Both the disk image and the app inside are Developer ID signed, notarized and stapled, so nothing warns even if you have never been online.
+- **iPhone, iPad and Mac:** the App Store, free (from 2.0).
+- **Mac, outside the store:** download `ChitarraTune-<version>.dmg` from the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases), open it and drag **ChitarraTune** onto **Applications**. The disk image and the app are both signed, notarized and stapled, so macOS opens them without a warning, even offline.
 
-To check what you downloaded before opening it:
+To check a download before opening it:
 
 ```bash
 shasum -a 256 -c ChitarraTune-<version>.dmg.sha256
 spctl --assess --type open --context context:primary-signature -v ChitarraTune-<version>.dmg
 ```
 
-## Getting started
+## Build from source
+
+You need **Xcode 26** or later.
 
 ```bash
 git clone https://github.com/gpicchiarelli/ChitarraTune.git
@@ -200,101 +136,33 @@ cd ChitarraTune
 open ChitarraTune.xcodeproj
 ```
 
-Choose the **ChitarraTune** scheme and a destination (*My Mac*, an iPhone or an iPad), then run.
+Choose the **ChitarraTune** scheme and a destination, then run. To sign with your own team, create `Config/Local.xcconfig` (ignored by git) containing `DEVELOPMENT_TEAM = YOURTEAMID`.
 
-**Signing.** The project uses automatic signing with the maintainer's team. To build with your own, create `Config/Local.xcconfig` (ignored by git):
-
-```
-DEVELOPMENT_TEAM = YOURTEAMID
-```
-
-**Tests.** The package tests need no microphone and no simulator:
+The engine and its tests need neither a microphone nor a simulator:
 
 ```bash
 swift test --package-path Packages/ChitarraTuneKit
+Scripts/verify.sh            # everything the pre-push hook checks: lint, warnings, tests, coverage
 ```
 
-**Command line, without signing.** Good for a compile check:
+The code is a local Swift package under a thin SwiftUI app:
 
-```bash
-xcodebuild -project ChitarraTune.xcodeproj -scheme ChitarraTune \
-  -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
-```
-
-<details>
-<summary><b>Releases and notarization</b></summary>
-
-<br>
-
-Pushing a tag such as `v2.0.0` (from a commit on `main`) runs the [release workflow](.github/workflows/release.yml): it runs the tests, builds and signs the app with your Developer ID certificate, checks the Hardened Runtime flag and the entitlements, notarizes and staples it, then wraps it in a disk image with an `Applications` symlink, signs the image under its own identifier (`com.chitarratune.app.dmg`), notarizes and staples the image too, and publishes `ChitarraTune-<version>.dmg` with a SHA-256 checksum and a build-provenance attestation. Two notarizations, one artifact; the rules are in [ADR 0014](docs/adr/0014-disk-image-distribution.md).
-
-Signing needs repository secrets; the full list and the reasoning are in [`CODE_SIGNING.md`](CODE_SIGNING.md). Without them the workflow refuses to publish, unless you start it by hand and explicitly allow an unsigned build.
-
-An unsigned disk image makes Gatekeeper warn. Verify the SHA-256 checksum, then use **Right-click → Open** once.
-
-</details>
-
-## Privacy & security
-
-ChitarraTune listens to your guitar to measure its pitch, and that is all it does with the microphone.
-
-- **On-device.** Samples live in a short in-memory buffer and are discarded after analysis. Nothing is recorded, stored or sent.
-- **No network.** No networking code, and the sandbox network entitlements are off.
-- **Least privilege.** macOS App Sandbox with a single resource entitlement, audio input. The permission prompt appears when you ask the tuner to listen.
-- **Hardened.** Hardened Runtime and Xcode Enhanced Security.
-- **Nothing to inherit.** No third-party dependencies, and every GitHub Action is pinned to a commit SHA.
-- **A privacy manifest** declares no tracking and no collected data.
-
-The full policy is in [`PRIVACY.md`](PRIVACY.md). Found a vulnerability? Please report it privately; see [`SECURITY.md`](SECURITY.md).
-
-## Project layout
-
-```
-ChitarraTune/
-├── App/                    SwiftUI app for macOS, iOS and iPadOS
-│   ├── Tuner/              dial, bar, note read-out, string selector, window, commands
-│   ├── Settings/           settings, About, license
-│   ├── Intents/            Siri and Shortcuts
-│   ├── DesignSystem/       colours, formatting, tuning names
-│   └── Resources/          string catalogs, assets, privacy manifest
-├── Shared/                 code shared by the app and the extension (Start Tuning intent)
-├── Controls/               WidgetKit extension: the Start Tuning system control
-├── AppStore/               store listing (en, it), review notes, screenshots
-├── Config/                 build settings, entitlements, Info.plists, export options
-├── Packages/ChitarraTuneKit/
-│   ├── Sources/TunerCore/      pitch maths, tunings, YIN, tuning engine
-│   ├── Sources/TunerAudio/     capture, permission, input discovery
-│   ├── Sources/TunerFeature/   observable models and settings
-│   └── Tests/                  Swift Testing suites
-└── docs/                   architecture, accessibility, assets
-```
-
-## Documentation
-
-| | |
+| Layer | What it does |
 | :-- | :-- |
-| [Architecture](docs/ARCHITECTURE.md) | Layers, signal path, concurrency model |
-| [Decisions](docs/adr/README.md) | Binding architecture decision records, each enforced by a test |
-| [Accessibility](docs/ACCESSIBILITY.md) | What is implemented and what is not |
-| [Platforms](PLATFORMS.md) | Requirements and per-platform behaviour |
-| [Code signing](CODE_SIGNING.md) | Entitlements, signing, notarization, secrets |
-| [Apple compliance](APPLE_COMPLIANCE.md) | App Store readiness |
-| [App Store submission](AppStore/README.md) | Listing, submission and unlisted distribution |
-| [Device test plan](docs/DEVICE_TEST_PLAN.md) | What to check on real hardware before each release |
-| [Support](SUPPORT.md) | How to get help |
-| [Changelog](CHANGELOG.md) | What changed |
-| [Contributing](CONTRIBUTING.md) | Ground rules and how to help |
-| [Security policy](SECURITY.md) | How to report a vulnerability |
-| [Privacy](PRIVACY.md) | What the app does with your data (nothing) |
-| [Contributors](CONTRIBUTORS.md) | Who made this |
+| **TunerCore** | Pitch math, tunings, the YIN detector and the tuning engine. Pure Swift, no I/O. |
+| **TunerAudio** | Microphone capture, permission and input discovery, behind protocols. |
+| **TunerFeature** | The observable state the interface renders, and the preferences. |
+| **App** | SwiftUI screens, menu commands, Settings and App Intents. |
+
+The design is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); every document is listed in [docs/README.md](docs/README.md).
 
 ## Contributing
 
-Issues and pull requests are welcome, in English or Italian. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md): it lists the few rules that keep the app small and private. Bugs and ideas go through the [issue forms](https://github.com/gpicchiarelli/ChitarraTune/issues/new/choose).
+Issues and pull requests are welcome, in English or Italian. [CONTRIBUTING.md](CONTRIBUTING.md) lists the few rules that keep the app small, private and precise. Bugs and ideas go through the [issue forms](https://github.com/gpicchiarelli/ChitarraTune/issues/new/choose); questions about using the app, to [SUPPORT.md](SUPPORT.md).
 
 ## License
 
-BSD 3-Clause. See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
+BSD 3-Clause, © 2025–2026 ChitarraTune contributors. See [LICENSE](LICENSE) and [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
 <sub>Apple, the Apple logo, Mac, macOS, iOS, iPadOS, iPhone, iPad, Xcode, Siri and Shortcuts are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store and Mac App Store are service marks of Apple Inc. Swift and the Swift logo are trademarks of Apple Inc. ChitarraTune is an independent project, not affiliated with or endorsed by Apple.</sub>
 
@@ -307,10 +175,10 @@ BSD 3-Clause. See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 
 <br>
 
-**ChitarraTune** è un accordatore per chitarra per **Mac, iPhone e iPad**, scritto in Swift 6 e SwiftUI. Misura l'intonazione con l'algoritmo YIN calcolato via FFT, mostra un ago fluido e conferma «intonato» solo quando la nota si è davvero stabilizzata.
+**ChitarraTune** è un accordatore per chitarra per **Mac, iPhone e iPad**. Misura la fondamentale della corda stessa, così gli armonici crescenti delle corde in acciaio non falsano la lettura, e dice «intonata» solo quando la nota si è davvero stabilizzata.
 
 > [!NOTE]
-> **La versione 2.0** è una riscrittura completa per iOS 26, iPadOS 26 e macOS 26, gratuita sull'App Store (come app non in elenco: non compare nelle ricerche, si raggiunge solo dal suo link diretto) e scaricabile per Mac come immagine disco, autenticata da Apple, dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
+> **La versione 2.0** è una riscrittura completa per macOS 26, iOS 26 e iPadOS 26, non ancora pubblicata. Sarà gratuita sull'App Store, come app non in elenco raggiungibile solo dal suo link diretto, e per Mac anche come immagine disco autenticata da Apple nella [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
 
 <!-- app-store-badges:it:start -->
 <!-- Official App Store badges: Scripts/app-store-badges.sh <App Store ID> adds them once the app is live. -->
@@ -318,41 +186,26 @@ BSD 3-Clause. See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 
 **Caratteristiche**
 
-- Dieci accordature, da Standard a Open A, con riconoscimento automatico della corda o corda fissata a mano
-- Calibrazione del La (A4) da 415 a 466 Hz
-- Nomi delle note in inglese o in solfeggio (Do Re Mi Fa Sol La Si), con modalità *Automatica* che segue la lingua del sistema
-- Quadrante o barra, con zona verde di ±5 cent
-- Scelta del microfono o dell'interfaccia audio su Mac, anche collegandola a caldo; una finestra per ogni accordatore
-- Risparmio energetico: analisi più rada in Modalità Risparmio Energetico, arresto dopo un periodo di silenzio, nessun polling
-- Accessibilità: VoiceOver, Dynamic Type, Riduci Movimento
-- Siri e Comandi Rapidi: avvia e ferma l'accordatura, scegli accordatura, corda, ingresso e frequenza di riferimento
+- Dieci accordature, con riconoscimento automatico della corda o corda fissata a mano.
+- La di riferimento (A4) da 415 a 466 Hz.
+- Nomi delle note in solfeggio o in inglese; *Automatica* segue la lingua del sistema.
+- Quadrante o barra, con zona verde di ±5 cent.
+- Sul Mac qualsiasi microfono o interfaccia audio, anche collegata mentre accordi; una finestra per ogni accordatore.
+- Sente anche le sorgenti deboli, come un amplificatore a volume basso, senza alzare il guadagno.
+- Rallenta l'analisi in Risparmio energetico e si ferma dopo un periodo di silenzio.
+- VoiceOver, Dynamic Type, Riduci movimento, Aumenta contrasto e controllo completo da tastiera.
+- Siri e Comandi Rapidi: avvia e ferma l'accordatura, scegli accordatura, corda, ingresso e La di riferimento.
 
-**Privacy.** L'audio viene analizzato sul dispositivo e non viene mai registrato né inviato: l'app non ha alcun accesso alla rete e non usa codice di terze parti. Sandbox, Hardened Runtime ed Enhanced Security sono attivi. Vedi [`SECURITY.md`](SECURITY.md) per segnalare una vulnerabilità in privato.
+**Precisione.** Sui 132 segnali di riferimento l'errore mediano è di 0,16 cent; nelle condizioni realistiche simulate resta tra 0,3 e 0,4 cent. Metodo e limiti in [docs/ACCURACY.md](docs/ACCURACY.md).
 
-**Installare su Mac.** Scarica `ChitarraTune-<versione>.dmg` dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases), aprilo e trascina **ChitarraTune** su **Applicazioni**. Sia l'immagine disco sia l'app dentro sono firmate, autenticate e con il ticket applicato, quindi nessun avviso anche senza connessione.
+**Privacy.** Il suono è analizzato sul dispositivo e scartato dopo una frazione di secondo: non viene mai registrato né inviato. L'app non ha accesso alla rete e non contiene codice di terze parti. Informativa in [PRIVACY.md](PRIVACY.md); per segnalare una vulnerabilità in privato vedi [SECURITY.md](SECURITY.md).
 
-**Requisiti.** macOS 26, iOS 26 o iPadOS 26; Xcode 26 o successivo.
+**Installare su Mac.** Scarica `ChitarraTune-<versione>.dmg` dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases), aprilo e trascina **ChitarraTune** su **Applicazioni**. Immagine disco e app sono firmate e autenticate da Apple: si aprono senza avvisi, anche offline.
 
-**Compilare.**
+**Compilare.** Serve Xcode 26 o successivo. Apri `ChitarraTune.xcodeproj`, scegli lo schema **ChitarraTune** e una destinazione. Per firmare con il tuo team crea `Config/Local.xcconfig` con `DEVELOPMENT_TEAM = TUOTEAMID`. I test del motore non richiedono microfono: `swift test --package-path Packages/ChitarraTuneKit`.
 
-```bash
-git clone https://github.com/gpicchiarelli/ChitarraTune.git
-cd ChitarraTune
-open ChitarraTune.xcodeproj
-```
+**Assistenza.** [SUPPORT.md](SUPPORT.md), in italiano o in inglese.
 
-Scegli lo scheme **ChitarraTune** e una destinazione, poi avvia. Per usare il tuo team di firma crea `Config/Local.xcconfig` con `DEVELOPMENT_TEAM = TUOTEAMID` (il file è ignorato da git). I test del pacchetto non richiedono microfono:
-
-```bash
-swift test --package-path Packages/ChitarraTuneKit
-```
-
-**Licenza.** BSD 3-Clause, vedi [`LICENSE`](LICENSE).
+**Licenza.** BSD 3-Clause, © 2025–2026 ChitarraTune contributors.
 
 </details>
-
-<br>
-
-<div align="center">
-  <sub>Made with Swift, SwiftUI and Accelerate &nbsp;·&nbsp; © 2025–2026 ChitarraTune contributors</sub>
-</div>

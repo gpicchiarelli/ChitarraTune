@@ -1,6 +1,6 @@
 # Accessibility
 
-This page describes what the code does today. It is not a certification: the behaviour has been written against Apple's accessibility APIs but has not yet been through a full VoiceOver audit on device.
+This page describes what the code does today. It is not a certification: the behavior has been written against Apple's accessibility APIs but has not yet been through a full VoiceOver audit on device.
 
 ## What is implemented
 
@@ -39,9 +39,9 @@ This page describes what the code does today. It is not a certification: the beh
 
 **Contrast**
 
-- Every colour in the asset catalog has light, dark and *Increase Contrast* variants. `ColorContrastTests` computes their WCAG 2.2 contrast against every background the app draws them on (window, grouped form, the tinted washes): text reaches 4.5:1, and 7:1 with *Increase Contrast*; white text sits on opaque fills of at least 5.8:1 (8:1 for the accent); secondary buttons reach 7:1.
-- Secondary text uses its own colour (`TuneSecondaryLabel`) instead of the system secondary label, which is about 3.4:1 on white.
-- Colour is never the only signal: every tuning state also has a text label and its own symbol.
+- Every color in the asset catalog has light, dark and *Increase Contrast* variants. `ColorContrastTests` computes their WCAG 2.2 contrast against every background the app draws them on (window, grouped form, the tinted washes): text reaches 4.5:1, and 7:1 with *Increase Contrast*; white text sits on opaque fills of at least 5.8:1 (8:1 for the accent); secondary buttons reach 7:1.
+- Secondary text uses its own color (`TuneSecondaryLabel`) instead of the system secondary label, which is about 3.4:1 on white.
+- Color is never the only signal: every tuning state also has a text label and its own symbol.
 
 **Explaining the microphone**
 

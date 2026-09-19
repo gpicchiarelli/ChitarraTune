@@ -42,4 +42,4 @@ By hand:
    other than 440 Hz.
 
 Keep files short (a few hundred kilobytes); the repository ships them. Only add recordings you
-have the right to publish under the project's licence.
+have the right to publish under the project's license.

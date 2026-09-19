@@ -59,7 +59,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "ChitarraTune listens to your guitar through the microphone to measure its pitch. Audio is analysed on the device and never recorded or sent anywhere."
+            "value": "ChitarraTune listens to your guitar through the microphone to measure its pitch. Audio is analyzed on the device and never recorded or sent anywhere."
           }
         },
         "it": {

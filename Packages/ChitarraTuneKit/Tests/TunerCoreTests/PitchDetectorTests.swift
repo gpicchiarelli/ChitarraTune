@@ -133,7 +133,7 @@ struct PitchDetectorPropertyTests {
         let runs = 50
         let elapsed = clock.measure { for _ in 0..<runs { _ = detector.estimate(in: signal) } }
         let perAnalysis = elapsed / runs
-        // Release measures ≈0.16 ms on Apple silicon (≈0.6 % of a 25 ms hop); unoptimised debug builds are
+        // Release measures ≈23 µs on an Apple M4 (≈0.1 % of a 25 ms hop); unoptimised debug builds are
         // ~50× slower. Either way it must stay well inside one hop.
         #if DEBUG
         let budget = Duration.milliseconds(20)
