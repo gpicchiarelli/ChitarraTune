@@ -37,13 +37,13 @@ struct GoldenReadingsTests {
     }()
 
     /// Canonical text of every frame for one case, and its fresh (non-held) readings.
-    static func render(_ c: Case) -> (text: String, readings: [TunerReading]) {
+    static func render(_ c: Case, parameters: EngineParameters = .standard) -> (text: String, readings: [TunerReading]) {
         let tuning = Tuning.tuning(for: c.tuning)
         let f0 = tuning.strings[c.string].frequency() * pow(2, c.cents / 1200)
         let signal: [Float] = c.plucked
             ? StringModel().pluck(frequency: f0, sampleRate: c.rate, duration: 0.8)
             : SignalGenerator.tone(frequency: f0, sampleRate: c.rate, duration: 0.8, harmonics: SignalGenerator.guitarHarmonics, amplitude: 0.3)
-        var engine = TuningEngine(configuration: TunerConfiguration(tuning: tuning))
+        var engine = TuningEngine(configuration: TunerConfiguration(tuning: tuning), parameters: parameters)
         var lines: [String] = []
         var readings: [TunerReading] = []
         for (index, chunk) in signal.chunked(1_024).enumerated() {
@@ -61,7 +61,7 @@ struct GoldenReadingsTests {
     @Test("Every frame of every reference signal matches the frozen measurement, and is accurate")
     func golden() throws {
         let rendered = Self.cases.map { ($0, Self.render($0)) }
-        try accuracyEnvelope(rendered)
+        try Self.accuracyEnvelope(rendered)
         let current = rendered.map(\.1.text).joined(separator: "\n") + "\n"
         if ProcessInfo.processInfo.environment["UPDATE_GOLDEN"] == "1" {
             try current.write(to: Self.file, atomically: true, encoding: .utf8)
@@ -83,6 +83,20 @@ struct GoldenReadingsTests {
         print("golden readings: largest cents deviation from the frozen values \(largest) (tolerance \(Self.tolerance["C"] ?? 0))")
     }
 
+    /// ADR 0008 rule 6: in Low Power Mode or under thermal pressure the engine analyses every 45 ms
+    /// instead of 25 (`PowerProfile.efficient`). It must stay inside the same envelope and still reach
+    /// "in tune" on a string that is in tune: fewer analyses per second, never less accuracy.
+    @Test("The Low Power analysis rate is as accurate, and still confirms a string in tune")
+    func lowPowerProfile() throws {
+        var parameters = EngineParameters.standard
+        parameters.hopDuration = 0.045
+        let rendered = Self.cases.map { ($0, Self.render($0, parameters: parameters)) }
+        try Self.accuracyEnvelope(rendered)
+        for (c, output) in rendered where c.cents == 0 {
+            #expect(output.readings.contains { $0.isInTune }, "\(c.name) never reached in tune")
+        }
+    }
+
     static func centsDeviation(_ a: String, _ b: String) -> Double {
         func cents(_ line: String) -> Double? { line.split(separator: " ").first { $0.hasPrefix("C") }.flatMap { Double($0.dropFirst()) } }
         guard let x = cents(a), let y = cents(b) else { return 0 }
@@ -93,7 +107,7 @@ struct GoldenReadingsTests {
     /// machines, and on a noisy plucked string the difference accumulates through the filters and the
     /// smoothing (measured between an M4 and the CI runner: up to 0.001 cent). Discrete values (frame,
     /// gate, string, in-tune, held) must match exactly; continuous ones within tolerances well below
-    /// the instrument's accuracy (0.34 cent median) yet far above rounding noise.
+    /// the instrument's accuracy (0.38 cent median) yet far above rounding noise.
     static let tolerance: [Character: Double] = ["L": 1e-5, "F": 1e-3, "C": 0.02, "Q": 1e-3]
 
     static func difference(_ a: String, _ b: String) -> String? {
@@ -111,7 +125,7 @@ struct GoldenReadingsTests {
     /// Independent of the frozen file: what any version of the engine must achieve on these signals.
     /// The settled part of each note (after the first third) must be on the right string, with a
     /// median error of at most 2 cents per note and 0.5 cent overall.
-    private func accuracyEnvelope(_ rendered: [(Case, (text: String, readings: [TunerReading]))]) throws {
+    static func accuracyEnvelope(_ rendered: [(Case, (text: String, readings: [TunerReading]))]) throws {
         var medians: [Double] = []
         for (c, output) in rendered {
             let settled = Array(output.readings.dropFirst(output.readings.count / 3))

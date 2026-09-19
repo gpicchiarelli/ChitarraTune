@@ -34,10 +34,8 @@ for object in "${OBJECTS[@]:1}"; do ARGS+=(-object "$object"); done
 
 xcrun llvm-cov export -format=text -instr-profile="$PROFDATA" "${ARGS[@]}" \
   -ignore-filename-regex="$IGNORE" > "$BUILD/coverage.json"
-xcrun llvm-cov show -instr-profile="$PROFDATA" "${ARGS[@]}" \
-  -ignore-filename-regex="$IGNORE" -show-line-counts-or-regions=false > "$BUILD/coverage.txt"
 
-python3 - "$BUILD/coverage.json" "$THRESHOLDS" "$BUILD/coverage.txt" <<'PY'
+python3 - "$BUILD/coverage.json" "$THRESHOLDS" <<'PY'
 import json, sys, collections, os
 
 data = json.load(open(sys.argv[1]))["data"][0]["files"]
@@ -72,16 +70,16 @@ if summary_path:
         handle.write("### Coverage\n" + "\n".join(report) + "\n")
 print("\nExcluded (hardware boundary): Sources/TunerAudio/Hardware/")
 if failed:
-    import re
-    current = None
+    # Lines that hold a region never executed, from the same export the percentages come from
+    # (segments: line, column, count, has count, region entry, gap region).
     print("\nUncovered lines:", file=sys.stderr)
-    for raw in open(sys.argv[3]):
-        if raw.startswith("/") and raw.rstrip().endswith(".swift:"):
-            current = raw.split("/Sources/")[-1].rstrip(":\n")
+    for entry in data:
+        name = entry["filename"]
+        if "/Sources/" not in name or entry["summary"]["lines"]["covered"] == entry["summary"]["lines"]["count"]:
             continue
-        match = re.match(r"\s*(\d+)\|\s*0\|(.*)", raw)
-        if match and current:
-            print(f"  {current}:{match.group(1)}  {match.group(2).strip()[:100]}", file=sys.stderr)
+        source = open(name).read().splitlines()
+        for number in sorted({s[0] for s in entry["segments"] if s[3] and s[2] == 0 and not s[5]}):
+            print(f"  {name.split('/Sources/')[1]}:{number}  {source[number - 1].strip()[:100]}", file=sys.stderr)
     print("\nCoverage gate FAILED:\n  " + "\n  ".join(failed), file=sys.stderr)
     sys.exit(1)
 print("\nCoverage gate passed.")

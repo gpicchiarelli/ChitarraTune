@@ -45,7 +45,9 @@ public struct EngineParameters: Sendable, Hashable {
     public var maximumDeviation: Double = 300
     /// A jump larger than this many cents restarts smoothing instead of averaging.
     public var smoothingResetJump: Double = 60
-    /// Smoothing factor range (higher clarity → less smoothing).
+    /// Smoothing factor range (higher clarity → less smoothing), as the weight of a new measurement
+    /// per ``smoothingReference`` seconds. The engine converts it to its actual analysis interval, so
+    /// the needle settles in the same time whatever the analysis rate.
     public var smoothingFactor: ClosedRange<Double> = 0.25...0.7
     /// Deviation (cents) inside which a string counts as in tune.
     public var inTuneThreshold: Double = 5
@@ -64,8 +66,12 @@ public struct EngineParameters: Sendable, Hashable {
     /// there: at least this fraction of the signal's RMS at exactly that frequency (−20 dB).
     /// Otherwise a new, higher string was played (E2 → E4, D2 → D3 → D4) and is reported as such.
     public var fundamentalPresenceRatio: Double = 0.1
-    /// Weight of each new measurement in the running inharmonicity correction.
+    /// Weight of a new measurement in the running inharmonicity correction, per ``smoothingReference``
+    /// seconds (converted to the actual analysis interval like ``smoothingFactor``).
     public var correctionSmoothing: Double = 0.15
+
+    /// Time step the smoothing weights are defined for: the standard analysis interval.
+    public static let smoothingReference = 0.025
 
     public static let standard = EngineParameters()
 

@@ -41,9 +41,10 @@ struct RealisticSignalTests {
         tuning: Tuning,
         frequency: Double,
         sampleRate: Double,
-        target: StringTarget = .automatic
+        target: StringTarget = .automatic,
+        parameters: EngineParameters = .standard
     ) -> [TunerReading] {
-        var engine = TuningEngine(configuration: .init(tuning: tuning, target: target))
+        var engine = TuningEngine(configuration: .init(tuning: tuning, target: target), parameters: parameters)
         let signal = model.pluck(frequency: frequency, sampleRate: sampleRate, duration: 1.0)
         var result: [TunerReading] = []
         var elapsed = 0
@@ -91,6 +92,52 @@ struct RealisticSignalTests {
         print("\(scenario.name): typical \(typical) ¢, worst \(worstError) ¢")
         #expect(typical < scenario.typical, "typical error \(typical) ¢")
         #expect(worstError < scenario.worst, "worst error \(worstError) ¢")
+    }
+
+    /// Mains hum inside a low string's refinement band beats with the fundamental and pulls the
+    /// refined period (see `PartialFilter.humNotches`). Before the hum notches a low D read up to
+    /// 10 cents flat at the Low Power analysis rate. Hum here is twice the everyday model's level.
+    @Test("Mains hum at 50 or 60 Hz does not bias the low strings, at either analysis rate",
+          arguments: [(50.0, 0.025), (50.0, 0.045), (60.0, 0.025), (60.0, 0.045)])
+    func mainsHum(mains: Double, hop: Double) throws {
+        var model = StringModel(hum: 0.006)
+        model.humFrequency = mains
+        var parameters = EngineParameters.standard
+        parameters.hopDuration = hop
+        let lowStrings: [(TuningID, Int)] = [(.dropC, 0), (.dropD, 0), (.halfDown, 0), (.standard, 0), (.dropC, 1), (.halfDown, 1), (.standard, 1)]
+        var medians: [Double] = []
+        for (id, index) in lowStrings {
+            let tuning = Tuning.tuning(for: id)
+            for offset in [-23.0, 17.0] {
+                let played = tuning.strings[index].frequency() * pow(2, offset / 1200)
+                let settled = readings(model, tuning: tuning, frequency: played, sampleRate: 48_000, parameters: parameters)
+                try #require(settled.count >= 5, "too few readings: \(id) string \(index + 1)")
+                #expect(settled.allSatisfy { $0.stringIndex == index }, "wrong string: \(id) string \(index + 1)")
+                let errors = settled.map { abs($0.cents - offset) }.sorted()
+                medians.append(errors[errors.count / 2])
+                #expect(errors[errors.count / 2] < 2.5, "\(id) string \(index + 1) \(offset) ¢ with \(mains) Hz hum: \(errors[errors.count / 2]) ¢")
+            }
+        }
+        let typical = medians.sorted()[medians.count / 2]
+        print("mains \(mains) Hz, hop \(hop) s: typical \(typical) ¢, worst note \(medians.max() ?? 0) ¢")
+        #expect(typical < 0.8)
+    }
+
+    /// The string filters ring after every attack, their hum notches for about a hundred milliseconds.
+    /// A correction measured on that ringing used to read a perfect tone 1.6 cents sharp 0.3 s after
+    /// it started, and took a second to recover.
+    @Test("The refinement never measures the filters' own ringing after an attack", arguments: [36, 38, 40, 43, 45])
+    func noRingingAfterAttack(midi: Int) throws {
+        let tuning = Tuning(id: .standard, strings: [Note(midi: midi)])
+        let frequency = Note(midi: midi).frequency()
+        let signal = SignalGenerator.tone(frequency: frequency, sampleRate: 44_100, duration: 1, harmonics: SignalGenerator.guitarHarmonics, amplitude: 0.3)
+        var engine = TuningEngine(configuration: .init(tuning: tuning))
+        var elapsed = 0
+        for chunk in signal.chunked(1_024) {
+            elapsed += chunk.count
+            guard let reading = engine.process(chunk, sampleRate: 44_100)?.reading, Double(elapsed) / 44_100 > 0.25 else { continue }
+            #expect(abs(reading.cents) < 0.05, "\(Note(midi: midi).label()) at \(Double(elapsed) / 44_100) s: \(reading.cents) ¢")
+        }
     }
 
     @Test("A pinned string reads the fundamental even when the second harmonic dominates")

@@ -39,6 +39,9 @@ public struct TuningEngine {
     private var filtered: [[Float]] = []
     /// Samples the filters have processed since they were created; they need a moment to settle.
     private var filteredSampleCount = 0
+    /// Samples since the last attack (a new pluck, or the start of the filtered stream): the string
+    /// filters ring for a while after one, and the refinement waits for them (ADR 0008).
+    private var samplesSinceAttack = 0
     private var samplesSinceAnalysis = 0
     /// Where the next chunk should start on the device timeline, if the source reports timestamps.
     private var nextSampleTime: Int64?
@@ -55,6 +58,8 @@ public struct TuningEngine {
     /// string, stable over a pluck, while each single measurement of it is noisy (hum and rumble
     /// share the fundamental's band), so it is averaged over time.
     private var inharmonicCorrection: (string: Int, cents: Double)?
+    /// The correction included in the last reading (see the smoothing step in `analyse`).
+    private var appliedCorrection = 0.0
     /// Analyses performed so far, for diagnostics (analyses per second on a real device).
     public private(set) var analysisCount = 0
     /// Discontinuities in the stream's timestamps, each of which discarded the analysis history.
@@ -83,6 +88,7 @@ public struct TuningEngine {
         for index in filtered.indices { filtered[index].removeAll(keepingCapacity: true) }
         for index in partialFilters.indices { partialFilters[index]?.reset() }
         filteredSampleCount = 0
+        samplesSinceAttack = 0
         samplesSinceAnalysis = 0
     }
 
@@ -94,6 +100,7 @@ public struct TuningEngine {
         lastReading = nil
         silentSamples = 0
         inharmonicCorrection = nil
+        appliedCorrection = 0
     }
 
     /// Consumes a chunk of mono samples.
@@ -132,6 +139,7 @@ public struct TuningEngine {
             }
             filtered = Array(repeating: [], count: partialFilters.count)
             filteredSampleCount = 0
+            samplesSinceAttack = 0
         }
         guard let detector else { return nil }
 
@@ -166,6 +174,7 @@ public struct TuningEngine {
             if filtered[index].count > capacity { filtered[index].removeFirst(filtered[index].count - capacity) }
         }
         filteredSampleCount += samples.count
+        samplesSinceAttack += samples.count
         samplesSinceAnalysis += samples.count
     }
 
@@ -182,6 +191,7 @@ public struct TuningEngine {
         gateOpen = gateOpen ? level > parameters.gateCloseLevel : level > parameters.gateOpenLevel
         let elapsed = hops * hop
         let isNewPluck = level > previousLevel * parameters.attackRatio
+        if isNewPluck { samplesSinceAttack = 0 }
         previousLevel = level
 
         guard gateOpen else {
@@ -195,14 +205,24 @@ public struct TuningEngine {
         else {
             return finish(withDetection: nil, elapsedSamples: elapsed)
         }
-        // Measure the fundamental itself, free of the upper partials' inharmonic pull.
-        // The filters' start-up transient must have left the window before it can be measured.
-        if filtered.indices.contains(selection.index), filteredSampleCount >= 2 * detector.requiredSampleCount {
-            let correction = inharmonicityCorrection(
+        // Measure the fundamental itself, free of the upper partials' inharmonic pull. The string
+        // filter rings after an attack (its hum notches longest): the window must hold only its
+        // settled response, otherwise the ringing is measured as a correction and lingers in the
+        // running average for half a second.
+        // While the filter settles after a re-pluck, the string keeps the correction already known.
+        var correction = 0.0
+        if filtered.indices.contains(selection.index), let filter = partialFilters[selection.index],
+           filteredSampleCount >= 2 * detector.requiredSampleCount,
+           samplesSinceAttack >= filter.settlingSamples + detector.requiredSampleCount {
+            correction = inharmonicityCorrection(
                 measured: detector.refine(selection.frequency, lowPassed: filtered[selection.index]),
                 estimate: selection.frequency,
                 string: selection.index
             )
+        } else if let known = inharmonicCorrection, known.string == selection.index {
+            correction = known.cents
+        }
+        if correction != 0 {
             let target = configuration.tuning.strings[selection.index].frequency(referenceA: configuration.referenceA)
             selection.frequency *= pow(2, correction / 1200)
             selection.cents = PitchMath.cents(from: selection.frequency, to: target)
@@ -216,10 +236,16 @@ public struct TuningEngine {
             stableCount = 0
             inTune = false
         } else {
+            // The correction is an offset of the instrument, not an observation: when it changes, the
+            // history averaged so far was measured with the old one and moves with it, instead of
+            // dragging the reading towards uncorrected values for several analyses.
+            smoothedCents += correction - appliedCorrection
             let range = parameters.smoothingFactor
-            let alpha = range.lowerBound + (range.upperBound - range.lowerBound) * estimate.clarity
+            let alpha = weight(range.lowerBound + (range.upperBound - range.lowerBound) * estimate.clarity)
             smoothedCents = alpha * selection.cents + (1 - alpha) * smoothedCents
         }
+
+        appliedCorrection = correction
 
         // Stability with hysteresis.
         let magnitude = abs(smoothedCents)
@@ -280,9 +306,18 @@ public struct TuningEngine {
         }
         guard let measured else { return current.cents }
         let sample = PitchMath.cents(from: measured, to: estimate)
-        let updated = current.cents + parameters.correctionSmoothing * (sample - current.cents)
+        let updated = current.cents + weight(parameters.correctionSmoothing) * (sample - current.cents)
         inharmonicCorrection = (string, updated)
         return updated
+    }
+
+    /// The weight of one analysis for a smoothing factor defined per
+    /// ``EngineParameters/smoothingReference`` seconds: `n` analyses of this weight forget the past
+    /// exactly as fast as one step of the reference, so smoothing is a property of time, not of the
+    /// analysis rate (ADR 0008). At the standard rate the factor is used unchanged.
+    private func weight(_ perReference: Double) -> Double {
+        let steps = parameters.hopDuration / EngineParameters.smoothingReference
+        return steps == 1 ? perReference : 1 - pow(1 - perReference, steps)
     }
 
     /// A string that is dying away keeps its octave. As the note decays into noise and hum, YIN can

@@ -42,8 +42,10 @@ struct StringModel {
     var attackNoise = 0.15
     /// Background noise RMS relative to full scale.
     var roomNoise = 0.002
-    /// Mains hum amplitude (50 Hz).
+    /// Mains hum amplitude.
     var hum = 0.003
+    /// Mains frequency: 50 Hz (Europe) or 60 Hz (the Americas); the hum has its third harmonic too.
+    var humFrequency = 50.0
     var amplitude = 0.3
     var seed: UInt64 = 0x2545F4914F6CDD1D
 
@@ -95,10 +97,10 @@ struct StringModel {
             value /= norm
             // Pick noise: ~15 ms of white noise with a fast decay.
             value += attackNoise * random.symmetric() * exp(-t / 0.004)
-            // Room: white + a little low-frequency rumble, and 50 Hz hum with its 3rd harmonic.
+            // Room: white + a little low-frequency rumble, and mains hum with its 3rd harmonic.
             brown = 0.995 * brown + 0.05 * random.symmetric()
             let room = roomNoise * (random.symmetric() + brown)
-            let mains = hum * (sin(2 * .pi * 50 * t) + 0.3 * sin(2 * .pi * 150 * t))
+            let mains = hum * (sin(2 * .pi * humFrequency * t) + 0.3 * sin(2 * .pi * 3 * humFrequency * t))
             output[n] = Float(amplitude * value + room + mains)
         }
         return output
