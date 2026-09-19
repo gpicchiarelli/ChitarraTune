@@ -18,6 +18,24 @@
         }
       }
     },
+    "CFBundleName": {
+      "comment": "Bundle name",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChitarraTune"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChitarraTune"
+          }
+        }
+      }
+    },
     "NSHumanReadableCopyright": {
       "extractionState": "manual",
       "localizations": {

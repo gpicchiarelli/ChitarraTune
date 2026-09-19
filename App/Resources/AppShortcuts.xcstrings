@@ -2,11 +2,22 @@
   "sourceLanguage": "en",
   "strings": {
     "Set tuning in ${applicationName}": {
+      "extractionState": "extracted_with_value",
       "localizations": {
-        "it": {
-          "stringUnit": {
+        "en": {
+          "stringSet": {
             "state": "translated",
-            "value": "Imposta accordatura in ${applicationName}"
+            "values": [
+              "Set tuning in ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Imposta accordatura in ${applicationName}"
+            ]
           }
         }
       }
@@ -22,11 +33,26 @@
       }
     },
     "Start tuning in ${applicationName}": {
+      "extractionState": "extracted_with_value",
       "localizations": {
-        "it": {
-          "stringUnit": {
+        "en": {
+          "stringSet": {
             "state": "translated",
-            "value": "Avvia accordatura in ${applicationName}"
+            "values": [
+              "Start tuning in ${applicationName}",
+              "Start tuner in ${applicationName}",
+              "Tune my guitar with ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Avvia accordatura in ${applicationName}",
+              "Avvia l'accordatore in ${applicationName}",
+              "Accorda la chitarra con ${applicationName}"
+            ]
           }
         }
       }
@@ -42,11 +68,24 @@
       }
     },
     "Stop tuning in ${applicationName}": {
+      "extractionState": "extracted_with_value",
       "localizations": {
-        "it": {
-          "stringUnit": {
+        "en": {
+          "stringSet": {
             "state": "translated",
-            "value": "Ferma accordatura in ${applicationName}"
+            "values": [
+              "Stop tuning in ${applicationName}",
+              "Stop tuner in ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Ferma accordatura in ${applicationName}",
+              "Ferma l'accordatore in ${applicationName}"
+            ]
           }
         }
       }

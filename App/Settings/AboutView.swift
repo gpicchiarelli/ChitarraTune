@@ -19,7 +19,12 @@ enum BuildInfo {
 }
 
 struct AboutView: View {
-    static let repositoryURL = URL(string: "https://github.com/gpicchiarelli/ChitarraTune")!
+    static let repositoryURL: URL = {
+        guard let url = URL(string: "https://github.com/gpicchiarelli/ChitarraTune") else {
+            preconditionFailure("the repository URL literal is malformed")
+        }
+        return url
+    }()
 
     var body: some View {
         VStack(spacing: 14) {
