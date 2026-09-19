@@ -193,6 +193,19 @@ struct TunerHubTests {
         #expect(hub.activeID == nil)
     }
 
+    @Test("Waiting for a tuner window is event-driven and bounded")
+    func waitForWindow() async {
+        let hub = makeHub()
+        async let appeared = hub.waitForVisibleTuner(timeout: .seconds(30))
+        await Task.yield()
+        hub.windowAppeared(hub.primaryID)
+        #expect(await appeared, "resumed by the window, long before the timeout")
+        #expect(await hub.waitForVisibleTuner(timeout: .zero), "already visible")
+
+        let empty = makeHub()
+        #expect(await empty.waitForVisibleTuner(timeout: .milliseconds(10)) == false)
+    }
+
     @Test("Demo hub never needs the microphone")
     func demoHub() async {
         let hub = TunerHub.demo()

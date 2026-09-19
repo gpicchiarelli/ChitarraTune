@@ -153,6 +153,7 @@ struct ArchitecturePolicyTests {
         for source in Self.shipped + tests {
             #expect(!source.code.contains("@unchecked Sendable"), "\(source.path) uses @unchecked Sendable")
             #expect(!source.code.contains("Thread.sleep") && !source.code.contains("usleep("), "\(source.path) sleeps a thread")
+            #expect(!source.code.contains("Task.sleep(for: .milliseconds("), "\(source.path) polls: wait for an event instead")
         }
         for (token, allowed) in Self.auditedUnsafe {
             let users = Self.shipped.filter { $0.code.contains(token) }.map(\.path)

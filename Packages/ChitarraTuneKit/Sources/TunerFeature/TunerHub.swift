@@ -16,6 +16,7 @@ public final class TunerHub {
     public private(set) var visibleIDs: [UUID] = []
 
     @ObservationIgnored private var models: [UUID: TunerModel] = [:]
+    @ObservationIgnored private var visibilityWaiters: [UUID: CheckedContinuation<Bool, Never>] = [:]
     @ObservationIgnored private let makeModel: @MainActor (UUID, TunerSettings) -> TunerModel
 
     public init(
@@ -53,6 +54,25 @@ public final class TunerHub {
     public func windowAppeared(_ id: UUID) {
         _ = model(for: id)
         if !visibleIDs.contains(id) { visibleIDs.append(id) }
+        for waiter in visibilityWaiters.keys { resumeWaiter(waiter, visible: true) }
+    }
+
+    /// Suspends until a tuner window is on screen, or until `timeout` has passed, and returns whether
+    /// one is. Event-driven: ``windowAppeared(_:)`` resumes it (ADR 0007).
+    public func waitForVisibleTuner(timeout: Duration) async -> Bool {
+        if hasVisibleTuner { return true }
+        let waiter = UUID()
+        return await withCheckedContinuation { continuation in
+            visibilityWaiters[waiter] = continuation
+            Task { [weak self] in
+                try? await Task.sleep(for: timeout)
+                self?.resumeWaiter(waiter, visible: false)
+            }
+        }
+    }
+
+    private func resumeWaiter(_ waiter: UUID, visible: Bool) {
+        visibilityWaiters.removeValue(forKey: waiter)?.resume(returning: visible)
     }
 
     /// The window of `id` became the focused one.

@@ -77,15 +77,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // `onChange` that tells the hub about it) on a later run-loop turn. Wait for that turn before
         // starting the microphone, or it could briefly run for a tuner still off screen.
         Task {
-            await Self.waitForVisibleTuner(hub)
+            guard await hub.waitForVisibleTuner(timeout: Self.windowAppearanceTimeout) else {
+                TunerLog.app.error("no tuner window appeared; not starting the microphone")
+                return
+            }
             await model.toggle()
-        }
-    }
-
-    private static func waitForVisibleTuner(_ hub: TunerHub) async {
-        let deadline = ContinuousClock.now + windowAppearanceTimeout
-        while !hub.hasVisibleTuner, ContinuousClock.now < deadline {
-            try? await Task.sleep(for: .milliseconds(20))
         }
     }
 }
