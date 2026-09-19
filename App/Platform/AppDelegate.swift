@@ -60,13 +60,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return menu
     }
 
+    /// Longest a start waits for a just-requested window to actually appear.
+    static let windowAppearanceTimeout = Duration.seconds(1)
+
     /// Starting from the Dock with no tuner window on screen opens one first: the microphone never
     /// runs for a tuner nobody can see.
     @objc private func toggleListening() {
         guard let hub = Self.hub else { return }
         let model = hub.activeModel
-        if !model.isBusy, !hub.hasVisibleTuner { Self.openTunerWindow?() }
-        Task { await model.toggle() }
+        guard !model.isBusy, !hub.hasVisibleTuner else {
+            Task { await model.toggle() }
+            return
+        }
+        Self.openTunerWindow?()
+        // `openTunerWindow` only requests a window; SwiftUI creates it (and fires the `onAppear`/
+        // `onChange` that tells the hub about it) on a later run-loop turn. Wait for that turn before
+        // starting the microphone, or it could briefly run for a tuner still off screen.
+        Task {
+            await Self.waitForVisibleTuner(hub)
+            await model.toggle()
+        }
+    }
+
+    private static func waitForVisibleTuner(_ hub: TunerHub) async {
+        let deadline = ContinuousClock.now + windowAppearanceTimeout
+        while !hub.hasVisibleTuner, ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(20))
+        }
     }
 }
 

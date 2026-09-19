@@ -40,43 +40,51 @@ public actor EngineAudioCapture: AudioCapturing {
     ) async throws(CaptureFailure) -> AsyncThrowingStream<AudioChunk, any Error> {
         await stop()
 
-        try Self.configureSession(for: selection)
+        do {
+            try Self.configureSession(for: selection)
 
-        let engine = makeEngine()
-        let inputNode = engine.inputNode
-        #if os(macOS)
-        try Self.route(inputNode, to: selection)
-        #endif
+            let engine = makeEngine()
+            let inputNode = engine.inputNode
+            #if os(macOS)
+            try Self.route(inputNode, to: selection)
+            #endif
 
-        let format = inputNode.outputFormat(forBus: 0)
-        try Self.requireInput(format)
-        let sampleRate = format.sampleRate
+            let format = inputNode.outputFormat(forBus: 0)
+            try Self.requireInput(format)
+            let sampleRate = format.sampleRate
 
-        let (stream, continuation) = AsyncThrowingStream<AudioChunk, any Error>.makeStream(
-            bufferingPolicy: .bufferingNewest(8)
-        )
-        // Runs on the audio thread: copy the active channel out of the buffer and hand it over. On an
-        // audio interface the guitar is rarely in channel 0, so the selector follows the loudest one.
-        // Nothing here touches actor state.
-        let selector = ChannelSelector()
-        inputNode.installTap(onBus: 0, bufferSize: Self.tapFrames, format: format) { buffer, when in
-            if let chunk = selector.chunk(from: buffer, sampleRate: sampleRate, sampleTime: Self.sampleTime(of: when)) {
-                continuation.yield(chunk)
+            let (stream, continuation) = AsyncThrowingStream<AudioChunk, any Error>.makeStream(
+                bufferingPolicy: .bufferingNewest(8)
+            )
+            // Runs on the audio thread: copy the active channel out of the buffer and hand it over. On
+            // an audio interface the guitar is rarely in channel 0, so the selector follows the loudest
+            // one. Nothing here touches actor state.
+            let selector = ChannelSelector()
+            inputNode.installTap(onBus: 0, bufferSize: Self.tapFrames, format: format) { buffer, when in
+                if let chunk = selector.chunk(from: buffer, sampleRate: sampleRate, sampleTime: Self.sampleTime(of: when)) {
+                    continuation.yield(chunk)
+                }
             }
-        }
 
-        try Self.startEngine(engine)
+            try Self.startEngine(engine)
 
-        let token = UUID()
-        self.engine = engine
-        self.continuation = continuation
-        self.sessionToken = token
-        continuation.onTermination = { [weak self] _ in
-            Task { await self?.teardown(ifCurrent: token) }
+            let token = UUID()
+            self.engine = engine
+            self.continuation = continuation
+            self.sessionToken = token
+            continuation.onTermination = { [weak self] _ in
+                Task { await self?.teardown(ifCurrent: token) }
+            }
+            observeRouteChanges(engine: engine)
+            Self.logger.info("capture started @ \(sampleRate, format: .fixed(precision: 0)) Hz")
+            return stream
+        } catch {
+            // `configureSession` may have already activated the iOS audio session before a later step
+            // (routing, missing input, the engine itself) failed: give it back to the system rather
+            // than leaving it active for a session that never started.
+            Self.releaseSession()
+            throw error
         }
-        observeRouteChanges(engine: engine)
-        Self.logger.info("capture started @ \(sampleRate, format: .fixed(precision: 0)) Hz")
-        return stream
     }
 
     public func stop() async {

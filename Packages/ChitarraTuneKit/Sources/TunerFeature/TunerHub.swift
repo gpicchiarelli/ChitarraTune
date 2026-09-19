@@ -48,8 +48,10 @@ public final class TunerHub {
     /// first, or the microphone would run with nothing on screen.
     public var hasVisibleTuner: Bool { !visibleIDs.isEmpty }
 
-    /// A window started showing the tuner `id`.
+    /// A window started showing the tuner `id`. Creates its model if this is the first sign of it, so
+    /// `activeModel` can never point `visibleIDs` at an id with nothing behind it.
     public func windowAppeared(_ id: UUID) {
+        _ = model(for: id)
         if !visibleIDs.contains(id) { visibleIDs.append(id) }
     }
 

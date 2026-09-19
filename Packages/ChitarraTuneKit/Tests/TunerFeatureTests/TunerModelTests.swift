@@ -207,12 +207,15 @@ struct TunerModelTests {
         let (model, capture, _) = makeModel(authorization: .denied, inputs: inputs)
         let monitor = Task { await model.monitorEnvironment() }
         inputs.endInterruption()
-        try? await Task.sleep(for: .milliseconds(50))
+        // Asserting an absence needs a bounded wait either way; unlike a fixed sleep, `eventually`
+        // re-checks the moment the observed state actually changes, so a bug that starts capture
+        // asynchronously still gets caught instead of racing a single sleep-then-check.
+        #expect(await eventually(timeout: .milliseconds(200)) { model.status != .idle } == false)
         #expect(model.status == .idle)
 
         await model.start()
         inputs.endInterruption()
-        try? await Task.sleep(for: .milliseconds(50))
+        #expect(await eventually(timeout: .milliseconds(200)) { capture.startCount > 0 } == false)
         #expect(model.failure == .microphoneDenied)
         #expect(capture.startCount == 0)
         monitor.cancel()

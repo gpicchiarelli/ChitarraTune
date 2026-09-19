@@ -184,9 +184,13 @@ public final class TunerModel: Identifiable {
         sessionTask = nil
         processor = nil
         endActivity()
-        await capture.stop()
+        // `status` drops to `.idle` before the hardware teardown finishes (below), not after: a
+        // `start()` racing this call must see the tuner as free rather than bail out on `isBusy` while
+        // this `stop()` is still awaiting `capture.stop()`. `capture` is an actor, so the two calls
+        // still serialize correctly however they interleave.
         clearOutput()
         status = .idle
+        await capture.stop()
     }
 
     private func begin(_ stream: AsyncThrowingStream<AudioChunk, any Error>, generation mine: Int, restartBudget budget: Int) {

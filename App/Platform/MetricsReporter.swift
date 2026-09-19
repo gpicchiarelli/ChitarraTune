@@ -1,6 +1,7 @@
 import Foundation
 import MetricKit
 import os
+import Synchronization
 import TunerAudio
 
 /// Receives the system's on-device metrics and diagnostics (CPU time, energy, hangs, crashes) and
@@ -17,6 +18,10 @@ final class MetricsReporter: NSObject, MXMetricManagerSubscriber {
     nonisolated static let storageKey = "diagnostics.previousSessions"
     /// How many summaries are kept.
     nonisolated static let limit = 5
+    /// Serializes the read-modify-write below: MetricKit may call `didReceive` off the main thread,
+    /// and two overlapping deliveries could otherwise each read the same array and one's write would
+    /// silently discard the other's summaries.
+    nonisolated private static let storageLock = Mutex(())
 
     func start() {
         MXMetricManager.shared.add(self)
@@ -46,9 +51,11 @@ final class MetricsReporter: NSObject, MXMetricManagerSubscriber {
             if hangs > 0 { summaries.append("\(period) \(hangs) hang(s)") }
         }
         guard !summaries.isEmpty else { return }
-        let defaults = UserDefaults.standard
-        let kept = (defaults.stringArray(forKey: Self.storageKey) ?? []) + summaries
-        defaults.set(Array(kept.suffix(Self.limit)), forKey: Self.storageKey)
+        Self.storageLock.withLock { _ in
+            let defaults = UserDefaults.standard
+            let kept = (defaults.stringArray(forKey: Self.storageKey) ?? []) + summaries
+            defaults.set(Array(kept.suffix(Self.limit)), forKey: Self.storageKey)
+        }
     }
 
     /// One line about a crash: when, which build, and how it ended.

@@ -47,13 +47,23 @@ struct ColorContrastTests {
 
     static let white: RGB = (1, 1, 1)
     static let black: RGB = (0, 0, 0)
-    /// Opacity of the state-coloured wash behind the tuner (`TunerBackground`).
-    static let wash = 0.14
+
+    /// Opacity of the state-coloured wash behind the tuner, read from `TunerBackground` itself so a
+    /// change there cannot silently drift out of sync with the value this test checks against.
+    static func washOpacity(reduced: Bool) throws -> Double {
+        let source = try Repo.text("App/Tuner/TunerBackground.swift")
+        let pattern = try NSRegularExpression(pattern: #"isLuminanceReduced \? ([\d.]+) : ([\d.]+)"#)
+        let range = NSRange(source.startIndex..., in: source)
+        let match = try #require(pattern.firstMatch(in: source, range: range), "wash opacity not found in TunerBackground.swift")
+        func group(_ index: Int) -> String { String(source[Range(match.range(at: index), in: source)!]) }
+        return try #require(Double(reduced ? group(1) : group(2)))
+    }
 
     /// The window background and the tinted washes drawn over it.
     static func backgrounds(_ appearance: Appearance) throws -> [(String, RGB)] {
         let base = appearance.isDark ? black : white
         let grouped: RGB = appearance.isDark ? (0.11, 0.11, 0.118) : (0.949, 0.949, 0.969)
+        let wash = try washOpacity(reduced: false)
         var result: [(String, RGB)] = [("window", base), ("grouped form", grouped)]
         for tint in ["AccentColor", "TuneGreen", "TuneAmber", "TuneRed"] {
             result.append(("\(tint) wash", blend(try color(tint, appearance), wash, over: base)))
