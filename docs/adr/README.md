@@ -16,3 +16,4 @@ Binding decisions for the whole project. They are enforced by tests and CI (see 
 | [0010](0010-supply-chain-and-repository-security.md) | Supply chain and repository security | Accepted |
 | [0011](0011-localisation-and-accessibility.md) | Localisation and accessibility | Accepted |
 | [0012](0012-windows-and-listening-sessions.md) | Windows and listening sessions | Accepted |
+| [0013](0013-release-readiness.md) | Release readiness on every push | Accepted |

@@ -126,6 +126,21 @@ struct WorkflowPolicyTests {
         #expect(ci.contains("coverage-gate.sh") && ci.contains("-warnings-as-errors"))
         #expect(ci.contains("platform=macOS") && ci.contains("generic/platform=iOS Simulator"))
         #expect(ci.contains("gate:"), "ci.yml needs the aggregate 'gate' job that branch protection requires")
+        #expect(ci.contains("run: Scripts/release-check.sh"), "every push must build and check the Mac app as a release (ADR 0013)")
+        #expect(ci.contains("needs: [kit, app, dsp, release, ui]"), "the gate must wait for every job")
+        let release = try Repo.text(".github/workflows/release.yml")
+        #expect(release.contains("Scripts/release-check.sh --verify build/Build/Products/Release/ChitarraTune.app --signed"),
+                "the release must pass the same checks, on its signed build")
+    }
+
+    @Test("Runners are pinned to an explicit image, never a moving `-latest` label")
+    func pinnedRunners() throws {
+        for workflow in Repo.files(in: ".github/workflows", extensions: ["yml"]) {
+            let text = try String(contentsOf: workflow, encoding: .utf8)
+            for line in text.split(separator: "\n") where line.contains("runs-on:") {
+                #expect(!line.contains("-latest"), "\(workflow.lastPathComponent): \(line.trimmingCharacters(in: .whitespaces))")
+            }
+        }
     }
 
     @Test("Repository health files exist")

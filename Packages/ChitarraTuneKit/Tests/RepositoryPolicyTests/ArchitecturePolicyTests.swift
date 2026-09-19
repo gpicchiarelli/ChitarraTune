@@ -132,7 +132,9 @@ struct ArchitecturePolicyTests {
         let delegate = try Repo.text("App/Platform/AppDelegate.swift")
         #expect(delegate.contains("static let quitTimeout = Duration.seconds(2)"))
         #expect(delegate.contains("Task.sleep(for: Self.quitTimeout)"))
-        #expect(delegate.contains("!hub.hasVisibleTuner { Self.openTunerWindow?() }"))
+        let dock = try #require(delegate.components(separatedBy: "func toggleListening()").last)
+        #expect(dock.contains("hub.hasVisibleTuner") && dock.contains("Self.openTunerWindow?()"),
+                "the Dock menu must open a tuner window before it starts listening without one")
         let window = try Repo.text("App/Tuner/TunerWindow.swift")
         #expect(window.contains("hub.activate(id)") && window.contains("hub.discard(id)"))
     }

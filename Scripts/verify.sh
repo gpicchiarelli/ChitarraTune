@@ -3,6 +3,7 @@
 #
 #   Scripts/verify.sh          lint + warning-free package build + tests + coverage gate
 #   Scripts/verify.sh --app    ... and also build the app for macOS
+#   Scripts/verify.sh --release ... and build and check the Mac app as a release (Scripts/release-check.sh)
 #
 # Install it as a pre-push hook once:   git config core.hooksPath .githooks
 set -euo pipefail
@@ -10,7 +11,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 APP=false
+RELEASE=false
 [ "${1:-}" = "--app" ] && APP=true
+[ "${1:-}" = "--release" ] && RELEASE=true
 
 # Build outside the repository: folders synced by iCloud (~/Documents) gain extended attributes that
 # make codesign fail. Override with SCRATCH=/some/dir.
@@ -40,6 +43,11 @@ if $APP; then
   step "App builds for macOS"
   xcodebuild -project ChitarraTune.xcodeproj -scheme ChitarraTune -destination 'platform=macOS' \
     CODE_SIGNING_ALLOWED=NO build -quiet
+fi
+
+if $RELEASE; then
+  step "Mac app as a release (notarization and App Review checks)"
+  Scripts/release-check.sh
 fi
 
 printf '\n\033[1;32m✓ all checks passed\033[0m\n'

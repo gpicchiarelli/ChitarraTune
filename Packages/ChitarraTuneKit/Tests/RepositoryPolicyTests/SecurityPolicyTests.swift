@@ -48,6 +48,15 @@ struct SecurityPolicyTests {
         }
     }
 
+    @Test("Release builds never carry development entitlements (ADR 0013)")
+    func noDevelopmentEntitlementsInRelease() throws {
+        let release = try Repo.xcconfig("Config/Base.xcconfig", "Config/Release.xcconfig")
+        #expect(release["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] == "NO", "get-task-allow would be injected; notarization rejects it")
+        for file in ["Config/ChitarraTune.entitlements", "Config/ChitarraTuneControls.entitlements"] {
+            #expect(try Repo.plist(file)["com.apple.security.get-task-allow"] == nil, "\(file) grants get-task-allow")
+        }
+    }
+
     @Test("The Controls extension is sandboxed, offline and needs no resource at all")
     func controlsExtension() throws {
         let s = try Repo.xcconfig("Config/Base.xcconfig", "Config/Controls.xcconfig")

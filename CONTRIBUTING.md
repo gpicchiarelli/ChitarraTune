@@ -40,7 +40,7 @@ You push straight to `main`. What stands between a commit and `main` is `Scripts
 Scripts/verify.sh
 ```
 
-It runs SwiftLint in strict mode, builds the package with warnings as errors, runs every test and enforces the coverage thresholds in `Scripts/coverage-thresholds.json`. Add `--app` to build the app too.
+It runs SwiftLint in strict mode, builds the package with warnings as errors, runs every test and enforces the coverage thresholds in `Scripts/coverage-thresholds.json`. Add `--app` to build the app too, or `--release` to build the Mac app exactly as a release and check it as notarization and App Review would (`Scripts/release-check.sh`, also run by CI on every push).
 
 What the gate protects, and how:
 
@@ -52,6 +52,7 @@ What the gate protects, and how:
 | Hostile-input and fuzz tests | Crashes on `NaN`, absurd sample rates, garbage audio |
 | Policy tests (`RepositoryPolicyTests`) | A network API, a new entitlement, an unpinned action, a missing translation, or a README that no longer matches the code |
 | CodeQL | Known classes of security bugs |
+| Release readiness (`Scripts/release-check.sh`, [ADR 0013](docs/adr/0013-release-readiness.md)) | A Mac build that notarization or App Review would reject: a debugging entitlement, an extra entitlement, a missing architecture, a non-system library, a missing purpose string or privacy manifest |
 
 **Every bug fix ships with a test that fails without the fix.** That is how a mistake stays fixed.
 

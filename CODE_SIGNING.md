@@ -30,6 +30,24 @@ Note that the sandbox and audio-input entitlements come from **build settings**,
 
 Pointer Authentication is on in every build that ships. An `arm64e` target can only import `arm64e` modules, and xcconfig settings never reach local SwiftPM targets, so `Config/App.xcconfig` leaves it off (Xcode's own builds keep working) and the release workflow passes `ENABLE_POINTER_AUTHENTICATION=YES` on the `xcodebuild` command line, where it applies to every target, packages included. The result, `arm64e` next to `arm64` (and `x86_64` on the Mac), is checked with `lipo` in the release and on every push in CI.
 
+## Release readiness
+
+Everything notarization and App Review check about the bundle is checked on every push, without a certificate ([ADR 0013](docs/adr/0013-release-readiness.md)): the `release` job of CI builds the Mac app exactly as a release and runs `Scripts/release-check.sh` on it (identifiers, versions, minimum system, category, export compliance, purpose strings in both languages, privacy manifest, icon, `arm64e`/`arm64`/`x86_64`, system-only linkage, dSYM, a strict signature, exactly the allowed entitlements, no `get-task-allow`, the Hardened Runtime setting). The release workflow runs the same script on its signed build before notarizing. Release builds never carry development entitlements (`CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO`).
+
+Locally:
+
+```bash
+Scripts/release-check.sh
+```
+
+With a *Developer ID Application* certificate in your keychain, and a `notarytool` profile created once with `xcrun notarytool store-credentials chitarratune --apple-id you@example.com --team-id TEAMID`, the same script signs, notarizes, staples and asks Gatekeeper:
+
+```bash
+Scripts/release-check.sh --identity "Developer ID Application: Your Name (TEAMID)" --notarize chitarratune
+```
+
+**Prerequisite: a paid Apple Developer Program membership.** A personal (free) team cannot create Developer ID certificates and cannot sign this app at all, because it cannot grant the Enhanced Security capability ([ADR 0003](docs/adr/0003-least-privilege-and-platform-security.md)).
+
 ## Release signing (CI)
 
 The [release workflow](.github/workflows/release.yml) runs on a `vX.Y.Z` tag or by hand, only from a commit that is on `main`, and only when `MARKETING_VERSION` and `CHANGELOG.md` already carry that version (`Scripts/bump-version.sh` prepares both). It publishes on two channels:
