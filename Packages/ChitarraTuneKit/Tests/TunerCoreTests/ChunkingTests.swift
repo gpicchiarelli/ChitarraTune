@@ -47,8 +47,9 @@ struct ChunkingTests {
 
         for sizes in [[1_024], [4_410], [segment], [17, 1_024, 4_800, 333, 2_048], [8_192]] {
             let frames = Self.checkpoints(signal, rate: rate, segment: segment, sizes: sizes)
-            let first = zip(frames, reference).enumerated().first { $0.element.0 != $0.element.1 }
-            #expect(first == nil, "chunk sizes \(sizes) @ \(rate) Hz, checkpoint \(first?.offset ?? -1): \(String(describing: first?.element.0)) ≠ \(String(describing: first?.element.1))")
+            #expect(frames.count == reference.count)
+            let first = frames.indices.first { frames[$0] != reference[$0] }
+            #expect(first == nil, "chunk sizes \(sizes) @ \(rate) Hz, first difference at checkpoint \(first ?? -1)")
         }
     }
 

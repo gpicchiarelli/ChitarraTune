@@ -101,10 +101,15 @@ struct ArchitecturePolicyTests {
     @Test("ADR 0006: launch-argument hooks exist only in Debug builds; tests run Debug, archives Release")
     func testHooksOnlyInDebug() throws {
         let options = try Repo.text("App/Platform/FocusedValues+LaunchOptions.swift")
-        let guarded = try #require(options.firstRange(of: "#if DEBUG\n    private static let arguments = ProcessInfo.processInfo.arguments\n    #else\n    private static let arguments: [String] = []\n    #endif"),
-                                   "LaunchOptions must read launch arguments only in Debug builds")
+        let guarded = """
+            #if DEBUG
+                private static let arguments = ProcessInfo.processInfo.arguments
+                #else
+                private static let arguments: [String] = []
+                #endif
+            """
+        #expect(options.contains(guarded), "LaunchOptions must read launch arguments only in Debug builds")
         #expect(options.components(separatedBy: "ProcessInfo.processInfo.arguments").count == 2, "arguments are read elsewhere too")
-        #expect(!guarded.isEmpty)
         let hooks = Self.shipped.filter { $0.code.contains("ProcessInfo.processInfo.arguments") || $0.code.contains("ProcessInfo.processInfo.environment") }
         #expect(hooks.map(\.path) == ["App/Platform/FocusedValues+LaunchOptions.swift"], "other test switches: \(hooks.map(\.path))")
 
