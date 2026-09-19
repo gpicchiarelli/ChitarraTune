@@ -26,6 +26,10 @@ struct TunerCommands: Commands {
                 .keyboardShortcut("n")
         }
         CommandGroup(replacing: .help) {
+            // The Help Book (Help/ChitarraTune.help), in the Mac's Help Viewer, as every Apple app does.
+            Button(.menuHelp) { NSApp.showHelp(nil) }
+                .keyboardShortcut("?", modifiers: .command)
+            Divider()
             Button(.menuLicense) { openWindow(id: "license") }
             Link(destination: AboutView.repositoryURL.appending(path: "issues/new/choose")) {
                 Text(.menuReportIssue)

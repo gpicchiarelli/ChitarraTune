@@ -12,6 +12,7 @@
 		B00000000000000000000003 /* TunerFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000003 /* TunerFeature */; };
 		B00000000000000000000004 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000001 /* LICENSE */; };
 		B00000000000000000000005 /* TunerFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000004 /* TunerFeature */; };
+		B00000000000000000000007 /* ChitarraTune.help in Resources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000010 /* ChitarraTune.help */; platformFilters = (macos, ); };
 		B00000000000000000000006 /* ChitarraTuneControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000C /* ChitarraTuneControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -62,6 +63,7 @@
 		F0000000000000000000000D /* Controls.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Controls.xcconfig; sourceTree = "<group>"; };
 		F0000000000000000000000E /* Controls-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Controls-Info.plist"; sourceTree = "<group>"; };
 		F0000000000000000000000F /* ChitarraTuneControls.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChitarraTuneControls.entitlements; sourceTree = "<group>"; };
+		F00000000000000000000010 /* ChitarraTune.help */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ChitarraTune.help; path = Help/ChitarraTune.help; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -126,6 +128,7 @@
 				F0000000000000000000000B /* ChitarraTuneKit */,
 				91000000000000000000000A /* Config */,
 				F00000000000000000000001 /* LICENSE */,
+				F00000000000000000000010 /* ChitarraTune.help */,
 				92000000000000000000000A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -288,6 +291,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B00000000000000000000004 /* LICENSE in Resources */,
+				B00000000000000000000007 /* ChitarraTune.help in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

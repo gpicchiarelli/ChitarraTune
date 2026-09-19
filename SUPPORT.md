@@ -1,6 +1,6 @@
 # Support
 
-Thanks for using ChitarraTune. Help is one of these away:
+Thanks for using ChitarraTune. The **[User Guide](docs/guide/en/index.md)** explains how to use it, task by task; on the Mac it is also in the app, under Help ▸ ChitarraTune Help. For anything else, help is one of these away:
 
 - **Email:** [gpicchiarelli@gmail.com](mailto:gpicchiarelli@gmail.com?subject=ChitarraTune), in English or Italian.
 - **Bugs and ideas:** [open an issue](https://github.com/gpicchiarelli/ChitarraTune/issues/new/choose) (needs a free GitHub account).
@@ -27,6 +27,8 @@ When something goes wrong, the most useful thing to send is the diagnostic repor
 ---
 
 ## Assistenza
+
+Il **[Manuale utente](docs/guide/it/index.md)** spiega come usare ChitarraTune, passo per passo; sul Mac è anche nell'app, in Aiuto ▸ Aiuto di ChitarraTune. Per tutto il resto:
 
 - **Email:** [gpicchiarelli@gmail.com](mailto:gpicchiarelli@gmail.com?subject=ChitarraTune), in italiano o in inglese.
 - **Problemi e idee:** [apri una issue](https://github.com/gpicchiarelli/ChitarraTune/issues/new/choose) (serve un account GitHub gratuito).

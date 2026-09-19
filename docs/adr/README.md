@@ -18,3 +18,4 @@ Binding decisions for the whole project. They are enforced by tests and CI (see 
 | [0012](0012-windows-and-listening-sessions.md) | Windows and listening sessions | Accepted |
 | [0013](0013-release-readiness.md) | Release readiness on every push | Accepted |
 | [0014](0014-disk-image-distribution.md) | Disk image distribution outside the App Store | Accepted |
+| [0015](0015-user-guide.md) | The user guide | Accepted |

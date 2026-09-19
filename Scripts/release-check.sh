@@ -87,6 +87,18 @@ done
 MICROPHONE_IT="$(plutil -extract NSMicrophoneUsageDescription raw "$APP/Contents/Resources/it.lproj/InfoPlist.strings" 2>/dev/null || true)"
 [ -n "$MICROPHONE_IT" ] && pass "microphone purpose string in Italian" || fail "no Italian microphone purpose string"
 
+# MARK: User guide
+
+step "User guide (Help Book, ADR 0015)"
+HELP="$APP/Contents/Resources/ChitarraTune.help"
+check "the Help Book is in the app" test -f "$HELP/Contents/Info.plist"
+[ "$(value "$PLIST" CFBundleHelpBookName)" = "$(value "$HELP/Contents/Info.plist" CFBundleIdentifier)" ] \
+  && pass "the app names the book it ships ($(value "$PLIST" CFBundleHelpBookName))" || fail "CFBundleHelpBookName does not match the Help Book"
+for language in en it; do
+  check "$language: pages and search index" test -f "$HELP/Contents/Resources/$language.lproj/index.html" -a -s "$HELP/Contents/Resources/$language.lproj/ChitarraTune.cshelpindex"
+done
+grep -rqE '(src|href)="https?:' "$HELP" && fail "the Help Book loads something from the network" || pass "the Help Book is entirely offline"
+
 # MARK: Binaries
 
 step "Binaries"

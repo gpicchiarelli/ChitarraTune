@@ -1511,6 +1511,24 @@
         }
       }
     },
+    "menu.help": {
+      "comment": "Help menu item that opens the user guide in the Help Viewer (Mac).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChitarraTune Help"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aiuto di ChitarraTune"
+          }
+        }
+      }
+    },
     "menu.license": {
       "extractionState": "manual",
       "localizations": {
@@ -2099,6 +2117,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impostazioni"
+          }
+        }
+      }
+    },
+    "settings.userGuide": {
+      "comment": "Link in Settings ▸ About (iPhone, iPad) to the user guide.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User Guide"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manuale utente"
           }
         }
       }

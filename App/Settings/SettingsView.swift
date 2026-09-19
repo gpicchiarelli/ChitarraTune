@@ -125,6 +125,12 @@ struct SettingsView: View {
     }
 
     #if os(iOS)
+    /// The user guide (docs/guide) in the language the app runs in.
+    static var userGuideURL: URL {
+        let language = Bundle.main.preferredLocalizations.first == "it" ? "it" : "en"
+        return AboutView.repositoryURL.appending(path: "blob/main/docs/guide/\(language)/index.md")
+    }
+
     private var about: some View {
         Section {
             NavigationLink {
@@ -136,6 +142,10 @@ struct SettingsView: View {
                 LicenseView()
             } label: {
                 Text(.aboutLicense)
+            }
+            // iPhone and iPad have no Help Viewer: the same guide, in the app's language, on the web.
+            Link(destination: Self.userGuideURL) {
+                Text(.settingsUserGuide)
             }
         } header: {
             Text(.settingsAbout)

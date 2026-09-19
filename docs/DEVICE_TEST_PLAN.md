@@ -58,6 +58,9 @@ A useful first set: every open string of standard tuning in tune (0 ¢), the low
 - [ ] Mac: Dock menu *Start*/*Stop*, ⌘L, ⌘0, ⌘1–⌘6, ⌘N (two windows with different inputs), ⌘, (Settings).
 - [ ] iPad with a hardware keyboard: the same shortcuts; with Full Keyboard Access, Space activates the focused control.
 
+- [ ] Mac: Help ▸ ChitarraTune Help (⌘?) opens the user guide in the Mac's language, English or Italian; searching for *reference pitch* (*diapason*) finds its page; the guide opens with the Mac offline.
+- [ ] iPhone and iPad: Settings ▸ About ▸ User Guide opens the guide in the app's language.
+
 ## Accessibility (on device)
 
 - [ ] VoiceOver: every control has a label, value and hint; the note read-out and gauge speak the deviation; *In tune* is announced.

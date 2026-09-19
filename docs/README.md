@@ -4,6 +4,7 @@
 
 | | |
 | :-- | :-- |
+| [User Guide](guide/en/index.md) · [Manuale utente](guide/it/index.md) | How to use ChitarraTune, task by task; on the Mac also in Help ▸ ChitarraTune Help |
 | [Support](../SUPPORT.md) | Help, common questions, how to send a diagnostic report |
 | [Privacy](../PRIVACY.md) | What the app does with your data: nothing leaves your device |
 | [Accuracy](ACCURACY.md) | How precise the tuner is, how that is measured, and its limits |

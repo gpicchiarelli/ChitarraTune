@@ -9,7 +9,7 @@
 
 <br>
 
-[Features](#features) · [Tunings](#tunings) · [Accuracy](#accuracy) · [Privacy](#privacy-and-security) · [Siri & Shortcuts](#siri-and-shortcuts) · [Install](#install) · [Build](#build-from-source) · [Italiano](#italiano)
+[User Guide](docs/guide/en/index.md) · [Features](#features) · [Tunings](#tunings) · [Accuracy](#accuracy) · [Privacy](#privacy-and-security) · [Siri & Shortcuts](#siri-and-shortcuts) · [Install](#install) · [Build](#build-from-source) · [Italiano](#italiano)
 
 <br>
 
@@ -57,6 +57,8 @@
 
 ## Features
 
+The **[User Guide](docs/guide/en/index.md)** explains every one of them, task by task; on the Mac it is also in the app, under Help ▸ ChitarraTune Help.
+
 - **Ten tunings**, with automatic string detection or a string you pin yourself.
 - **Reference pitch** from 415 to 466 Hz: baroque pitch, 432 Hz, or a piano that has drifted.
 - **Note names** in English (`C D E F G A B`) or fixed-do solfège (`Do Re Mi Fa Sol La Si`); *Automatic* follows your language.
@@ -101,12 +103,12 @@ Each of these is a [binding decision](docs/adr/README.md) that a test enforces. 
 
 | Action | What it does |
 | :-- | :-- |
-| **Start tuning** | Opens the app and starts listening (a microphone needs the foreground) |
-| **Stop tuning** | Stops listening |
-| **Set tuning** | Chooses one of the ten tunings |
-| **Set reference pitch** | Sets A4, 415–466 Hz |
-| **Pick a string** | Pins string 1–6, or returns to automatic |
-| **Choose input** | Selects a microphone or interface |
+| **Start Tuning** | Opens the app and starts listening (a microphone needs the foreground) |
+| **Stop Tuning** | Stops listening |
+| **Set Tuning** | Chooses one of the ten tunings |
+| **Set Reference Pitch** | Sets A4, 415–466 Hz |
+| **Pick String** | Pins string 1–6, or returns to automatic |
+| **Choose Microphone** | Selects a microphone or interface |
 
 Say *"Start tuning in ChitarraTune"*, or use the actions in your own shortcuts. The **Start Tuning** control fits in Control Center, on the Lock Screen and on the Action Button (iPhone, iPad), and in Control Center or the menu bar (Mac).
 
@@ -203,6 +205,8 @@ BSD 3-Clause, © 2025–2026 ChitarraTune contributors. See [LICENSE](LICENSE) a
 **Installare su Mac.** Scarica `ChitarraTune-<versione>.dmg` dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases), aprilo e trascina **ChitarraTune** su **Applicazioni**. Immagine disco e app sono firmate e autenticate da Apple: si aprono senza avvisi, anche offline.
 
 **Compilare.** Serve Xcode 26 o successivo. Apri `ChitarraTune.xcodeproj`, scegli lo schema **ChitarraTune** e una destinazione. Per firmare con il tuo team crea `Config/Local.xcconfig` con `DEVELOPMENT_TEAM = TUOTEAMID`. I test del motore non richiedono microfono: `swift test --package-path Packages/ChitarraTuneKit`.
+
+**Manuale utente.** Il [Manuale utente di ChitarraTune](docs/guide/it/index.md) spiega ogni funzione, passo per passo; sul Mac è anche nell'app, in Aiuto ▸ Aiuto di ChitarraTune.
 
 **Assistenza.** [SUPPORT.md](SUPPORT.md), in italiano o in inglese.
 

@@ -43,7 +43,7 @@ struct DocumentationSpecTests {
         )
         #expect(implemented == ["StartTuningIntent", "StopTuningIntent", "SetTuningIntent", "SetReferencePitchIntent", "PickStringIntent", "ChooseInputIntent"])
         let readme = try Repo.text("README.md")
-        for action in ["Start tuning", "Stop tuning", "Set tuning", "Set reference pitch", "Pick a string", "Choose input"] {
+        for action in ["Start Tuning", "Stop Tuning", "Set Tuning", "Set Reference Pitch", "Pick String", "Choose Microphone"] {
             #expect(readme.contains("**\(action)**"), "README no longer documents '\(action)'")
         }
         #expect(source.contains("static let supportedModes: IntentModes = .foreground"), "Start must open the app: a microphone needs the foreground")

@@ -17,6 +17,7 @@ All notable changes to ChitarraTune, for the people who use it. The format follo
 - **Considerate by default:** the tuner stops listening after a period of silence (one, three or five minutes, or never), analyzes less often in Low Power Mode or when the device is hot, and on iPhone and iPad resumes by itself after a phone call or Siri.
 - **Accessibility:** VoiceOver speaks notes as words ("E flat, octave 2") and announces when a string is in tune; Dynamic Type up to the largest sizes; Reduce Motion; Increase Contrast; full keyboard control; haptic feedback.
 - **Diagnostics you can share:** *Copy Diagnostics* in About gathers the app's own recent log and a summary of earlier crashes, without audio or personal data, for a bug report.
+- **A user guide** in English and Italian: in the Mac app under Help ▸ ChitarraTune Help (⌘?), searchable in the Help Viewer and available offline; on iPhone and iPad from Settings ▸ About.
 - A new icon for Liquid Glass, in the default, dark, clear and tinted appearances.
 
 ### Changed
