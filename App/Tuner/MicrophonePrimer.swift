@@ -66,6 +66,7 @@ struct MicrophonePrimer: View {
         // `.contain` keeps the buttons' own identifiers; on a plain container the identifier would
         // be copied onto every child.
         .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(.primerTitle))
         .accessibilityIdentifier("microphonePrimer")
     }
 }
