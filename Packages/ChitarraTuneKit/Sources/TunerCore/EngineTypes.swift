@@ -35,10 +35,19 @@ public struct EngineParameters: Sendable, Hashable {
     /// Window the signal level (and therefore the noise gate and the attack test) is measured over.
     /// In seconds, so that behaviour does not depend on the device's sample rate.
     public var levelWindowDuration: Double = 2_048 / 44_100
-    /// RMS above which the noise gate opens.
+    /// RMS above which the noise gate opens in a noisy room (−48 dBFS). In a quieter room it opens
+    /// lower: ``gateNoiseMargin`` above the measured noise floor, down to ``minimumGateLevel``.
     public var gateOpenLevel: Double = 0.004
-    /// RMS below which an open gate closes (hysteresis avoids chatter).
+    /// RMS below which an open gate closes (hysteresis avoids chatter); scaled with the open level.
     public var gateCloseLevel: Double = 0.0025
+    /// The lowest level the gate ever opens at (−64 dBFS), however quiet the room.
+    public var minimumGateLevel: Double = 0.000_6
+    /// How far above the room's noise floor the gate opens (×4, +12 dB).
+    public var gateNoiseMargin: Double = 4
+    /// How fast the noise-floor estimate may rise while nothing is played, in dB per second. It falls
+    /// at once to anything quieter, and stands still while the gate is open, so a ringing string is
+    /// never taken for the room.
+    public var noiseFloorRise: Double = 3
     /// Minimum ``PitchEstimate/clarity`` accepted.
     public var minimumClarity: Double = 0.55
     /// Deviations beyond this many cents from the target string are ignored.

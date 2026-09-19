@@ -40,6 +40,7 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Fixed
 
+- **Soft sources are heard without raising the input gain.** The noise gate opened at a fixed −48 dBFS, so the top strings of an unplugged electric guitar, heard by a Mac's built-in microphone in a quiet room, stayed below it. The gate now opens 12 dB above the room's measured noise floor, down to −64 dBFS, and keeps the fixed level in a noisy room; the noise floor never learns from a sounding note. Found in a field test; no golden reading changes.
 - iPad: one window. Several windows all showed the same tuner, and minimising or closing one stopped listening in the others.
 - Mac: Siri, Shortcuts, the Dock menu and Control Center act on the focused window's tuner, not on the one opened last; closing the focused window hands over to another open one, and *Start* from the Dock with no tuner window open opens one first instead of listening with nothing on screen.
 - Mac: quitting waits at most two seconds for the audio to stop, so ⌘Q always quits even if Core Audio blocks (an interface unplugged while it stops).

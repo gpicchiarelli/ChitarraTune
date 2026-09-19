@@ -23,7 +23,7 @@ struct DocumentationSpecTests {
     func architectureNumbers() throws {
         let architecture = try Repo.text("docs/ARCHITECTURE.md")
         let p = EngineParameters.standard
-        for expected in ["\(p.gateOpenLevel)", "\(p.gateCloseLevel)", "\(p.minimumClarity)", "±\(Int(p.maximumDeviation)) cents",
+        for expected in ["\(p.gateOpenLevel)", "\(p.gateCloseLevel)", "\(p.minimumGateLevel)", "\(Int(p.gateNoiseMargin))×", "\(Int(p.noiseFloorRise)) dB per second", "\(p.minimumClarity)", "±\(Int(p.maximumDeviation)) cents",
                          "±\(Int(p.inTuneThreshold)) cents", "\(Int(p.inTuneExitMargin)) cents of exit margin", "\(p.holdDuration) s",
                          "25 ms", "45 ms", "0.7×–1.5×"] {
             #expect(architecture.contains(expected), "ARCHITECTURE.md no longer mentions '\(expected)'")

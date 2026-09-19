@@ -47,6 +47,9 @@ public struct TuningEngine {
     private var nextSampleTime: Int64?
 
     private var gateOpen = false
+    /// Estimated level of the room when nothing is played (see ``EngineParameters/noiseFloorRise``).
+    /// Starts where the gate opens at its fixed level.
+    private lazy var noiseFloor = parameters.gateOpenLevel / parameters.gateNoiseMargin
     private var level = 0.0
     private var smoothedCents = 0.0
     private var stableCount = 0
@@ -187,8 +190,17 @@ public struct TuningEngine {
         for sample in window { sumSquares += Double(sample) * Double(sample) }
         level = (sumSquares / Double(window.count)).squareRoot()
 
-        gateOpen = gateOpen ? level > parameters.gateCloseLevel : level > parameters.gateOpenLevel
         let elapsed = hops * hop
+        // Adaptive gate: a quiet source in a quiet room (an unplugged electric, the top strings into a
+        // laptop's microphone) is measured without raising the input gain, while a noisy room keeps
+        // the fixed level. The clarity test still rejects anything that is not a periodic note.
+        let openLevel = min(parameters.gateOpenLevel, max(parameters.minimumGateLevel, noiseFloor * parameters.gateNoiseMargin))
+        let closeLevel = openLevel * parameters.gateCloseLevel / parameters.gateOpenLevel
+        gateOpen = gateOpen ? level > closeLevel : level > openLevel
+        if !gateOpen {
+            let rise = pow(10, parameters.noiseFloorRise * Double(elapsed) / sampleRate / 20)
+            noiseFloor = min(level, noiseFloor * rise)
+        }
         let isNewPluck = level > previousLevel * parameters.attackRatio
         if isNewPluck { samplesSinceAttack = 0 }
         previousLevel = level
