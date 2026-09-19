@@ -65,7 +65,6 @@ public struct TuningEngine {
     /// Discontinuities in the stream's timestamps, each of which discarded the analysis history.
     public private(set) var discontinuityCount = 0
     private var silentSamples = 0
-    private var lastFrame = TunerFrame(level: 0, isSignalPresent: false, reading: nil)
 
     public init(configuration: TunerConfiguration = .init(), parameters: EngineParameters = .standard) {
         self.configuration = configuration
@@ -279,8 +278,7 @@ public struct TuningEngine {
         if let reading {
             silentSamples = 0
             lastReading = reading
-            lastFrame = TunerFrame(level: level, isSignalPresent: true, reading: reading)
-            return lastFrame
+            return TunerFrame(level: level, isSignalPresent: true, reading: reading)
         }
 
         silentSamples += elapsedSamples
@@ -288,12 +286,11 @@ public struct TuningEngine {
         if var held = lastReading, silentSamples <= holdSamples {
             held.isHeld = true
             lastReading = held
-            lastFrame = TunerFrame(level: level, isSignalPresent: gateOpen, reading: held)
+            return TunerFrame(level: level, isSignalPresent: gateOpen, reading: held)
         } else {
             resetReading()
-            lastFrame = TunerFrame(level: level, isSignalPresent: gateOpen, reading: nil)
+            return TunerFrame(level: level, isSignalPresent: gateOpen, reading: nil)
         }
-        return lastFrame
     }
 
     /// Running inharmonicity correction, in cents, for `string`, updated with one refined measurement
@@ -323,15 +320,23 @@ public struct TuningEngine {
     /// A string that is dying away keeps its octave. As the note decays into noise and hum, YIN can
     /// latch onto two to four times the period (or a half to a quarter of it), which in automatic
     /// mode would jump to another string. Without a new pluck, a detection at such a ratio from the note
-    /// being followed is folded back onto it.
+    /// being followed is folded back onto it, but only when the spectrum agrees that it is an error:
+    /// folding *down* needs the followed note's fundamental to still be there (otherwise a higher
+    /// string was played), folding *up* needs the detected lower note to be absent (otherwise a lower
+    /// string was played softly, with no attack to announce it).
     private func followingOctave(of frequency: Double, isNewPluck: Bool) -> Double {
         guard !isNewPluck, let last = lastReading else { return frequency }
-        let fundamentalPresent = fundamentalIsPresent(at: last.frequency)
+        var followedIsPresent: Bool?, detectedIsPresent: Bool?
         for ratio in 2...4 {
-            for factor in [Double(ratio), 1 / Double(ratio)] where factor > 1 || fundamentalPresent {
+            for factor in [Double(ratio), 1 / Double(ratio)] {
                 let folded = frequency * factor
-                if abs(PitchMath.cents(from: folded, to: last.frequency)) < parameters.octaveContinuityWindow {
-                    return folded
+                guard abs(PitchMath.cents(from: folded, to: last.frequency)) < parameters.octaveContinuityWindow else { continue }
+                if factor > 1 {
+                    detectedIsPresent = detectedIsPresent ?? lowerNoteIsPresent(at: frequency, below: last.frequency)
+                    if detectedIsPresent == false { return folded }
+                } else {
+                    followedIsPresent = followedIsPresent ?? fundamentalIsPresent(at: last.frequency)
+                    if followedIsPresent == true { return folded }
                 }
             }
         }
@@ -346,6 +351,17 @@ public struct TuningEngine {
     private func fundamentalIsPresent(at frequency: Double) -> Bool {
         guard let tone = Spectrum.tone(at: frequency, in: buffer, sampleRate: sampleRate) else { return true }
         return tone.amplitude / 2.squareRoot() >= tone.rms * parameters.fundamentalPresenceRatio
+    }
+
+    /// Whether a note at `frequency`, an octave or two below the followed note, is really sounding:
+    /// its amplitude against the followed note's own. Against the window's RMS (as for the followed
+    /// note) would not do: a short window cannot separate 41 Hz from 50 Hz hum, so hum would count as
+    /// a low E an octave down. A detector that took twice the period finds almost nothing there; a
+    /// lower string played softly is at least as loud as what is left of the higher one.
+    private func lowerNoteIsPresent(at frequency: Double, below followed: Double) -> Bool {
+        guard let lower = Spectrum.tone(at: frequency, in: buffer, sampleRate: sampleRate),
+              let upper = Spectrum.tone(at: followed, in: buffer, sampleRate: sampleRate) else { return true }
+        return lower.amplitude >= upper.amplitude * parameters.lowerNotePresenceRatio
     }
 
     /// Frequencies the detector has to cover. When a string is pinned the search is narrowed

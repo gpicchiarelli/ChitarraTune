@@ -10,5 +10,12 @@
 	     relaunch reuses that process without opening a tuner window. -->
 	<key>NSSupportsSuddenTermination</key>
 	<true/>
+	<!-- iPhone and iPad: one scene. iOS has a single audio input for the whole app, so a second
+	     window could only show the same tuner, and closing or minimising one would stop the other. -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
 </dict>
 </plist>

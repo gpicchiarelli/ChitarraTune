@@ -66,6 +66,12 @@ public struct EngineParameters: Sendable, Hashable {
     /// there: at least this fraction of the signal's RMS at exactly that frequency (−20 dB).
     /// Otherwise a new, higher string was played (E2 → E4, D2 → D3 → D4) and is reported as such.
     public var fundamentalPresenceRatio: Double = 0.1
+    /// Folding a detection *up* onto the followed note needs the lower note to be absent: its
+    /// amplitude below this fraction of the followed note's. Otherwise a lower string was played
+    /// softly (D3 → D2 with no attack) and is reported as such. At 1 the lower note must be at least
+    /// as loud: a detector error leaves almost nothing there, while a plucked string with a weak
+    /// fundamental (close to the bridge) can leak enough hum into a short window to pass a lower bar.
+    public var lowerNotePresenceRatio: Double = 1
     /// Weight of a new measurement in the running inharmonicity correction, per ``smoothingReference``
     /// seconds (converted to the actual analysis interval like ``smoothingFactor``).
     public var correctionSmoothing: Double = 0.15

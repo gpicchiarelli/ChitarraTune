@@ -19,7 +19,8 @@ INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.music
 INFOPLIST_KEY_NSHumanReadableCopyright = Copyright © 2025–2026 ChitarraTune contributors. BSD 3-Clause License.
 INFOPLIST_KEY_NSMicrophoneUsageDescription = ChitarraTune listens to your guitar through the microphone to measure its pitch. Audio is analysed on the device and never recorded or sent anywhere.
 INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO
-INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES
+// The scene manifest comes from Config/Info.plist: one scene on iPhone and iPad (no multiple windows).
+INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO
 INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES
 INFOPLIST_KEY_UILaunchScreen_Generation = YES
 INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight

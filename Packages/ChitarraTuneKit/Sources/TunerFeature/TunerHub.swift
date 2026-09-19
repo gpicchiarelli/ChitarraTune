@@ -12,6 +12,8 @@ public final class TunerHub {
     nonisolated public let primaryID = UUID()
 
     public private(set) var activeID: UUID?
+    /// Windows showing a tuner right now, in the order they appeared.
+    public private(set) var visibleIDs: [UUID] = []
 
     @ObservationIgnored private var models: [UUID: TunerModel] = [:]
     @ObservationIgnored private let makeModel: @MainActor (UUID, TunerSettings) -> TunerModel
@@ -34,20 +36,37 @@ public final class TunerHub {
 
     public var primary: TunerModel { model(for: primaryID) }
 
-    /// The tuner that was focused last.
+    /// The tuner that system-wide entry points (Siri, Shortcuts, the Dock menu, Control Center) act
+    /// on: the window focused last while it is still open, otherwise the newest open window, otherwise
+    /// the primary tuner (which then needs a window: see ``hasVisibleTuner``).
     public var activeModel: TunerModel {
-        activeID.flatMap { models[$0] } ?? primary
+        if let id = activeID, visibleIDs.contains(id) { return model(for: id) }
+        return visibleIDs.last.map(model(for:)) ?? primary
     }
 
+    /// `false` when no window shows a tuner: an entry point that starts listening must open one
+    /// first, or the microphone would run with nothing on screen.
+    public var hasVisibleTuner: Bool { !visibleIDs.isEmpty }
+
+    /// A window started showing the tuner `id`.
+    public func windowAppeared(_ id: UUID) {
+        if !visibleIDs.contains(id) { visibleIDs.append(id) }
+    }
+
+    /// The window of `id` became the focused one.
     public func activate(_ id: UUID) {
+        windowAppeared(id)
         if activeID != id { activeID = id }
     }
 
-    /// Releases a closed window's model and stops its audio. The primary model is kept.
+    /// A window was closed: its tuner stops listening and stops being the active one. Every model
+    /// except the primary one is released.
     public func discard(_ id: UUID) async {
-        guard id != primaryID, let model = models.removeValue(forKey: id) else { return }
+        visibleIDs.removeAll { $0 == id }
+        if activeID == id { activeID = visibleIDs.last }
+        guard let model = models[id] else { return }
+        if id != primaryID { models[id] = nil }
         await model.stop()
-        if activeID == id { activeID = nil }
     }
 
     public func stopAll() async {

@@ -11,8 +11,9 @@ import TunerFeature
 struct StartTuningIntent: AppIntent {
     static let title: LocalizedStringResource = LocalizedStringResource("intent.start.title")
     static let description = IntentDescription(LocalizedStringResource("intent.start.description"))
-    /// The microphone can only be used by a foreground app.
-    static let openAppWhenRun = true
+    /// The microphone can only be used by a foreground app: the intent always brings the app forward
+    /// before it runs.
+    static let supportedModes: IntentModes = .foreground
 
     @Dependency private var hub: TunerHub
 

@@ -118,6 +118,25 @@ struct ArchitecturePolicyTests {
         #expect(scheme.contains(/<ArchiveAction\s+buildConfiguration = "Release"/))
     }
 
+    // MARK: ADR 0012 — windows and sessions
+
+    @Test("ADR 0012: one scene on iPhone and iPad, a bounded quit, no listening without a window")
+    func windowsAndSessions() throws {
+        let info = try Repo.plist("Config/Info.plist")
+        let manifest = try #require(info["UIApplicationSceneManifest"] as? [String: Any])
+        #expect(manifest["UIApplicationSupportsMultipleScenes"] as? Bool == false)
+        let settings = try Repo.xcconfig("Config/Base.xcconfig", "Config/App.xcconfig")
+        #expect(settings["INFOPLIST_KEY_UIApplicationSceneManifest_Generation"] == "NO",
+                "a generated manifest would replace the one in Config/Info.plist")
+
+        let delegate = try Repo.text("App/Platform/AppDelegate.swift")
+        #expect(delegate.contains("static let quitTimeout = Duration.seconds(2)"))
+        #expect(delegate.contains("Task.sleep(for: Self.quitTimeout)"))
+        #expect(delegate.contains("!hub.hasVisibleTuner { Self.openTunerWindow?() }"))
+        let window = try Repo.text("App/Tuner/TunerWindow.swift")
+        #expect(window.contains("hub.activate(id)") && window.contains("hub.discard(id)"))
+    }
+
     // MARK: ADR 0007 — concurrency
 
     /// The audited escape hatches, each with the reason it is safe written next to it in the code.

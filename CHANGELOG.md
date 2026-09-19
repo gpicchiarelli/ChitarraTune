@@ -39,6 +39,12 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Fixed
 
+- iPad: one window. Several windows all showed the same tuner, and minimising or closing one stopped listening in the others.
+- Mac: Siri, Shortcuts, the Dock menu and Control Center act on the focused window's tuner, not on the one opened last; closing the focused window hands over to another open one, and *Start* from the Dock with no tuner window open opens one first instead of listening with nothing on screen.
+- Mac: quitting waits at most two seconds for the audio to stop, so ⌘Q always quits even if Core Audio blocks (an interface unplugged while it stops).
+- A lower string played softly after a higher one an octave or two above (D3 → D2 in Drop D, with no attack to announce it) was read as the higher string; the engine now checks that the lower note is really absent before treating the detection as an octave error. No golden reading changes.
+- *Start Tuning* declares `supportedModes = .foreground` instead of the deprecated `openAppWhenRun`.
+- *Copy Diagnostics* includes a one-line summary of the crashes and hangs MetricKit reported for earlier sessions, whose logs are no longer readable after a crash.
 - Copying a `TuningEngine` now copies its string filters: they were reference types, so a copy shared their state and feeding one engine disturbed the other. The refinement reports failure as `nil` instead of returning its input. Neither change moves any golden reading.
 - Release builds ignore the demo and test launch arguments; only Debug builds (UI tests, screenshots) honour them.
 - Logged errors carry their domain and code only: an error description can quote a device name and would have been public in *Copy Diagnostics*.

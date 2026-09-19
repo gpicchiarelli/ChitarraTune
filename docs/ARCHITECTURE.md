@@ -73,7 +73,7 @@ The package is built in Swift 6 language mode; the app with `SWIFT_STRICT_CONCUR
 
 `TunerModel.Status` is `idle → starting → listening`, or `failed(CaptureFailure)`. The UI maps failures to text; `CaptureFailure` carries no user-facing strings.
 
-`TunerHub` owns one `TunerModel` per window and remembers which was focused last, so Siri, Shortcuts and menu commands act on the tuner you are looking at. Models are created lazily (which also makes window restoration work) and released, with their audio, when a window closes.
+`TunerHub` owns one `TunerModel` per window, knows which windows are open and which was focused last, so Siri, Shortcuts, the Dock menu and menu commands act on the tuner you are looking at, never on one whose window was closed; with no window open, the Dock menu opens one before it starts listening ([ADR 0012](adr/0012-windows-and-listening-sessions.md)). iPhone and iPad run a single scene. Models are created lazily (which also makes window restoration work) and released, with their audio, when a window closes.
 
 ## Preferences
 

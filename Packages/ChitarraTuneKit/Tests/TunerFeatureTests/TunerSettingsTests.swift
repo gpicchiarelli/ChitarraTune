@@ -158,6 +158,41 @@ struct TunerHubTests {
         #expect(hub.primary.id == hub.primaryID)
     }
 
+    @Test("The active tuner follows focus, and only among open windows")
+    func focusFollowsWindows() {
+        let hub = makeHub()
+        let second = hub.model(for: UUID())
+        hub.windowAppeared(hub.primaryID)
+        hub.windowAppeared(second.id)
+        hub.windowAppeared(second.id)
+        #expect(hub.visibleIDs == [hub.primaryID, second.id])
+        #expect(hub.activeModel === second, "with nothing focused yet, the newest window")
+        hub.activate(hub.primaryID)
+        #expect(hub.activeModel === hub.primary)
+        hub.activate(second.id)
+        #expect(hub.activeModel === second)
+    }
+
+    /// Regression: closing the focused primary window left it active, and *Start* from the Dock or
+    /// Siri then turned the microphone on for a tuner that had no window.
+    @Test("Closing the focused window hands over to an open one; with none open, a window is needed")
+    func closingTheFocusedWindow() async {
+        let hub = makeHub()
+        let second = hub.model(for: UUID())
+        hub.windowAppeared(second.id)
+        hub.activate(hub.primaryID)
+        await hub.primary.start()
+        await hub.discard(hub.primaryID)
+        #expect(hub.primary.status == .idle, "a closed window's tuner stops listening")
+        #expect(hub.activeModel === second)
+        #expect(hub.hasVisibleTuner)
+
+        await hub.discard(second.id)
+        #expect(!hub.hasVisibleTuner)
+        #expect(hub.activeModel === hub.primary, "the primary tuner, which the caller must show first")
+        #expect(hub.activeID == nil)
+    }
+
     @Test("Demo hub never needs the microphone")
     func demoHub() async {
         let hub = TunerHub.demo()

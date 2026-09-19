@@ -46,7 +46,8 @@ struct DocumentationSpecTests {
         for action in ["Start tuning", "Stop tuning", "Set tuning", "Set reference pitch", "Pick a string", "Choose input"] {
             #expect(readme.contains("**\(action)**"), "README no longer documents '\(action)'")
         }
-        #expect(source.contains("openAppWhenRun = true"), "Start must open the app: a microphone needs the foreground")
+        #expect(source.contains("static let supportedModes: IntentModes = .foreground"), "Start must open the app: a microphone needs the foreground")
+        #expect(!source.contains("openAppWhenRun"), "openAppWhenRun is deprecated since iOS and macOS 26: use supportedModes")
     }
 
     @Test("The keyboard shortcuts in the README exist in the menu commands")
