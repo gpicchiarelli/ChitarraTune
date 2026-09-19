@@ -24,4 +24,14 @@ enum LaunchOptions {
         default: .authorized
         }
     }
+    /// Demo mode only: force an appearance (`-demoAppearance dark|light`) for screenshots, where
+    /// switching the simulator's appearance while the app runs is not reliable.
+    static var demoColorScheme: ColorScheme? {
+        guard isDemo else { return nil }
+        switch UserDefaults.standard.string(forKey: "demoAppearance") {
+        case "dark": return .dark
+        case "light": return .light
+        default: return nil
+        }
+    }
 }

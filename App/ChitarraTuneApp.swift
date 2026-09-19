@@ -28,6 +28,7 @@ struct ChitarraTuneApp: App {
         // One window per tuner; the first uses the primary model, ⌘N opens more (own input and tuning).
         WindowGroup(Text(.appName), id: "tuner", for: UUID.self) { $id in
             TunerWindow(hub: hub, id: id)
+                .preferredColorScheme(LaunchOptions.demoColorScheme)
         } defaultValue: {
             hub.primaryID
         }
@@ -58,6 +59,7 @@ struct ChitarraTuneApp: App {
         #else
         WindowGroup {
             TunerWindow(hub: hub, id: hub.primaryID)
+                .preferredColorScheme(LaunchOptions.demoColorScheme)
         }
         .commands { TunerCommands(hub: hub) }
         #endif

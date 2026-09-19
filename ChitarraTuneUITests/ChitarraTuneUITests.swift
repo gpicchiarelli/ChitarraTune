@@ -15,7 +15,6 @@ final class ChitarraTuneUITests: XCTestCase {
     override func tearDown() async throws {
         #if os(iOS)
         XCUIDevice.shared.orientation = .portrait
-        XCUIDevice.shared.appearance = .light
         #endif
     }
 
@@ -300,8 +299,9 @@ final class ChitarraTuneUITests: XCTestCase {
     }
 
     func testAccessibilityAuditDarkWhileListening() throws {
-        XCUIDevice.shared.appearance = .dark
-        app.launchArguments += ["-autostart"]
+        // The app's own Dark Mode switch: flipping the simulator's appearance between launches makes
+        // the next launch flaky on CI.
+        app.launchArguments += ["-autostart", "-demoAppearance", "dark"]
         app.launch()
         waitForTuner()
         let hasNote = NSPredicate(format: "value MATCHES %@", "^[A-G]( sharp| flat)?, octave [0-9], .*")

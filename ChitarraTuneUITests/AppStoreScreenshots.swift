@@ -17,12 +17,6 @@ final class AppStoreScreenshots: XCTestCase {
         app.launchArguments += ["-demo", "-AppleLanguages", "(\(language))", "-AppleLocale", locale]
     }
 
-    override func tearDown() async throws {
-        #if os(iOS)
-        XCUIDevice.shared.appearance = .light
-        #endif
-    }
-
     private func element(_ identifier: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
@@ -74,18 +68,15 @@ final class AppStoreScreenshots: XCTestCase {
         XCTAssertTrue(element("tuningPicker").waitForExistence(timeout: 15))
         element("tuningPicker").tap()
         // The menu is open once its last tuning is on screen (names like DADGAD are not translated).
-        XCTAssertTrue(app.descendants(matching: .any)["DADGAD"].waitForExistence(timeout: 5), "tuning menu did not open")
+        let lastTuning = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH %@", "DADGAD")).firstMatch
+        XCTAssertTrue(lastTuning.waitForExistence(timeout: 15), "tuning menu did not open")
         snapshot("03-tunings")
     }
 
-    /// 4. The bar gauge in Dark Mode (iPhone, iPad) with a pinned string.
+    /// 4. The bar gauge in Dark Mode with a pinned string.
     func test3BarGauge() {
-        app.launchArguments += ["-autostart", "-settings.gauge", "bar"]
+        app.launchArguments += ["-autostart", "-settings.gauge", "bar", "-demoAppearance", "dark"]
         launch()
-        #if os(iOS)
-        // Set once the app runs, so the running scene picks the change up.
-        XCUIDevice.shared.appearance = .dark
-        #endif
         XCTAssertTrue(element("stringChip.5").waitForExistence(timeout: 15))
         element("stringChip.5").tap()
         waitForReadout(matching: inTunePattern, timeout: 30)
