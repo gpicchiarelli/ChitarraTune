@@ -98,7 +98,8 @@ public struct TuningEngine {
     ///   it does not follow on from the previous chunk, audio was lost: the analysis window and the
     ///   string filters would otherwise splice two unrelated stretches of signal and measure a
     ///   period that never existed, so the history is discarded (a held reading stays on screen).
-    /// - Returns: The most recent frame if at least one analysis hop elapsed, otherwise `nil`.
+    /// - Returns: The frame of the last analysis that fell inside this chunk, or `nil` if none did.
+    ///   The analyses themselves do not depend on how the stream is split into chunks.
     public mutating func process(_ samples: [Float], sampleRate: Double, sampleTime: Int64? = nil) -> TunerFrame? {
         // Reject anything a real audio device never reports. Non-finite or absurd rates would otherwise
         // trap in an `Int` conversion or ask for gigabytes of scratch memory.
@@ -127,8 +128,30 @@ public struct TuningEngine {
         }
         guard let detector else { return nil }
 
-        buffer.append(contentsOf: samples)
+        // Analyse at the same sample positions however the stream is cut into chunks: a device that
+        // delivers 100 ms at a time must get the same stability count, smoothing and readings as one
+        // that delivers 20 ms. The chunk is fed in slices that end exactly where an analysis is due.
+        let hop = max(1, Int(sampleRate * parameters.hopDuration))
         let capacity = detector.requiredSampleCount
+        var frame: TunerFrame?
+        var start = samples.startIndex
+        while start < samples.endIndex {
+            let due = buffer.count < capacity ? max(capacity - buffer.count, hop - samplesSinceAnalysis) : hop - samplesSinceAnalysis
+            let end = min(samples.endIndex, start + max(1, due))
+            append(Array(samples[start..<end]), capacity: capacity)
+            start = end
+            guard buffer.count >= capacity, samplesSinceAnalysis >= hop else { continue }
+            // Before the window first fills, several hops pass without an analysis; `hops` keeps the
+            // hold timer accurate. From then on every analysis is exactly one hop after the previous.
+            let hops = samplesSinceAnalysis / hop
+            samplesSinceAnalysis -= hops * hop
+            frame = analyse(detector: detector, hops: hops, hop: hop)
+        }
+        return frame
+    }
+
+    private mutating func append(_ samples: [Float], capacity: Int) {
+        buffer.append(contentsOf: samples)
         if buffer.count > capacity { buffer.removeFirst(buffer.count - capacity) }
         for index in partialFilters.indices {
             guard let filter = partialFilters[index] else { continue }
@@ -137,15 +160,6 @@ public struct TuningEngine {
         }
         filteredSampleCount += samples.count
         samplesSinceAnalysis += samples.count
-
-        let hop = max(1, Int(sampleRate * parameters.hopDuration))
-        guard buffer.count >= capacity, samplesSinceAnalysis >= hop else { return nil }
-
-        // The buffer only ever holds the newest window, so one analysis per call is equivalent to
-        // one per elapsed hop; `hops` keeps the hold/stability timers accurate.
-        let hops = max(1, samplesSinceAnalysis / hop)
-        samplesSinceAnalysis -= hops * hop
-        return analyse(detector: detector, hops: hops, hop: hop)
     }
 
     // MARK: - Analysis step

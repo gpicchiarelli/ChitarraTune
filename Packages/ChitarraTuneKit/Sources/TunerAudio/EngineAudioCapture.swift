@@ -4,8 +4,9 @@ import os
 /// `AVAudioEngine`-based microphone capture, shared by macOS and iOS.
 ///
 /// Design notes (power and latency):
-/// - The tap size matches the analysis hop (~23 ms), so the process wakes ~43×/s instead of once
-///   per hardware buffer.
+/// - The tap asks for 1 024 frames (~23 ms). The system may deliver larger buffers (manual rendering
+///   delivers ~100 ms); that only lowers how often the screen updates, because the engine analyses at
+///   fixed positions in the stream whatever the chunk size.
 /// - On iOS the session uses `.record` + `.measurement`, which turns off system gain control and
 ///   voice processing (less DSP work, untouched signal) and a long I/O buffer duration.
 /// - The stream buffers only the newest chunks: a slow consumer never accumulates a backlog.

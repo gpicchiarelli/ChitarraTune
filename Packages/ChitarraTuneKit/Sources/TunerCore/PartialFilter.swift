@@ -1,4 +1,3 @@
-import Accelerate
 import Foundation
 
 /// Streaming band-pass tuned to one string: a 4th-order Butterworth low-pass that passes the
@@ -10,18 +9,39 @@ import Foundation
 /// over from one chunk to the next and there are no edge transients to distort the period. A
 /// causal IIR filter delays a steady tone but does not change its period.
 ///
-/// Holds an Accelerate biquad setup, so it is a reference type confined to one isolation domain.
+/// The sections run in double precision, one sample after the other. The poles of a low-pass at a
+/// hundred hertz sit within 2 % of the unit circle, where single precision (`vDSP_biquad`) loses
+/// digits, and a vectorised kernel rounds differently depending on where the stream was cut into
+/// chunks. Here the output depends only on the samples: not on the chunking, not on the CPU.
+///
+/// Carries the filter state from one chunk to the next, so it is a reference type confined to one
+/// isolation domain.
 public final class PartialFilter {
-    /// Cutoff relative to the string's frequency. With the ±300 cent capture window of the engine
-    /// the fundamental always stays in the passband and the third partial is at least 20 dB down.
+    /// Cutoff relative to the string's frequency. Across the engine's ±300 cent capture window the
+    /// fundamental loses less than 1 dB and the third partial at least 15 dB (22 dB on pitch).
     public static let cutoffRatio = 1.6
-    /// High-pass corner relative to the string's frequency.
+    /// High-pass corner relative to the string's frequency: rumble at a fifth of it loses 16 dB.
     public static let highPassRatio = 0.5
 
+    /// One second-order section, transposed direct form II, normalised so that `a0 == 1`.
+    private struct Section {
+        var b0, b1, b2, a1, a2: Double
+        var z1 = 0.0, z2 = 0.0
+
+        init(b0: Double, b1: Double, b2: Double, a0: Double, a1: Double, a2: Double) {
+            (self.b0, self.b1, self.b2, self.a1, self.a2) = (b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0)
+        }
+
+        mutating func callAsFunction(_ x: Double) -> Double {
+            let y = b0 * x + z1
+            z1 = b1 * x - a1 * y + z2
+            z2 = b2 * x - a2 * y
+            return y
+        }
+    }
+
     public let cutoff: Double
-    private let setup: vDSP_biquad_Setup
-    private var delay: [Float]
-    private var output: [Float] = []
+    private var sections: [Section]
 
     /// - Returns: `nil` if the cutoff is not below the Nyquist frequency.
     public init?(frequency: Double, sampleRate: Double) {
@@ -29,36 +49,32 @@ public final class PartialFilter {
         guard cutoff.isFinite, sampleRate.isFinite, cutoff > 0, cutoff < sampleRate * 0.45 else { return nil }
         let omega = 2 * .pi * cutoff / sampleRate
         let cosine = cos(omega), sine = sin(omega)
-        var coefficients: [Double] = []
-        // Two sections with the Q values of a 4th-order Butterworth.
-        for q in [0.541_196_100_146_197, 1.306_562_964_876_376] {
+        // Two low-pass sections with the Q values of a 4th-order Butterworth.
+        sections = [0.541_196_100_146_197, 1.306_562_964_876_376].map { q in
             let alpha = sine / (2 * q)
-            let a0 = 1 + alpha
-            coefficients += [(1 - cosine) / 2 / a0, (1 - cosine) / a0, (1 - cosine) / 2 / a0,
-                             -2 * cosine / a0, (1 - alpha) / a0]
+            return Section(b0: (1 - cosine) / 2, b1: 1 - cosine, b2: (1 - cosine) / 2,
+                           a0: 1 + alpha, a1: -2 * cosine, a2: 1 - alpha)
         }
         let highOmega = 2 * .pi * Self.highPassRatio * frequency / sampleRate
         let highCosine = cos(highOmega), highAlpha = sin(highOmega) / (2 * 0.707_106_781_186_548)
-        let h0 = 1 + highAlpha
-        coefficients += [(1 + highCosine) / 2 / h0, -(1 + highCosine) / h0, (1 + highCosine) / 2 / h0,
-                         -2 * highCosine / h0, (1 - highAlpha) / h0]
-        guard let setup = vDSP_biquad_CreateSetup(coefficients, 3) else { return nil }
+        sections.append(Section(b0: (1 + highCosine) / 2, b1: -(1 + highCosine), b2: (1 + highCosine) / 2,
+                                a0: 1 + highAlpha, a1: -2 * highCosine, a2: 1 - highAlpha))
         self.cutoff = cutoff
-        self.setup = setup
-        delay = [Float](repeating: 0, count: 2 * 3 + 2)
     }
-
-    deinit { vDSP_biquad_DestroySetup(setup) }
 
     /// Filters the next chunk of the stream.
     public func process(_ samples: [Float]) -> [Float] {
-        if output.count != samples.count { output = [Float](repeating: 0, count: samples.count) }
-        vDSP_biquad(setup, &delay, samples, 1, &output, 1, vDSP_Length(samples.count))
-        return output
+        sections.withUnsafeMutableBufferPointer { sections in
+            samples.map { sample in
+                var value = Double(sample)
+                for index in sections.indices { value = sections[index](value) }
+                return Float(value)
+            }
+        }
     }
 
     /// Forgets the filter state (after a gap in the stream).
     public func reset() {
-        for index in delay.indices { delay[index] = 0 }
+        for index in sections.indices { (sections[index].z1, sections[index].z2) = (0, 0) }
     }
 }

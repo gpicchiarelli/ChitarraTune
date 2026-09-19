@@ -109,12 +109,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Realistic signals and recorded corpus, optimised build
+      - name: Realistic signals, recorded corpus and real-time budgets, optimised build
         env:
           CHITARRA_FULL_DSP: "1"
         run: |
           swift test --package-path Packages/ChitarraTuneKit -c release -Xswiftc -enable-testing \
-            --filter "RealisticSignalTests|RecordingCorpusTests"
+            --filter "RealisticSignalTests|RecordingCorpusTests|RealTimeBudgetTests|PitchDetectorTests"
 
   # End-to-end tests in demo mode (synthetic guitar, no microphone), including Xcode's accessibility
   # audit of every screen in light, dark, landscape and the largest text size.

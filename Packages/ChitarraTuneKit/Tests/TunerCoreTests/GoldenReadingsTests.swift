@@ -124,5 +124,7 @@ struct GoldenReadingsTests {
         }
         let overall = medians.sorted()[medians.count / 2]
         #expect(overall <= 0.5, "overall median error \(overall) cents")
+        let sorted = medians.sorted(), mean = medians.reduce(0, +) / Double(medians.count)
+        print("accuracy envelope: median error per note — median \(overall), mean \(mean), 90th percentile \(sorted[sorted.count * 9 / 10]), worst \(sorted.last ?? 0) cents")
     }
 }
