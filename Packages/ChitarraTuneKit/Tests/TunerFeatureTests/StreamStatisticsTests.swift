@@ -18,17 +18,21 @@ struct StreamStatisticsTests {
     func statistics() {
         var stats = StreamStatistics()
         #expect(stats.duration == 0 && stats.averageChunkDuration == 0 && stats.analysisRate == 0)
-        stats.record(AudioChunk(samples: .init(repeating: 0, count: 4_800), sampleRate: 48_000), analyses: 4, discontinuities: 0)
-        stats.record(AudioChunk(samples: .init(repeating: 0, count: 2_400), sampleRate: 48_000), analyses: 2, discontinuities: 1)
+        var first = AnalysisCounts(), second = AnalysisCounts()
+        (first.analyses, first.belowGate, first.unclear) = (4, 3, 1)
+        (second.analyses, second.discontinuities, second.outOfRange) = (2, 1, 2)
+        stats.record(AudioChunk(samples: .init(repeating: 0, count: 4_800), sampleRate: 48_000), counts: first)
+        stats.record(AudioChunk(samples: .init(repeating: 0, count: 2_400), sampleRate: 48_000), counts: second)
         #expect(stats.chunks == 2 && stats.samples == 7_200)
         #expect(stats.smallestChunk == 2_400 && stats.largestChunk == 4_800)
         #expect(stats.duration == 0.15)
         #expect(stats.averageChunkDuration == 75)
         #expect(stats.analysisRate == 40)
-        #expect(stats.discontinuities == 1)
-        #expect(stats.summary == "48000 Hz, 0.1 s, 2 callbacks of 2400–4800 frames (75.0 ms average), 40.0 analyses/s, 1 discontinuities")
+        #expect(stats.counts.discontinuities == 1)
+        #expect(stats.summary == "48000 Hz, 0.1 s, 2 callbacks of 2400–4800 frames (75.0 ms average), 40.0 analyses/s, 1 discontinuities; "
+            + "no reading: 3 below the gate, 1 unclear, 2 out of range")
 
-        stats.record(AudioChunk(samples: .init(repeating: 0, count: 441), sampleRate: 44_100), analyses: 0, discontinuities: 0)
+        stats.record(AudioChunk(samples: .init(repeating: 0, count: 441), sampleRate: 44_100), counts: AnalysisCounts())
         #expect(stats.chunks == 1 && stats.sampleRate == 44_100, "a new sample rate starts afresh")
     }
 
@@ -39,7 +43,7 @@ struct StreamStatisticsTests {
         let stats = await processor.statistics
         #expect(stats.largestChunk == size)
         #expect(abs(stats.analysisRate - 40) < 2, "\(stats.summary)")
-        #expect(stats.discontinuities == 0)
+        #expect(stats.counts.discontinuities == 0)
     }
 
     @Test("Lost audio is counted")
@@ -47,7 +51,7 @@ struct StreamStatisticsTests {
         let processor = TunerProcessor(configuration: TunerConfiguration(), parameters: .standard)
         let tone = pluckSamples(midi: 45, duration: 0.5)
         for chunk in chunks(tone) + chunks(tone, from: 100_000) { _ = await processor.process(chunk) }
-        #expect(await processor.statistics.discontinuities == 1)
+        #expect(await processor.statistics.counts.discontinuities == 1)
     }
 
     @Test("Statistics are reported at the end of a stream")

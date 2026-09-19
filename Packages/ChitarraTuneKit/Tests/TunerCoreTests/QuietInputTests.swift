@@ -63,4 +63,35 @@ struct QuietInputTests {
         let found = readings(signal)
         #expect(found.count < 3, "\(found.count) readings from a pluck buried in a noisy room")
     }
+
+    @Test("Diagnostics say why the needle does not move: below the gate, unclear, or out of range")
+    func rejectionReasons() {
+        var engine = TuningEngine()
+        _ = engine.process(SignalGenerator.silence(count: 48_000), sampleRate: Self.rate)
+        #expect(engine.counts.belowGate > 30 && engine.counts.unclear == 0)
+
+        var noise = RandomNoise()
+        let loudNoise = (0..<48_000).map { _ in Float(0.05 * noise.next()) }
+        let beforeNoise = engine.counts
+        _ = engine.process(loudNoise, sampleRate: Self.rate)
+        #expect((engine.counts - beforeNoise).unclear > 30)
+
+        // Automatic mode, a clear 470 Hz: inside the search range, 640 cents above the nearest string.
+        var automatic = TuningEngine()
+        _ = automatic.process(SignalGenerator.tone(frequency: 470, sampleRate: Self.rate, duration: 1, harmonics: [1], amplitude: 0.3),
+                              sampleRate: Self.rate)
+        #expect(automatic.counts.outOfRange > 30)
+        #expect(automatic.counts.analyses == automatic.counts.outOfRange + automatic.counts.belowGate + automatic.counts.unclear)
+    }
+}
+
+/// A small deterministic noise source (xorshift), uniform in −1…1.
+private struct RandomNoise {
+    private var state: UInt64 = 0x9E37_79B9_7F4A_7C15
+    mutating func next() -> Double {
+        state ^= state << 13
+        state ^= state >> 7
+        state ^= state << 17
+        return Double(state % 2_000_001) / 1_000_000 - 1
+    }
 }

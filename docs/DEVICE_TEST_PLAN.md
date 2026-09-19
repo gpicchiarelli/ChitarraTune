@@ -4,7 +4,7 @@ Automated tests cover the signal path (synthetic and modelled strings), the pres
 
 ## Field session (debug build from Xcode)
 
-ChitarraTune never records or stores audio, in any build. What it logs is how the device delivers audio: after 3 s of listening, then every minute and when listening stops, e.g. `stream: 48000 Hz, 3.0 s, 141 callbacks of 1024–1024 frames (21.3 ms average), 39.9 analyses/s, 0 discontinuities`. Read it in Console.app (filter `com.chitarratune.app`, category `capture`) or with *Settings ▸ About ▸ Copy Diagnostics*. Analyses must be ~40/s whatever the callback size (~22/s in Low Power Mode); discontinuities must be 0 in a quiet session.
+ChitarraTune never records or stores audio, in any build. What it logs is how the device delivers audio: after 3 s of listening, then every minute and when listening stops, e.g. `stream: 48000 Hz, 3.0 s, 141 callbacks of 1024–1024 frames (21.3 ms average), 39.9 analyses/s, 0 discontinuities; no reading: 80 below the gate, 3 unclear, 0 out of range`. When a string does not move the needle, the last part says why: *below the gate* (too quiet for the room), *unclear* (not a clean periodic sound: noise, a buzzing string, two strings at once), *out of range* (more than 300 cents from every string). Read it in Console.app (filter `com.chitarratune.app`, category `capture`) or with *Settings ▸ About ▸ Copy Diagnostics*. Analyses must be ~40/s whatever the callback size (~22/s in Low Power Mode); discontinuities must be 0 in a quiet session.
 
 To turn a real string into a regression test, record it with a separate recorder (Voice Memos, a DAW), never with ChitarraTune:
 

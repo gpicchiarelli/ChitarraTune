@@ -90,7 +90,55 @@ public struct EngineParameters: Sendable, Hashable {
 
     public static let standard = EngineParameters()
 
+    /// The weight of one analysis for a smoothing factor defined per ``smoothingReference`` seconds:
+    /// `n` analyses of this weight forget the past exactly as fast as one step of the reference, so
+    /// smoothing is a property of time, not of the analysis rate (ADR 0008). At the standard rate the
+    /// factor is used unchanged.
+    func weight(_ perReference: Double) -> Double {
+        let steps = hopDuration / Self.smoothingReference
+        return steps == 1 ? perReference : 1 - pow(1 - perReference, steps)
+    }
+
     public init() {}
+}
+
+// MARK: - Diagnostics
+
+/// What the engine did with its analyses, for diagnostics: how many there were, and why those that
+/// produced no reading were set aside. Answers "why does the needle not move?" on a real device.
+public struct AnalysisCounts: Sendable, Hashable {
+    public var analyses = 0
+    /// The level was below the noise gate.
+    public var belowGate = 0
+    /// No clearly periodic sound (the detector found nothing, or its clarity was too low).
+    public var unclear = 0
+    /// A pitch, but further than ``EngineParameters/maximumDeviation`` from every string.
+    public var outOfRange = 0
+    /// Audio lost between chunks; each discarded the analysis history.
+    public var discontinuities = 0
+
+    public init() {}
+
+    /// The counts accumulated since `earlier`.
+    public static func - (later: AnalysisCounts, earlier: AnalysisCounts) -> AnalysisCounts {
+        var delta = AnalysisCounts()
+        delta.analyses = later.analyses - earlier.analyses
+        delta.belowGate = later.belowGate - earlier.belowGate
+        delta.unclear = later.unclear - earlier.unclear
+        delta.outOfRange = later.outOfRange - earlier.outOfRange
+        delta.discontinuities = later.discontinuities - earlier.discontinuities
+        return delta
+    }
+
+    public static func + (lhs: AnalysisCounts, rhs: AnalysisCounts) -> AnalysisCounts {
+        var sum = lhs
+        sum.analyses += rhs.analyses
+        sum.belowGate += rhs.belowGate
+        sum.unclear += rhs.unclear
+        sum.outOfRange += rhs.outOfRange
+        sum.discontinuities += rhs.discontinuities
+        return sum
+    }
 }
 
 // MARK: - Output

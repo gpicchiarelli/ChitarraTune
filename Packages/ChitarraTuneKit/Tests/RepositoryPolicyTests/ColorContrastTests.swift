@@ -55,8 +55,8 @@ struct ColorContrastTests {
         let pattern = try NSRegularExpression(pattern: #"isLuminanceReduced \? ([\d.]+) : ([\d.]+)"#)
         let range = NSRange(source.startIndex..., in: source)
         let match = try #require(pattern.firstMatch(in: source, range: range), "wash opacity not found in TunerBackground.swift")
-        func group(_ index: Int) -> String { String(source[Range(match.range(at: index), in: source)!]) }
-        return try #require(Double(reduced ? group(1) : group(2)))
+        let captured = try #require(Range(match.range(at: reduced ? 1 : 2), in: source))
+        return try #require(Double(source[captured]))
     }
 
     /// The window background and the tinted washes drawn over it.

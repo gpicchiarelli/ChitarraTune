@@ -1,5 +1,6 @@
 import Foundation
 import TunerAudio
+import TunerCore
 
 /// What the capture stream actually delivers on this device: sample rate, callback size, how often
 /// the engine analyses, and whether audio was lost. It answers questions no simulator can ("does this
@@ -10,8 +11,8 @@ public struct StreamStatistics: Sendable, Equatable {
     public private(set) var samples = 0
     public private(set) var smallestChunk = 0
     public private(set) var largestChunk = 0
-    public private(set) var analyses = 0
-    public private(set) var discontinuities = 0
+    /// What the engine did with its analyses, and why some produced no reading.
+    public private(set) var counts = AnalysisCounts()
 
     public init() {}
 
@@ -22,10 +23,10 @@ public struct StreamStatistics: Sendable, Equatable {
     public var averageChunkDuration: Double { chunks > 0 && sampleRate > 0 ? 1_000 * Double(samples) / Double(chunks) / sampleRate : 0 }
 
     /// Analyses per second of audio.
-    public var analysisRate: Double { duration > 0 ? Double(analyses) / duration : 0 }
+    public var analysisRate: Double { duration > 0 ? Double(counts.analyses) / duration : 0 }
 
     /// Adds one callback and what the engine did with it.
-    mutating func record(_ chunk: AudioChunk, analyses: Int, discontinuities: Int) {
+    mutating func record(_ chunk: AudioChunk, counts delta: AnalysisCounts) {
         if chunk.sampleRate != sampleRate {
             self = StreamStatistics()
             sampleRate = chunk.sampleRate
@@ -35,15 +36,16 @@ public struct StreamStatistics: Sendable, Equatable {
         largestChunk = max(largestChunk, count)
         chunks += 1
         samples += count
-        self.analyses += analyses
-        self.discontinuities += discontinuities
+        counts = counts + delta
     }
 
     /// One line for the diagnostics log.
     public var summary: String {
         String(
-            format: "%.0f Hz, %.1f s, %d callbacks of %d–%d frames (%.1f ms average), %.1f analyses/s, %d discontinuities",
-            sampleRate, duration, chunks, smallestChunk, largestChunk, averageChunkDuration, analysisRate, discontinuities
+            format: "%.0f Hz, %.1f s, %d callbacks of %d–%d frames (%.1f ms average), %.1f analyses/s, %d discontinuities; "
+                + "no reading: %d below the gate, %d unclear, %d out of range",
+            sampleRate, duration, chunks, smallestChunk, largestChunk, averageChunkDuration, analysisRate, counts.discontinuities,
+            counts.belowGate, counts.unclear, counts.outOfRange
         )
     }
 }

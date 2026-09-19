@@ -199,7 +199,10 @@ struct TunerHubTests {
         let model = hub.primary
         await model.start()
         #expect(model.isListening)
-        #expect(await eventually { model.reading != nil })
+        // The demo guitar plays in real time: while the DSP suites saturate every core in the same
+        // test run, its first reading can take far longer than on an idle machine (0.05 s). The
+        // timeout only bounds a failure; a passing run returns as soon as the reading arrives.
+        #expect(await eventually(timeout: .seconds(60)) { model.reading != nil })
         await hub.stopAll()
         #expect(model.status == .idle)
     }

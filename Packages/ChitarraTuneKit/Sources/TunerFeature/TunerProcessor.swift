@@ -57,9 +57,9 @@ actor TunerProcessor {
     func process(_ chunk: AudioChunk) -> TunerFrame? {
         let interval = signposter.beginInterval("analyse")
         defer { signposter.endInterval("analyse", interval) }
-        let analyses = engine.analysisCount, discontinuities = engine.discontinuityCount
+        let before = engine.counts
         let frame = engine.process(chunk.samples, sampleRate: chunk.sampleRate, sampleTime: chunk.sampleTime)
-        statistics.record(chunk, analyses: engine.analysisCount - analyses, discontinuities: engine.discontinuityCount - discontinuities)
+        statistics.record(chunk, counts: engine.counts - before)
         if statistics.duration >= nextReport {
             reportStatistics()
             nextReport = ((statistics.duration / Self.reportInterval).rounded(.down) + 1) * Self.reportInterval

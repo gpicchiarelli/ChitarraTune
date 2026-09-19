@@ -46,10 +46,7 @@ public struct TuningEngine {
     /// Where the next chunk should start on the device timeline, if the source reports timestamps.
     private var nextSampleTime: Int64?
 
-    private var gateOpen = false
-    /// Estimated level of the room when nothing is played (see ``EngineParameters/noiseFloorRise``).
-    /// Starts where the gate opens at its fixed level.
-    private lazy var noiseFloor = parameters.gateOpenLevel / parameters.gateNoiseMargin
+    private lazy var gate = NoiseGate(parameters: parameters)
     private var level = 0.0
     private var smoothedCents = 0.0
     private var stableCount = 0
@@ -57,16 +54,9 @@ public struct TuningEngine {
     private var lastReading: TunerReading?
     /// Level of the previous analysis, to tell a new pluck from a decaying one.
     private var previousLevel = 0.0
-    /// Inharmonicity correction (cents) of the string being followed. It is a property of the
-    /// string, stable over a pluck, while each single measurement of it is noisy (hum and rumble
-    /// share the fundamental's band), so it is averaged over time.
-    private var inharmonicCorrection: (string: Int, cents: Double)?
-    /// The correction included in the last reading (see the smoothing step in `analyse`).
-    private var appliedCorrection = 0.0
-    /// Analyses performed so far, for diagnostics (analyses per second on a real device).
-    public private(set) var analysisCount = 0
-    /// Discontinuities in the stream's timestamps, each of which discarded the analysis history.
-    public private(set) var discontinuityCount = 0
+    private var inharmonicity = InharmonicityTracker()
+    /// Analyses performed so far and why some produced no reading, for diagnostics.
+    public private(set) var counts = AnalysisCounts()
     private var silentSamples = 0
 
     public init(configuration: TunerConfiguration = .init(), parameters: EngineParameters = .standard) {
@@ -101,8 +91,7 @@ public struct TuningEngine {
         inTune = false
         lastReading = nil
         silentSamples = 0
-        inharmonicCorrection = nil
-        appliedCorrection = 0
+        inharmonicity = InharmonicityTracker()
     }
 
     /// Consumes a chunk of mono samples.
@@ -128,7 +117,7 @@ public struct TuningEngine {
         }
         if let sampleTime {
             if let expected = nextSampleTime, sampleTime != expected {
-                discontinuityCount += 1
+                counts.discontinuities += 1
                 discardHistory()
             }
             nextSampleTime = sampleTime + Int64(samples.count)
@@ -183,7 +172,7 @@ public struct TuningEngine {
     // MARK: - Analysis step
 
     private mutating func analyse(detector: PitchDetector, hops: Int, hop: Int) -> TunerFrame {
-        analysisCount += 1
+        counts.analyses += 1
         let levelSamples = max(1, Int((parameters.levelWindowDuration * sampleRate).rounded()))
         let window = buffer.suffix(min(buffer.count, levelSamples))
         var sumSquares = 0.0
@@ -191,29 +180,22 @@ public struct TuningEngine {
         level = (sumSquares / Double(window.count)).squareRoot()
 
         let elapsed = hops * hop
-        // Adaptive gate: a quiet source in a quiet room (an unplugged electric, the top strings into a
-        // laptop's microphone) is measured without raising the input gain, while a noisy room keeps
-        // the fixed level. The clarity test still rejects anything that is not a periodic note.
-        let openLevel = min(parameters.gateOpenLevel, max(parameters.minimumGateLevel, noiseFloor * parameters.gateNoiseMargin))
-        let closeLevel = openLevel * parameters.gateCloseLevel / parameters.gateOpenLevel
-        gateOpen = gateOpen ? level > closeLevel : level > openLevel
-        if !gateOpen {
-            let rise = pow(10, parameters.noiseFloorRise * Double(elapsed) / sampleRate / 20)
-            noiseFloor = min(level, noiseFloor * rise)
-        }
+        gate.update(level: level, elapsed: Double(elapsed) / sampleRate)
         let isNewPluck = level > previousLevel * parameters.attackRatio
         if isNewPluck { samplesSinceAttack = 0 }
         previousLevel = level
 
-        guard gateOpen else {
+        guard gate.isOpen else {
+            counts.belowGate += 1
             return finish(withDetection: nil, elapsedSamples: elapsed)
         }
-
-        guard let estimate = detector.estimate(in: buffer),
-              estimate.clarity >= parameters.minimumClarity,
-              var selection = select(for: followingOctave(of: estimate.frequency, isNewPluck: isNewPluck)),
-              abs(selection.cents) <= parameters.maximumDeviation
-        else {
+        guard let estimate = detector.estimate(in: buffer), estimate.clarity >= parameters.minimumClarity else {
+            counts.unclear += 1
+            return finish(withDetection: nil, elapsedSamples: elapsed)
+        }
+        var selection = select(for: followingOctave(of: estimate.frequency, isNewPluck: isNewPluck))
+        guard abs(selection.cents) <= parameters.maximumDeviation else {
+            counts.outOfRange += 1
             return finish(withDetection: nil, elapsedSamples: elapsed)
         }
         // Measure the fundamental itself, free of the upper partials' inharmonic pull. The string
@@ -225,13 +207,14 @@ public struct TuningEngine {
         if filtered.indices.contains(selection.index), let filter = partialFilters[selection.index],
            filteredSampleCount >= 2 * detector.requiredSampleCount,
            samplesSinceAttack >= filter.settlingSamples + detector.requiredSampleCount {
-            correction = inharmonicityCorrection(
+            correction = inharmonicity.update(
                 measured: detector.refine(selection.frequency, lowPassed: filtered[selection.index]),
                 estimate: selection.frequency,
-                string: selection.index
+                string: selection.index,
+                weight: parameters.weight(parameters.correctionSmoothing)
             )
-        } else if let known = inharmonicCorrection, known.string == selection.index {
-            correction = known.cents
+        } else if let known = inharmonicity.known(for: selection.index) {
+            correction = known
         }
         if correction != 0 {
             let target = configuration.tuning.strings[selection.index].frequency(referenceA: configuration.referenceA)
@@ -250,13 +233,13 @@ public struct TuningEngine {
             // The correction is an offset of the instrument, not an observation: when it changes, the
             // history averaged so far was measured with the old one and moves with it, instead of
             // dragging the reading towards uncorrected values for several analyses.
-            smoothedCents += correction - appliedCorrection
+            smoothedCents += correction - inharmonicity.applied
             let range = parameters.smoothingFactor
-            let alpha = weight(range.lowerBound + (range.upperBound - range.lowerBound) * estimate.clarity)
+            let alpha = parameters.weight(range.lowerBound + (range.upperBound - range.lowerBound) * estimate.clarity)
             smoothedCents = alpha * selection.cents + (1 - alpha) * smoothedCents
         }
 
-        appliedCorrection = correction
+        inharmonicity.applied = correction
 
         // Stability with hysteresis.
         let magnitude = abs(smoothedCents)
@@ -298,35 +281,11 @@ public struct TuningEngine {
         if var held = lastReading, silentSamples <= holdSamples {
             held.isHeld = true
             lastReading = held
-            return TunerFrame(level: level, isSignalPresent: gateOpen, reading: held)
+            return TunerFrame(level: level, isSignalPresent: gate.isOpen, reading: held)
         } else {
             resetReading()
-            return TunerFrame(level: level, isSignalPresent: gateOpen, reading: nil)
+            return TunerFrame(level: level, isSignalPresent: gate.isOpen, reading: nil)
         }
-    }
-
-    /// Running inharmonicity correction, in cents, for `string`, updated with one refined measurement
-    /// (`nil` when this analysis could not refine the period).
-    private mutating func inharmonicityCorrection(measured: Double?, estimate: Double, string: Int) -> Double {
-        guard let current = inharmonicCorrection, current.string == string else {
-            let initial = measured.map { PitchMath.cents(from: $0, to: estimate) } ?? 0
-            inharmonicCorrection = (string, initial)
-            return initial
-        }
-        guard let measured else { return current.cents }
-        let sample = PitchMath.cents(from: measured, to: estimate)
-        let updated = current.cents + weight(parameters.correctionSmoothing) * (sample - current.cents)
-        inharmonicCorrection = (string, updated)
-        return updated
-    }
-
-    /// The weight of one analysis for a smoothing factor defined per
-    /// ``EngineParameters/smoothingReference`` seconds: `n` analyses of this weight forget the past
-    /// exactly as fast as one step of the reference, so smoothing is a property of time, not of the
-    /// analysis rate (ADR 0008). At the standard rate the factor is used unchanged.
-    private func weight(_ perReference: Double) -> Double {
-        let steps = parameters.hopDuration / EngineParameters.smoothingReference
-        return steps == 1 ? perReference : 1 - pow(1 - perReference, steps)
     }
 
     /// A string that is dying away keeps its octave. As the note decays into noise and hum, YIN can
@@ -338,18 +297,14 @@ public struct TuningEngine {
     /// string was played softly, with no attack to announce it).
     private func followingOctave(of frequency: Double, isNewPluck: Bool) -> Double {
         guard !isNewPluck, let last = lastReading else { return frequency }
-        var followedIsPresent: Bool?, detectedIsPresent: Bool?
         for ratio in 2...4 {
             for factor in [Double(ratio), 1 / Double(ratio)] {
                 let folded = frequency * factor
                 guard abs(PitchMath.cents(from: folded, to: last.frequency)) < parameters.octaveContinuityWindow else { continue }
-                if factor > 1 {
-                    detectedIsPresent = detectedIsPresent ?? lowerNoteIsPresent(at: frequency, below: last.frequency)
-                    if detectedIsPresent == false { return folded }
-                } else {
-                    followedIsPresent = followedIsPresent ?? fundamentalIsPresent(at: last.frequency)
-                    if followedIsPresent == true { return folded }
-                }
+                let isDetectorError = factor > 1
+                    ? !lowerNoteIsPresent(at: frequency, below: last.frequency)
+                    : fundamentalIsPresent(at: last.frequency)
+                if isDetectorError { return folded }
             }
         }
         return frequency
@@ -400,7 +355,7 @@ public struct TuningEngine {
     }
 
     /// Maps a detected frequency to a string of the configured tuning.
-    private func select(for frequency: Double) -> Selection? {
+    private func select(for frequency: Double) -> Selection {
         let tuning = configuration.tuning
         let referenceA = configuration.referenceA
 
