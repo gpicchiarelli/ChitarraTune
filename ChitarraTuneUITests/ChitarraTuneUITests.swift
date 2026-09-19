@@ -79,7 +79,7 @@ final class ChitarraTuneUITests: XCTestCase {
         // while the sheet is open; the audit reports it without an element.
         if issue.element == nil, issue.compactDescription.hasPrefix("Potentially inaccessible text") { return true }
         #if os(macOS)
-        // The Touch Bar and the window's own content groups are AppKit's, not the app's.
+        // The Touch Bar and the content groups of windows and sheets are AppKit's, not the app's.
         if let element = issue.element {
             if element.elementType == .touchBar { return true }
             // SwiftUI's menu-style Picker is a system pop-up button that opens its menu when pressed;
@@ -92,6 +92,8 @@ final class ChitarraTuneUITests: XCTestCase {
                 || issue.auditType == .parentChild { return true }
             let window = app.windows.firstMatch
             if element.elementType == .group, element.label.isEmpty, window.exists, element.frame == window.frame { return true }
+            let sheet = app.sheets.firstMatch
+            if element.elementType == .group, element.label.isEmpty, sheet.exists, element.frame == sheet.frame { return true }
         }
         #endif
         #if os(iOS)
