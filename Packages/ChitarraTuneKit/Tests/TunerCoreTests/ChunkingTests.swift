@@ -93,3 +93,26 @@ struct RealTimeBudgetTests {
         #endif
     }
 }
+
+@Suite("Engine value semantics")
+struct EngineValueSemanticsTests {
+    /// `TuningEngine` is a struct: a copy must be a second, independent instrument. Before the string
+    /// filters became value types a copy shared their state, and feeding one engine corrupted the other.
+    @Test("A copied engine measures independently of the original")
+    func copiesAreIndependent() throws {
+        let rate = 48_000.0
+        let low = StringModel().pluck(frequency: 82.41, sampleRate: rate, duration: 1)
+        let high = StringModel().pluck(frequency: 329.63, sampleRate: rate, duration: 1)
+        var original = TuningEngine()
+        for chunk in Array(low.prefix(24_000)).chunked(1_024) { _ = original.process(chunk, sampleRate: rate) }
+
+        var reference = original    // continues with the same audio
+        var other = original        // hears something else
+        for chunk in high.chunked(1_024) { _ = other.process(chunk, sampleRate: rate) }
+        let rest = Array(low.dropFirst(24_000)).chunked(1_024)
+        let expected = rest.compactMap { reference.process($0, sampleRate: rate) }
+        let actual = rest.compactMap { original.process($0, sampleRate: rate) }
+        #expect(actual == expected)
+        #expect(try #require(actual.last?.reading).stringIndex == 0)
+    }
+}

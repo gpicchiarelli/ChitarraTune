@@ -23,6 +23,7 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 - **More accurate on real strings.** Steel strings are slightly inharmonic, which pulled YIN's reading one to four cents sharp (up to eight on a stiff string). A per-string streaming band-pass and a second period measurement on it now measure the fundamental itself; the typical error on a modelled string is under one cent. As a note dies away the reading can no longer jump an octave (or to another string).
 - A physically informed string model (inharmonicity, pluck position, phone-microphone roll-off, pick and room noise, mains hum) and accuracy tests for every tuning and string; a corpus directory for real recordings that become regression tests.
+- **Architecture decision records.** Eleven binding ADRs (`docs/adr/`) cover privacy, platform security, logging, module boundaries, test hooks, concurrency, measurement integrity, the quality gate, the supply chain, localisation and accessibility. Each is enforced by a test; new policy tests scan every source file (no audio can be written, exported or shared; no error descriptions or device identities in the public log; module imports per layer; audited concurrency escape hatches).
 - Field-testing tools. The diagnostics log records what the device really delivers (sample rate, callback sizes, analyses per second, lost audio), never the audio itself. `Scripts/add-recording.sh` adds a recording made with a separate recorder to the test corpus, with a reference tuner's reading as ground truth; corpus entries may state the A4 they were tuned to.
 - A screen that explains why the tuner needs the microphone before the system asks.
 - Listening resumes by itself after a phone call or Siri, and restarts after a reset of the media services.
@@ -37,6 +38,12 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 - `ITSAppUsesNonExemptEncryption = NO`, and a permission text that says audio is never recorded or sent anywhere.
 
 ### Fixed
+
+- Copying a `TuningEngine` now copies its string filters: they were reference types, so a copy shared their state and feeding one engine disturbed the other. The refinement reports failure as `nil` instead of returning its input. Neither change moves any golden reading.
+- Release builds ignore the demo and test launch arguments; only Debug builds (UI tests, screenshots) honour them.
+- Logged errors carry their domain and code only: an error description can quote a device name and would have been public in *Copy Diagnostics*.
+- Shortcuts' *Choose Input* lists the inputs the tuner itself sees, instead of querying the hardware separately.
+- The Mac window-close observer is removed when its view goes away.
 
 - VoiceOver now says notes as words in the user's language ("E flat, octave 2", "Mi bemolle, ottava 2") instead of leaving "Mi♭2" to the speech engine, and the readout's spoken value is a localized format.
 - Shortcuts shows each tuning's strings in the user's notation (solfège in Italian) instead of hard-coded English letters.

@@ -257,6 +257,7 @@ ChitarraTune/
 | | |
 | :-- | :-- |
 | [Architecture](docs/ARCHITECTURE.md) | Layers, signal path, concurrency model |
+| [Decisions](docs/adr/README.md) | Binding architecture decision records, each enforced by a test |
 | [Accessibility](docs/ACCESSIBILITY.md) | What is implemented and what is not |
 | [Platforms](PLATFORMS.md) | Requirements and per-platform behaviour |
 | [Code signing](CODE_SIGNING.md) | Entitlements, signing, notarization, secrets |

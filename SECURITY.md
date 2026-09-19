@@ -14,13 +14,14 @@ Only the latest release and the `main` branch receive security fixes.
 
 ## Security model
 
-ChitarraTune is designed so that there is very little to attack:
+ChitarraTune is designed so that there is very little to attack. Each property below is a binding [architecture decision](docs/adr/README.md) enforced by tests:
 
 | Property | How it is enforced |
 | --- | --- |
 | Audio never leaves the device | No networking code, and the sandbox network entitlements are off (`ENABLE_INCOMING_NETWORK_CONNECTIONS = NO`, `ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO`). |
-| Audio is never recorded | Samples live in a short in-memory ring buffer and are discarded after analysis. |
-| Minimal privileges | macOS App Sandbox with a single resource entitlement: audio input. |
+| Audio is never recorded | Samples live only in the engine's sliding analysis window and are overwritten as new audio arrives. No build, Debug included, can write, export or share audio ([ADR 0002](docs/adr/0002-audio-never-leaves-memory.md)); a test scans the code for it. |
+| Minimal privileges | macOS App Sandbox with a single resource entitlement: audio input ([ADR 0003](docs/adr/0003-least-privilege-and-platform-security.md)). Test hooks exist only in Debug builds ([ADR 0006](docs/adr/0006-test-hooks-only-in-debug-builds.md)). |
+| Private diagnostics | The log never publishes error descriptions, device names or audio ([ADR 0004](docs/adr/0004-logging-and-diagnostics.md)). |
 | Hardened process | Hardened Runtime and Xcode Enhanced Security (hardened heap, dyld read-only, platform restrictions). |
 | Small supply chain | No third-party dependencies. GitHub Actions are pinned to full commit SHAs and kept current by Dependabot. |
 | Verifiable releases | The release workflow signs, notarizes and checksums the archive, and publishes a build-provenance attestation for it. It refuses to publish from a commit that is not on `main`. |

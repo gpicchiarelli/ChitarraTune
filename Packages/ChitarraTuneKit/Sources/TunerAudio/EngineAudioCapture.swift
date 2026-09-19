@@ -137,6 +137,13 @@ public actor EngineAudioCapture: AudioCapturing {
         #endif
     }
 
+    /// An error as the log may show it publicly: its domain and code. Descriptions can quote device
+    /// names or paths, so they never reach the log (see `docs/adr/0004-logging-and-diagnostics.md`).
+    nonisolated static func describe(_ error: any Error) -> String {
+        let error = error as NSError
+        return "\(error.domain) \(error.code)"
+    }
+
     /// The device timeline position of a tap buffer, when the engine provides one.
     nonisolated static func sampleTime(of time: AVAudioTime) -> Int64? {
         time.isSampleTimeValid ? time.sampleTime : nil

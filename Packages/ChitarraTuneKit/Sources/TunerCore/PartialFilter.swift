@@ -14,9 +14,9 @@ import Foundation
 /// digits, and a vectorised kernel rounds differently depending on where the stream was cut into
 /// chunks. Here the output depends only on the samples: not on the chunking, not on the CPU.
 ///
-/// Carries the filter state from one chunk to the next, so it is a reference type confined to one
-/// isolation domain.
-public final class PartialFilter {
+/// A value type: its state (two numbers per section) carries over from one chunk to the next, and a
+/// copy is an independent filter, so copying a ``TuningEngine`` copies its filters too.
+public struct PartialFilter: Sendable {
     /// Cutoff relative to the string's frequency. Across the engine's ±300 cent capture window the
     /// fundamental loses less than 1 dB and the third partial at least 15 dB (22 dB on pitch).
     public static let cutoffRatio = 1.6
@@ -24,7 +24,7 @@ public final class PartialFilter {
     public static let highPassRatio = 0.5
 
     /// One second-order section, transposed direct form II, normalised so that `a0 == 1`.
-    private struct Section {
+    private struct Section: Sendable {
         var b0, b1, b2, a1, a2: Double
         var z1 = 0.0, z2 = 0.0
 
@@ -63,7 +63,7 @@ public final class PartialFilter {
     }
 
     /// Filters the next chunk of the stream.
-    public func process(_ samples: [Float]) -> [Float] {
+    public mutating func process(_ samples: [Float]) -> [Float] {
         sections.withUnsafeMutableBufferPointer { sections in
             samples.map { sample in
                 var value = Double(sample)
@@ -74,7 +74,7 @@ public final class PartialFilter {
     }
 
     /// Forgets the filter state (after a gap in the stream).
-    public func reset() {
+    public mutating func reset() {
         for index in sections.indices { (sections[index].z1, sections[index].z2) = (0, 0) }
     }
 }

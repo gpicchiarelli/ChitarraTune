@@ -211,11 +211,13 @@ public final class PitchDetector {
     /// Stiff strings are slightly inharmonic: overtone `k` sits about `866·B·k²` cents sharp of
     /// `k·f0`, so the full waveform is not quite periodic and the first pass is pulled sharp by the
     /// upper partials (one to four cents on a steel string). Without them the shift is a fraction
-    /// of a cent. Returns `estimate` unchanged whenever the refinement is not trustworthy.
-    public func refine(_ estimate: Double, lowPassed samples: [Float]) -> Double {
-        guard samples.count >= requiredSampleCount, estimate.isFinite, estimate > 0 else { return estimate }
+    /// of a cent.
+    ///
+    /// - Returns: The refined frequency, or `nil` when the refinement is not trustworthy.
+    public func refine(_ estimate: Double, lowPassed samples: [Float]) -> Double? {
+        guard samples.count >= requiredSampleCount, estimate.isFinite, estimate > 0 else { return nil }
         loadDemeanedTail(of: samples)
-        guard computeCMNDF() else { return estimate }
+        guard computeCMNDF() else { return nil }
 
         // The raw difference, not the CMNDF: on a smooth two-partial signal the dip is broad, and
         // the CMNDF's running-mean normalisation would tilt it and move its minimum.
@@ -227,10 +229,10 @@ public final class PitchDetector {
               best != lower, best != upper,
               // Too noisy to be periodic (the band may hold little more than hum and rumble).
               cmnd[best] <= Self.refinementClarity
-        else { return estimate }
+        else { return nil }
         let frequency = sampleRate / interpolatedLag(best, in: difference)
         let correction = abs(1200 * log2(frequency / estimate))
-        return frequency.isFinite && correction <= Self.maximumRefinement ? frequency : estimate
+        return frequency.isFinite && correction <= Self.maximumRefinement ? frequency : nil
     }
 
     /// Floor of the integration window (samples): very high ranges (short periods) still integrate

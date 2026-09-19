@@ -20,7 +20,7 @@ extension EngineAudioCapture {
             try engine.start()
         } catch {
             engine.inputNode.removeTap(onBus: 0)
-            logger.error("engine start failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("engine start failed: \(Self.describe(error), privacy: .public)")
             throw .engineFailed(code: (error as NSError).code)
         }
     }
@@ -28,7 +28,11 @@ extension EngineAudioCapture {
     /// Gives the audio hardware back to the system (lets other apps resume playback). iOS only.
     static func releaseSession() {
         #if os(iOS)
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        } catch {
+            logger.error("audio session release failed: \(Self.describe(error), privacy: .public)")
+        }
         #endif
     }
 
@@ -51,7 +55,7 @@ extension EngineAudioCapture {
         } catch let failure as CaptureFailure {
             throw failure
         } catch {
-            logger.error("audio session setup failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("audio session setup failed: \(Self.describe(error), privacy: .public)")
             throw .engineFailed(code: (error as NSError).code)
         }
         guard session.isInputAvailable else { throw .noInputAvailable }
@@ -65,7 +69,7 @@ extension EngineAudioCapture {
         do {
             try inputNode.auAudioUnit.setDeviceID(deviceID)
         } catch {
-            logger.error("cannot select input \(uid, privacy: .private): \(error.localizedDescription, privacy: .public)")
+            logger.error("cannot select input \(uid, privacy: .private): \(Self.describe(error), privacy: .public)")
             throw .inputUnavailable
         }
     }

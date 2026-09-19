@@ -7,6 +7,14 @@ import Testing
 /// regression in device enumeration (the class of bug that fixed-size buffers used to cause).
 @Suite("System audio (no hardware required)")
 struct SystemAudioTests {
+    @Test("Errors reach the public log as domain and code only, never as a description")
+    func loggedErrors() {
+        let error = NSError(domain: "com.apple.coreaudio.avfaudio", code: -10_868,
+                            userInfo: [NSLocalizedDescriptionKey: "Cannot open “Studio Interface of Someone”"])
+        #expect(EngineAudioCapture.describe(error) == "com.apple.coreaudio.avfaudio -10868")
+        #expect(EngineAudioCapture.describe(CaptureFailure.inputUnavailable).hasPrefix("TunerAudio.CaptureFailure "))
+    }
+
     @Test("Microphone authorization reports one of the four documented states")
     func authorizationStatus() {
         let status = SystemMicrophoneAuthorization().status()

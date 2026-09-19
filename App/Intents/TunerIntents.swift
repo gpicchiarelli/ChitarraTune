@@ -106,13 +106,20 @@ struct AudioInputEntity: AppEntity {
     var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(name)") }
 }
 
+/// Lists the inputs the tuner itself sees (the hub's input provider), so Shortcuts and the app never
+/// disagree, and demo mode never reaches real hardware.
 struct AudioInputQuery: EntityQuery {
+    @Dependency private var hub: TunerHub
+
     func entities(for identifiers: [String]) async throws -> [AudioInputEntity] {
         try await suggestedEntities().filter { identifiers.contains($0.id) }
     }
 
+    @MainActor
     func suggestedEntities() async throws -> [AudioInputEntity] {
-        SystemAudioInputs().availableInputs().map { AudioInputEntity(id: $0.id, name: $0.name) }
+        let model = hub.activeModel
+        model.refreshInputs()
+        return model.availableInputs.map { AudioInputEntity(id: $0.id, name: $0.name) }
     }
 }
 
@@ -127,10 +134,12 @@ struct ChooseInputIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        guard SystemAudioInputs().availableInputs().contains(where: { $0.id == input.id }) else {
+        let model = hub.activeModel
+        model.refreshInputs()
+        guard model.availableInputs.contains(where: { $0.id == input.id }) else {
             throw TunerIntentError.inputMissing
         }
-        await hub.activeModel.selectInput(.device(id: input.id))
+        await model.selectInput(.device(id: input.id))
         return .result(dialog: IntentDialog(.intentInputDialog(input.name)))
     }
 }

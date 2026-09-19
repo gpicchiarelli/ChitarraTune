@@ -13,7 +13,7 @@ struct TunerCoreEdgeTests {
 
     @Test("Resetting a partial filter forgets the previous note")
     func partialFilterReset() throws {
-        let filter = try #require(PartialFilter(frequency: 82.41, sampleRate: 44_100))
+        var filter = try #require(PartialFilter(frequency: 82.41, sampleRate: 44_100))
         let tone = (0..<4_096).map { Float(sin(2 * Double.pi * 82.41 * Double($0) / 44_100)) }
         let silence = [Float](repeating: 0, count: 256)
 

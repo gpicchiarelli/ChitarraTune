@@ -14,6 +14,8 @@ ChitarraTune is a single multiplatform SwiftUI app (macOS, iPhone, iPad) on top 
 └───────────────────────────────────────────────────────────────┘
 ```
 
+The binding decisions behind this document are the [architecture decision records](adr/README.md); where the two differ, the ADR wins and the difference is a bug.
+
 Dependencies only point downwards. `TunerCore` imports Foundation and Accelerate and nothing else, so the whole signal path can be tested with synthetic sine waves and no microphone.
 
 ## Modules

@@ -4,12 +4,12 @@ Thanks for helping. English and Italian are both welcome in issues and pull requ
 
 ## Ground rules
 
-These are invariants of the product. A change that breaks one will not be merged.
+These are invariants of the product, recorded as binding [architecture decision records](docs/adr/README.md) and enforced by tests. A change that breaks one will not be merged; changing one means superseding its ADR.
 
-1. **Audio stays on the device.** No networking, no recording, no persistence of samples.
+1. **Audio never leaves memory** ([ADR 0002](docs/adr/0002-audio-never-leaves-memory.md)). No recording, no files, no export, no networking, in any build, Debug included.
 2. **Least privilege.** No new entitlement, permission or Info.plist capability without a discussion first.
 3. **No third-party dependencies.** The project has none today. Open an issue before proposing one.
-4. **Swift 6, strict concurrency.** The build uses `SWIFT_STRICT_CONCURRENCY = complete`. Do not silence the compiler with `@unchecked Sendable` or `nonisolated(unsafe)` unless the invariant is documented at the use site.
+4. **Swift 6, strict concurrency** ([ADR 0007](docs/adr/0007-concurrency-model.md)). The build uses `SWIFT_STRICT_CONCURRENCY = complete`. `@unchecked Sendable` is forbidden; `nonisolated(unsafe)` and `MainActor.assumeIsolated` only at the audited sites listed in `ArchitecturePolicyTests`.
 5. **English and Italian.** User-facing text lives in the string catalogs (`App/Resources/*.xcstrings`), never in code.
 
 ## Getting set up

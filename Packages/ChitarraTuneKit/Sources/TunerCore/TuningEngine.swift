@@ -81,7 +81,7 @@ public struct TuningEngine {
     private mutating func discardHistory() {
         buffer.removeAll(keepingCapacity: true)
         for index in filtered.indices { filtered[index].removeAll(keepingCapacity: true) }
-        for filter in partialFilters { filter?.reset() }
+        for index in partialFilters.indices { partialFilters[index]?.reset() }
         filteredSampleCount = 0
         samplesSinceAnalysis = 0
     }
@@ -161,8 +161,8 @@ public struct TuningEngine {
         buffer.append(contentsOf: samples)
         if buffer.count > capacity { buffer.removeFirst(buffer.count - capacity) }
         for index in partialFilters.indices {
-            guard let filter = partialFilters[index] else { continue }
-            filtered[index].append(contentsOf: filter.process(samples))
+            guard let output = partialFilters[index]?.process(samples) else { continue }
+            filtered[index].append(contentsOf: output)
             if filtered[index].count > capacity { filtered[index].removeFirst(filtered[index].count - capacity) }
         }
         filteredSampleCount += samples.count
@@ -270,16 +270,16 @@ public struct TuningEngine {
         return lastFrame
     }
 
-    /// Running inharmonicity correction, in cents, for `string`, updated with one refined measurement.
-    private mutating func inharmonicityCorrection(measured: Double, estimate: Double, string: Int) -> Double {
-        let sample = PitchMath.cents(from: measured, to: estimate)
-        let refinementFailed = measured == estimate
+    /// Running inharmonicity correction, in cents, for `string`, updated with one refined measurement
+    /// (`nil` when this analysis could not refine the period).
+    private mutating func inharmonicityCorrection(measured: Double?, estimate: Double, string: Int) -> Double {
         guard let current = inharmonicCorrection, current.string == string else {
-            let initial = refinementFailed ? 0 : sample
+            let initial = measured.map { PitchMath.cents(from: $0, to: estimate) } ?? 0
             inharmonicCorrection = (string, initial)
             return initial
         }
-        guard !refinementFailed else { return current.cents }
+        guard let measured else { return current.cents }
+        let sample = PitchMath.cents(from: measured, to: estimate)
         let updated = current.cents + parameters.correctionSmoothing * (sample - current.cents)
         inharmonicCorrection = (string, updated)
         return updated

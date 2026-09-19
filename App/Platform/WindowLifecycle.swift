@@ -34,6 +34,10 @@ private struct WindowCloseObserver: NSViewRepresentable {
 
         required init?(coder: NSCoder) { nil }
 
+        isolated deinit {
+            if let observer { NotificationCenter.default.removeObserver(observer) }
+        }
+
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
             if let observer { NotificationCenter.default.removeObserver(observer) }

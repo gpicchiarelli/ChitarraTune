@@ -6,6 +6,7 @@ import Testing
 struct PartialFilterTests {
     /// Steady-state gain of the filter for a sine at `frequency`, in decibels.
     private func gain(_ filter: PartialFilter, at frequency: Double, rate: Double) -> Double {
+        var filter = filter
         let count = Int(rate)   // one second: every transient has died out by the second half
         let input = (0..<count).map { Float(sin(2 * Double.pi * frequency * Double($0) / rate)) }
         let output = filter.process(input).suffix(count / 2)
@@ -28,13 +29,26 @@ struct PartialFilterTests {
         #expect(gain(hum, at: string * 0.2, rate: rate) < -15, "rumble a fifth of the string's frequency")
     }
 
+    @Test("A copy is an independent filter")
+    func valueSemantics() throws {
+        var original = try #require(PartialFilter(frequency: 110, sampleRate: 48_000))
+        let tone = (0..<4_800).map { Float(sin(2 * Double.pi * 110 * Double($0) / 48_000)) }
+        _ = original.process(tone)
+        var copy = original
+        let silence = [Float](repeating: 0, count: 64)
+        let fromCopy = copy.process(silence)
+        _ = copy.process(tone)
+        #expect(original.process(silence) == fromCopy, "processing the copy must not disturb the original")
+    }
+
     @Test("The output depends only on the samples, not on how they were cut into chunks")
     func chunkingInvariance() throws {
         let rate = 44_100.0
         let signal = StringModel().pluck(frequency: 82.41, sampleRate: rate, duration: 1)
-        let whole = try #require(PartialFilter(frequency: 82.41, sampleRate: rate)).process(signal)
+        var reference = try #require(PartialFilter(frequency: 82.41, sampleRate: rate))
+        let whole = reference.process(signal)
         for size in [1, 64, 1_000, 4_410] {
-            let filter = try #require(PartialFilter(frequency: 82.41, sampleRate: rate))
+            var filter = try #require(PartialFilter(frequency: 82.41, sampleRate: rate))
             let pieces = signal.chunked(size).flatMap { filter.process($0) }
             #expect(pieces == whole, "chunks of \(size)")
         }
