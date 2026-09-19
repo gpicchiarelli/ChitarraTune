@@ -51,11 +51,34 @@ actor TunerProcessor {
         } catch {
             frames.finish(throwing: error)
         }
+        if statistics.chunks > 0 { reportStatistics() }
     }
 
     func process(_ chunk: AudioChunk) -> TunerFrame? {
         let interval = signposter.beginInterval("analyse")
         defer { signposter.endInterval("analyse", interval) }
-        return engine.process(chunk.samples, sampleRate: chunk.sampleRate, sampleTime: chunk.sampleTime)
+        let analyses = engine.analysisCount, discontinuities = engine.discontinuityCount
+        let frame = engine.process(chunk.samples, sampleRate: chunk.sampleRate, sampleTime: chunk.sampleTime)
+        statistics.record(chunk, analyses: engine.analysisCount - analyses, discontinuities: engine.discontinuityCount - discontinuities)
+        if statistics.duration >= nextReport {
+            reportStatistics()
+            nextReport = ((statistics.duration / Self.reportInterval).rounded(.down) + 1) * Self.reportInterval
+        }
+        return frame
+    }
+
+    // MARK: - Field diagnostics
+
+    /// Seconds of audio after which the stream statistics are first logged, then how often (and once
+    /// more when the stream ends).
+    static let firstReport = 3.0
+    static let reportInterval = 60.0
+
+    /// What the device has delivered so far in this session.
+    private(set) var statistics = StreamStatistics()
+    private var nextReport = TunerProcessor.firstReport
+
+    private func reportStatistics() {
+        TunerLog.capture.notice("stream: \(self.statistics.summary, privacy: .public)")
     }
 }

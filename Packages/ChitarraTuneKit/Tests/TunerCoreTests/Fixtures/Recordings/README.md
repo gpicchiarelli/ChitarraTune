@@ -7,6 +7,14 @@ test.
 
 ## Adding a recording
 
+ChitarraTune itself never records audio: use a separate recorder (Voice Memos, a DAW). Then
+
+```bash
+Scripts/add-recording.sh low-e.m4a --tuning standard --string 1 --cents 0 --source "Acoustic steel-string, iPhone 16 built-in microphone, quiet room"
+```
+
+By hand:
+
 1. Tune the string with a reference you trust (a strobe tuner, or a tone generator and beats), then
    record one pluck of 2–4 seconds. Any microphone is fine; note which one.
 2. Save it as a mono **WAV**, 16-bit integer or 32-bit float, 44.1 or 48 kHz. On a Mac:
@@ -28,9 +36,10 @@ test.
    }
    ```
 
-   `string` counts from 1 (low to high), `cents` is how far the string was deliberately detuned
-   from its target when recorded, `tolerance` the largest accepted error of the typical settled
-   reading, in cents.
+   `string` counts from 1 (low to high), `cents` is how far the string was from its target when
+   recorded, according to the trusted reference, `tolerance` the largest accepted error of the
+   typical settled reading, in cents. Add `"referenceA": 442` if the string was tuned against an A4
+   other than 440 Hz.
 
 Keep files short (a few hundred kilobytes); the repository ships them. Only add recordings you
 have the right to publish under the project's licence.

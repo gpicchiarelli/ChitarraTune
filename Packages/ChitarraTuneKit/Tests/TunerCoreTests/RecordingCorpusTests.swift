@@ -15,6 +15,8 @@ struct RecordingCorpusTests {
         let cents: Double
         let tolerance: Double
         let source: String
+        /// A4 the string was tuned against, if not 440 Hz.
+        let referenceA: Double?
         var testDescription: String { "\(file) — \(source)" }
     }
 
@@ -34,6 +36,7 @@ struct RecordingCorpusTests {
             let tuning = try #require(TuningID(rawValue: entry.tuning), "unknown tuning \(entry.tuning)")
             #expect((1...Tuning.tuning(for: tuning).stringCount).contains(entry.string))
             #expect(entry.tolerance > 0 && entry.tolerance <= 5)
+            #expect(PitchMath.referenceARange.contains(entry.referenceA ?? PitchMath.standardReferenceA))
         }
     }
 
@@ -41,7 +44,7 @@ struct RecordingCorpusTests {
     func recording(entry: Entry) throws {
         let audio = try WAV(contentsOf: Self.directory.appendingPathComponent(entry.file))
         let tuning = Tuning.tuning(for: try #require(TuningID(rawValue: entry.tuning)))
-        var engine = TuningEngine(configuration: .init(tuning: tuning))
+        var engine = TuningEngine(configuration: .init(tuning: tuning, referenceA: entry.referenceA ?? PitchMath.standardReferenceA))
         var readings: [TunerReading] = []
         for chunk in audio.samples.chunked(1_024) {
             if let reading = engine.process(chunk, sampleRate: audio.sampleRate)?.reading, !reading.isHeld {

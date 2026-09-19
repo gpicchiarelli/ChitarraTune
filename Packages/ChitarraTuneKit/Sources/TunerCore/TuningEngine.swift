@@ -33,8 +33,8 @@ public struct TuningEngine {
     ///
     /// All strings are filtered even when one is pinned: switching back to automatic, or to another
     /// string, then finds settled filter history and the fundamental can be refined at once. The whole
-    /// engine costs about 80 µs per 1 024-sample chunk on Apple silicon (0.3 % of real time), so
-    /// saving five biquads is not worth a measurement that briefly loses its refinement.
+    /// engine costs 0.6 % of real time on Apple silicon (`RealTimeBudgetTests`), so saving five
+    /// filters is not worth a measurement that briefly loses its refinement.
     private var partialFilters: [PartialFilter?] = []
     private var filtered: [[Float]] = []
     /// Samples the filters have processed since they were created; they need a moment to settle.
@@ -55,6 +55,10 @@ public struct TuningEngine {
     /// string, stable over a pluck, while each single measurement of it is noisy (hum and rumble
     /// share the fundamental's band), so it is averaged over time.
     private var inharmonicCorrection: (string: Int, cents: Double)?
+    /// Analyses performed so far, for diagnostics (analyses per second on a real device).
+    public private(set) var analysisCount = 0
+    /// Discontinuities in the stream's timestamps, each of which discarded the analysis history.
+    public private(set) var discontinuityCount = 0
     private var silentSamples = 0
     private var lastFrame = TunerFrame(level: 0, isSignalPresent: false, reading: nil)
 
@@ -114,7 +118,10 @@ public struct TuningEngine {
             resetReading()
         }
         if let sampleTime {
-            if let expected = nextSampleTime, sampleTime != expected { discardHistory() }
+            if let expected = nextSampleTime, sampleTime != expected {
+                discontinuityCount += 1
+                discardHistory()
+            }
             nextSampleTime = sampleTime + Int64(samples.count)
         }
         if detector == nil, !detectorUnavailable {
@@ -165,6 +172,7 @@ public struct TuningEngine {
     // MARK: - Analysis step
 
     private mutating func analyse(detector: PitchDetector, hops: Int, hop: Int) -> TunerFrame {
+        analysisCount += 1
         let levelSamples = max(1, Int((parameters.levelWindowDuration * sampleRate).rounded()))
         let window = buffer.suffix(min(buffer.count, levelSamples))
         var sumSquares = 0.0

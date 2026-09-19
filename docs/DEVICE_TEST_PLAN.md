@@ -2,6 +2,18 @@
 
 Automated tests cover the signal path (synthetic and modelled strings), the presentation model, every screen in demo mode and Xcode's accessibility audit on iPhone, iPad and Mac. What they cannot cover is real hardware: a real microphone, a real guitar, a phone call, VoiceOver on a device. Run this plan on the TestFlight build of every release candidate, before submitting for review. Record the build number, the device and the result of each line in the release issue.
 
+## Field session (debug build from Xcode)
+
+ChitarraTune never records or stores audio, in any build. What it logs is how the device delivers audio: after 3 s of listening, then every minute and when listening stops, e.g. `stream: 48000 Hz, 3.0 s, 141 callbacks of 1024–1024 frames (21.3 ms average), 39.9 analyses/s, 0 discontinuities`. Read it in Console.app (filter `com.chitarratune.app`, category `capture`) or with *Settings ▸ About ▸ Copy Diagnostics*. Analyses must be ~40/s whatever the callback size (~22/s in Low Power Mode); discontinuities must be 0 in a quiet session.
+
+To turn a real string into a regression test, record it with a separate recorder (Voice Memos, a DAW), never with ChitarraTune:
+
+1. Tune the string with a trusted reference (strobe tuner, or a tone generator and beats) and note its reading in cents: that is the ground truth, never ChitarraTune's own reading.
+2. Record one pluck of 2–4 seconds. Note what ChitarraTune showed for the same pluck.
+3. `Scripts/add-recording.sh <file> --tuning standard --string 1 --cents <reference reading> --source "<guitar, microphone, room>"` copies it into the corpus as a mono WAV, adds it to the manifest and runs the corpus tests.
+
+A useful first set: every open string of standard tuning in tune (0 ¢), the low E 20 ¢ flat and 20 ¢ sharp, one string at A4 = 442 Hz (`--a4 442`), and the low E played softly into an iPhone's built-in microphone.
+
 ## Devices
 
 | Class | Minimum | Why |
