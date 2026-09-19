@@ -25,6 +25,7 @@ What is in place for the App Store Review Guidelines, the Human Interface Guidel
 | Metadata | `AppStore/metadata`, checked by `AppStoreMetadataTests` for length limits, keywords, forbidden claims and working URLs. |
 | Review notes | `AppStore/review/notes.txt`: no account needed, how to test without a guitar. |
 | Copyright | `NSHumanReadableCopyright` in the Info.plist; the licence is shown in the app. |
+| Marketing | App Store badges only as Apple provides them (served by Apple's marketing tools, English and Italian artwork, black, 40 pt), linked to the product page and added only once the app is live (`Scripts/app-store-badges.sh`); the README carries Apple's trademark credit line. `AppStoreBadgeTests` holds these rules. |
 | Crash and energy data | MetricKit summaries in the app's own log; Xcode Organizer for reports users share with developers. No third-party SDK. |
 
 ## To do by hand at submission
@@ -35,6 +36,7 @@ What is in place for the App Store Review Guidelines, the Human Interface Guidel
 - Screenshots: `Scripts/screenshots.sh`, then upload per device and locale.
 - Run the [device test plan](docs/DEVICE_TEST_PLAN.md) on the TestFlight build.
 - Choose *Manually release this version*, submit, then request unlisted distribution.
+- Once the app is live: `Scripts/app-store-badges.sh <Apple ID>` for the README badges.
 
 ## Logging
 

@@ -13,6 +13,10 @@
 
 <br>
 
+<!-- app-store-badges:en:start -->
+<!-- Official App Store badges: Scripts/app-store-badges.sh <App Store ID> adds them once the app is live. -->
+<!-- app-store-badges:en:end -->
+
 <p>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/gpicchiarelli/ChitarraTune/ci.yml?branch=main&style=flat-square&logo=github&label=CI"></a>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://img.shields.io/github/actions/workflow/status/gpicchiarelli/ChitarraTune/codeql.yml?branch=main&style=flat-square&logo=github&label=CodeQL"></a>
@@ -67,7 +71,7 @@
 <br>
 
 > [!NOTE]
-> **Version 2.0** is a ground-up rewrite for iOS 26, iPadOS 26 and macOS 26, free on the App Store (as an unlisted app: ask for the link) and as a notarized download for the Mac on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). See the [changelog](CHANGELOG.md).
+> **Version 2.0** is a ground-up rewrite for iOS 26, iPadOS 26 and macOS 26, free on the App Store (as an unlisted app: it is not in search results, only reachable through its direct link) and as a notarized download for the Mac on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). See the [changelog](CHANGELOG.md).
 
 <table>
   <tr>
@@ -279,7 +283,7 @@ Issues and pull requests are welcome, in English or Italian. Start with [`CONTRI
 
 BSD 3-Clause. See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 
-<sub>Apple, macOS, iOS, iPadOS, iPhone, iPad, Xcode, Siri and Shortcuts are trademarks of Apple Inc. Swift and the Swift logo are trademarks of Apple Inc. ChitarraTune is an independent project, not affiliated with or endorsed by Apple.</sub>
+<sub>Apple, the Apple logo, Mac, macOS, iOS, iPadOS, iPhone, iPad, Xcode, Siri and Shortcuts are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store and Mac App Store are service marks of Apple Inc. Swift and the Swift logo are trademarks of Apple Inc. ChitarraTune is an independent project, not affiliated with or endorsed by Apple.</sub>
 
 <br>
 
@@ -293,7 +297,11 @@ BSD 3-Clause. See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 **ChitarraTune** è un accordatore per chitarra per **Mac, iPhone e iPad**, scritto in Swift 6 e SwiftUI. Misura l'intonazione con l'algoritmo YIN calcolato via FFT, mostra un ago fluido e conferma «intonato» solo quando la nota si è davvero stabilizzata.
 
 > [!NOTE]
-> **La versione 2.0** è una riscrittura completa per iOS 26, iPadOS 26 e macOS 26, gratuita sull'App Store (come app non in elenco: chiedi il link) e scaricabile per Mac, autenticata da Apple, dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
+> **La versione 2.0** è una riscrittura completa per iOS 26, iPadOS 26 e macOS 26, gratuita sull'App Store (come app non in elenco: non compare nelle ricerche, si raggiunge solo dal suo link diretto) e scaricabile per Mac, autenticata da Apple, dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
+
+<!-- app-store-badges:it:start -->
+<!-- Official App Store badges: Scripts/app-store-badges.sh <App Store ID> adds them once the app is live. -->
+<!-- app-store-badges:it:end -->
 
 **Caratteristiche**
 

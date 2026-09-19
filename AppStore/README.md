@@ -72,6 +72,7 @@ AppStore/
 1. After the first submission, send the request at <https://developer.apple.com/support/unlisted-app-distribution/> (Apple Developer → Contact Us form for unlisted apps), with the App Store Connect app ID and a short reason: a free tuner shared directly with musicians and students, not promoted in the store.
 2. When Apple approves it, App Store Connect shows **Unlisted App** under *Pricing and Availability → App Distribution Methods*. Select it, then release the approved version.
 3. Share the app's direct link (App Store Connect → App Information → *View on App Store*). Search, charts and categories never show it; anyone with the link can download it.
+4. Put the official *Download on the App Store* and *Download on the Mac App Store* badges in the README, in English and Italian: `Scripts/app-store-badges.sh <Apple ID>` (the digits of the product page URL). It refuses until the product page is live, because Apple's marketing guidelines allow the badges only for an available app, as Apple's own artwork linked to that page; `AppStoreBadgeTests` keeps them that way. `--remove` takes them out if the app is withdrawn.
 
 Updates to an unlisted app are reviewed and released like any other; the unlisted status stays.
 
