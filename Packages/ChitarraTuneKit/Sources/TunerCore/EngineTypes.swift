@@ -130,14 +130,12 @@ public struct AnalysisCounts: Sendable, Hashable {
         return delta
     }
 
-    public static func + (lhs: AnalysisCounts, rhs: AnalysisCounts) -> AnalysisCounts {
-        var sum = lhs
-        sum.analyses += rhs.analyses
-        sum.belowGate += rhs.belowGate
-        sum.unclear += rhs.unclear
-        sum.outOfRange += rhs.outOfRange
-        sum.discontinuities += rhs.discontinuities
-        return sum
+    public static func += (total: inout AnalysisCounts, delta: AnalysisCounts) {
+        total.analyses += delta.analyses
+        total.belowGate += delta.belowGate
+        total.unclear += delta.unclear
+        total.outOfRange += delta.outOfRange
+        total.discontinuities += delta.discontinuities
     }
 }
 

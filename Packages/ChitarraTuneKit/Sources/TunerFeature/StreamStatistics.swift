@@ -36,7 +36,7 @@ public struct StreamStatistics: Sendable, Equatable {
         largestChunk = max(largestChunk, count)
         chunks += 1
         samples += count
-        counts = counts + delta
+        counts += delta
     }
 
     /// One line for the diagnostics log.

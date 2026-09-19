@@ -198,11 +198,34 @@ public struct TuningEngine {
             counts.outOfRange += 1
             return finish(withDetection: nil, elapsedSamples: elapsed)
         }
-        // Measure the fundamental itself, free of the upper partials' inharmonic pull. The string
-        // filter rings after an attack (its hum notches longest): the window must hold only its
-        // settled response, otherwise the ringing is measured as a correction and lingers in the
-        // running average for half a second.
-        // While the filter settles after a re-pluck, the string keeps the correction already known.
+        let correction = correct(&selection, detector: detector)
+        smooth(selection.cents, string: selection.index, clarity: estimate.clarity, correction: correction)
+        updateStability(hops: hops)
+
+        let note = configuration.tuning.strings[selection.index]
+        let reading = TunerReading(
+            frequency: selection.frequency,
+            targetFrequency: note.frequency(referenceA: configuration.referenceA),
+            stringIndex: selection.index,
+            note: note,
+            cents: smoothedCents,
+            clarity: estimate.clarity,
+            isInTune: inTune,
+            isHeld: false
+        )
+        return finish(withDetection: reading, elapsedSamples: elapsed)
+    }
+
+    // MARK: - Correction, smoothing, stability
+
+    /// Measures the fundamental itself, free of the upper partials' inharmonic pull, and applies the
+    /// running correction to `selection`. Returns the correction, in cents.
+    ///
+    /// The string filter rings after an attack (its hum notches longest): the window must hold only
+    /// its settled response, otherwise the ringing is measured as a correction and lingers in the
+    /// running average for half a second. While the filter settles after a re-pluck, the string keeps
+    /// the correction already known.
+    private mutating func correct(_ selection: inout Selection, detector: PitchDetector) -> Double {
         var correction = 0.0
         if filtered.indices.contains(selection.index), let filter = partialFilters[selection.index],
            filteredSampleCount >= 2 * detector.requiredSampleCount,
@@ -221,27 +244,32 @@ public struct TuningEngine {
             selection.frequency *= pow(2, correction / 1200)
             selection.cents = PitchMath.cents(from: selection.frequency, to: target)
         }
+        return correction
+    }
 
-        // Smooth the deviation; restart on string change or a large jump.
-        let previousIndex = lastReading?.stringIndex
-        if previousIndex != selection.index || lastReading?.isHeld == true
-            || abs(selection.cents - smoothedCents) > parameters.smoothingResetJump {
-            smoothedCents = selection.cents
+    /// Smooths the deviation of the string being followed; restarts on a string change, after a held
+    /// reading or on a large jump.
+    private mutating func smooth(_ cents: Double, string: Int, clarity: Double, correction: Double) {
+        guard let last = lastReading, last.stringIndex == string, !last.isHeld,
+              abs(cents - smoothedCents) <= parameters.smoothingResetJump else {
+            smoothedCents = cents
             stableCount = 0
             inTune = false
-        } else {
-            // The correction is an offset of the instrument, not an observation: when it changes, the
-            // history averaged so far was measured with the old one and moves with it, instead of
-            // dragging the reading towards uncorrected values for several analyses.
-            smoothedCents += correction - inharmonicity.applied
-            let range = parameters.smoothingFactor
-            let alpha = parameters.weight(range.lowerBound + (range.upperBound - range.lowerBound) * estimate.clarity)
-            smoothedCents = alpha * selection.cents + (1 - alpha) * smoothedCents
+            inharmonicity.applied = correction
+            return
         }
-
+        // The correction is an offset of the instrument, not an observation: when it changes, the
+        // history averaged so far was measured with the old one and moves with it, instead of
+        // dragging the reading towards uncorrected values for several analyses.
+        smoothedCents += correction - inharmonicity.applied
         inharmonicity.applied = correction
+        let range = parameters.smoothingFactor
+        let alpha = parameters.weight(range.lowerBound + (range.upperBound - range.lowerBound) * clarity)
+        smoothedCents = alpha * cents + (1 - alpha) * smoothedCents
+    }
 
-        // Stability with hysteresis.
+    /// "In tune" with hysteresis, counted in real analyses (ADR 0008).
+    private mutating func updateStability(hops: Int) {
         let magnitude = abs(smoothedCents)
         if inTune {
             if magnitude > parameters.inTuneThreshold + parameters.inTuneExitMargin {
@@ -254,19 +282,6 @@ public struct TuningEngine {
         } else {
             stableCount = 0
         }
-
-        let note = configuration.tuning.strings[selection.index]
-        let reading = TunerReading(
-            frequency: selection.frequency,
-            targetFrequency: note.frequency(referenceA: configuration.referenceA),
-            stringIndex: selection.index,
-            note: note,
-            cents: smoothedCents,
-            clarity: estimate.clarity,
-            isInTune: inTune,
-            isHeld: false
-        )
-        return finish(withDetection: reading, elapsedSamples: elapsed)
     }
 
     private mutating func finish(withDetection reading: TunerReading?, elapsedSamples: Int) -> TunerFrame {
