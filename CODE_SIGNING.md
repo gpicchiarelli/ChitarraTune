@@ -34,6 +34,8 @@ Pointer Authentication is on in every build that ships. An `arm64e` target can o
 
 Everything notarization and App Review check about the bundle is checked on every push, without a certificate ([ADR 0013](docs/adr/0013-release-readiness.md)): the `release` job of CI builds the Mac app exactly as a release and runs `Scripts/release-check.sh` on it (identifiers, versions, minimum system, category, export compliance, purpose strings in both languages, privacy manifest, icon, `arm64e`/`arm64`/`x86_64`, system-only linkage, dSYM, a strict signature, exactly the allowed entitlements, no `get-task-allow`, the Hardened Runtime setting). The release workflow runs the same script on its signed build before notarizing. Release builds never carry development entitlements (`CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO`).
 
+The same job also builds an ad-hoc disk image from that build with `Scripts/make-dmg.sh` and checks its format, its contents, the `Applications` symlink and its signing identifier — see [Disk image](#disk-image) below and [ADR 0014](docs/adr/0014-disk-image-distribution.md).
+
 Locally:
 
 ```bash
@@ -52,7 +54,7 @@ Scripts/release-check.sh --identity "Developer ID Application: Your Name (TEAMID
 
 The [release workflow](.github/workflows/release.yml) runs on a `vX.Y.Z` tag or by hand, only from a commit that is on `main`, and only when `MARKETING_VERSION` and `CHANGELOG.md` already carry that version (`Scripts/bump-version.sh` prepares both). It publishes on two channels:
 
-**Developer ID (Mac, outside the store).** It builds with Manual signing and your *Developer ID Application* certificate, verifies the signature, the Hardened Runtime flag and the sandbox of the app and of the Controls extension, and the audio-input entitlement of the app; notarizes with `notarytool` and staples the ticket; zips the app with a SHA-256 checksum and a build-provenance attestation; and creates the GitHub Release with the changelog section as notes.
+**Developer ID (Mac, outside the store).** It builds with Manual signing and your *Developer ID Application* certificate, verifies the signature, the Hardened Runtime flag and the sandbox of the app and of the Controls extension, and the audio-input entitlement of the app; notarizes the app with `notarytool` and staples its ticket; wraps it in a disk image (`Scripts/make-dmg.sh`), signs the image under its own identifier, notarizes it in a submission of its own and staples it too; computes a SHA-256 checksum and a build-provenance attestation of the image; and creates the GitHub Release with the changelog section as notes.
 
 **App Store (iPhone, iPad, Mac).** For each platform it archives with **cloud-managed signing** (`-allowProvisioningUpdates` with the App Store Connect API key: Xcode obtains the Apple Distribution certificate and the provisioning profiles for the app and the extension, so no distribution certificate is stored anywhere), then exports with `Config/ExportOptions-AppStore.plist`, which uploads the build to App Store Connect. The build appears in TestFlight once processed; submission for review is manual (see [AppStore/README.md](AppStore/README.md)). Pre-release versions such as `2.1.0-beta.1` go to the Developer ID channel only.
 
@@ -70,10 +72,24 @@ Without the certificate and team the Developer ID job refuses to publish, unless
 
 Secrets are exposed only to the steps that need them, and the temporary keychain and key files are removed at the end of every run.
 
+## Disk image
+
+The Developer ID artifact is a disk image, not a zip ([ADR 0014](docs/adr/0014-disk-image-distribution.md)): `Scripts/make-dmg.sh` stages the already-notarized-and-stapled app with `ditto`, adds a symlink to `/Applications` and a volume icon, and builds a UDIF read-only, zip-compressed (`UDZO`) image with `hdiutil`. The image is then signed under its own code-signing identifier, `com.chitarratune.app.dmg` — prefixed by the app's bundle identifier and equal to no bundle identifier in the product, as Apple's packaging guide requires — notarized in a submission of its own, and stapled. Two notarizations, one artifact: the app keeps working once dragged out and offline, and so does the image before it is ever opened.
+
+Locally:
+
+```bash
+Scripts/make-dmg.sh                                             # ad hoc, from the app Scripts/release-check.sh just built
+Scripts/make-dmg.sh --app path/to/ChitarraTune.app \
+  --identity "Developer ID Application: Your Name (TEAMID)" \
+  --notarize chitarratune --output ChitarraTune-2.0.1.dmg        # signed, notarized and stapled
+Scripts/make-dmg.sh --verify ChitarraTune-2.0.1.dmg --signed --stapled   # check one someone else built
+```
+
 ## The Controls extension
 
 `ChitarraTuneControls.appex` (`com.chitarratune.app.controls`) is signed like the app, with its own entitlements (`Config/ChitarraTuneControls.entitlements`): the same Enhanced Security keys, the macOS App Sandbox, no network and no resources at all, not even the microphone. The intent it triggers runs in the app.
 
 ## Gatekeeper
 
-An unsigned or non-notarized build shows "Apple cannot check it for malicious software". Verify the published SHA-256, then use **Right-click → Open** once.
+Downloading the disk image quarantines it; the stapled ticket is what lets it open with no warning and no network, both for the image and for the app once it is dragged out. An unsigned or non-notarized image shows "Apple cannot check it for malicious software" the moment it is opened. Verify the published SHA-256, then use **Right-click → Open** once.

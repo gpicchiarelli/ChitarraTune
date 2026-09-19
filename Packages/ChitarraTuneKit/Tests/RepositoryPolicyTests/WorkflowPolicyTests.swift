@@ -133,6 +133,21 @@ struct WorkflowPolicyTests {
                 "the release must pass the same checks, on its signed build")
     }
 
+    @Test("Both workflows build the disk image, and the release notarizes, staples and publishes it (ADR 0014)")
+    func diskImage() throws {
+        let ci = try Repo.text(".github/workflows/ci.yml")
+        #expect(ci.contains("run: Scripts/make-dmg.sh"),
+                "every push must build and check the disk image, ad hoc (ADR 0014)")
+        let release = try Repo.text(".github/workflows/release.yml")
+        #expect(release.contains(#"Scripts/make-dmg.sh "${ARGS[@]}""#), "the release publishes the image the script builds")
+        #expect(release.contains("--notarize-key"), "the image is notarized in a submission of its own")
+        #expect(release.contains(#"DMG="ChitarraTune-${VERSION}.dmg""#), "one artifact, named ChitarraTune-X.Y.Z.dmg")
+        #expect(release.contains("subject-path: ${{ env.DMG }}"), "the attestation must cover the published image")
+        #expect(release.contains(#"gh release create "$TAG" "$DMG" "$DMG.sha256""#),
+                "the release publishes the image and its checksum, and nothing else")
+        #expect(!release.contains("-macOS.zip"), "the zip channel is gone (ADR 0014)")
+    }
+
     @Test("Runners are pinned to an explicit image, never a moving `-latest` label")
     func pinnedRunners() throws {
         for workflow in Repo.files(in: ".github/workflows", extensions: ["yml"]) {

@@ -7,7 +7,7 @@ ChitarraTune is distributed **free**, on **two channels**, and on the App Store 
 | Channel | What | How |
 | --- | --- | --- |
 | App Store (iPhone, iPad, Mac) | One app record, bundle id `com.chitarratune.app`, with the iOS and macOS platforms | Release workflow, `app-store` job → TestFlight → review |
-| Developer ID (Mac) | Signed, notarized zip on GitHub Releases | Release workflow, `developer-id` job |
+| Developer ID (Mac) | Signed, notarized disk image (`ChitarraTune-X.Y.Z.dmg`) on GitHub Releases | Release workflow, `developer-id` job |
 
 An unlisted app goes through normal App Review, then is reachable only through its direct link: it does not appear in search, charts or categories.
 
@@ -59,7 +59,7 @@ AppStore/
 ## For each version
 
 1. Update `CHANGELOG.md`, then `Scripts/bump-version.sh X.Y.Z` and `AppStore/metadata/*/release_notes.txt`. Push.
-2. Tag: `git tag vX.Y.Z && git push origin vX.Y.Z`. The release workflow tests, archives and uploads iOS/iPadOS and macOS builds to App Store Connect, and publishes the notarized Developer ID zip.
+2. Tag: `git tag vX.Y.Z && git push origin vX.Y.Z`. The release workflow tests, archives and uploads iOS/iPadOS and macOS builds to App Store Connect, and publishes the notarized Developer ID disk image `ChitarraTune-X.Y.Z.dmg` with its SHA-256 checksum.
 3. **TestFlight**: when the builds finish processing, install them and run the [device test plan](../docs/DEVICE_TEST_PLAN.md).
 4. **Screenshots** (the first time, and whenever the interface changes): `Scripts/screenshots.sh` produces them for iPhone 6.9″, iPad 13″ and Mac, in English and Italian, in `AppStore/screenshots/`. Upload the whole set per locale.
 5. **Version page**, per platform and locale: paste promotional text, description, keywords, support and marketing URLs, and *What's New* from `metadata/`. Select the build.

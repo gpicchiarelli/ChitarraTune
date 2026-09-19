@@ -1,7 +1,7 @@
 name: Release
 
 # One tag, two channels:
-#   • Developer ID — a signed, notarized macOS zip on GitHub Releases, for download outside the store.
+#   • Developer ID — a signed, notarized disk image on GitHub Releases, for download outside the store.
 #   • App Store    — iOS/iPadOS and macOS builds uploaded to App Store Connect (TestFlight first,
 #                    then submitted for review by hand; see AppStore/README.md).
 on:
@@ -207,7 +207,7 @@ jobs:
         if: env.SIGNED == 'true'
         run: Scripts/release-check.sh --verify build/Build/Products/Release/ChitarraTune.app --signed
 
-      - name: Notarize and staple
+      - name: Notarize and staple the app
         if: env.SIGNED == 'true'
         env:
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
@@ -235,20 +235,34 @@ jobs:
           xcrun stapler validate -v "$APP"
           spctl --assess --type execute --verbose=2 "$APP"
 
-      - name: Package
+      # The app is already notarized and stapled: wrap it Apple's way (ditto, hdiutil, UDZO), sign
+      # the image under an identifier of its own, notarize it in a submission of its own and staple
+      # it too (ADR 0014). Stapling rewrites the file, so the checksum and the attestation come after
+      # the script, never before.
+      - name: Disk image
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          SCRATCH: ${{ runner.temp }}
         run: |
           set -euo pipefail
-          APP="build/Build/Products/Release/ChitarraTune.app"
-          ZIP="ChitarraTune-${VERSION}-macOS.zip"
-          ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
-          shasum -a 256 "$ZIP" > "$ZIP.sha256"
-          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+          DMG="ChitarraTune-${VERSION}.dmg"
+          ARGS=(--app build/Build/Products/Release/ChitarraTune.app --version "$VERSION" --output "$DMG")
+          if [ "$SIGNED" = "true" ]; then
+            ARGS+=(--identity "$IDENTITY" --keychain "$KEYCHAIN")
+            # The App Store Connect key is already on disk if the app was notarized above; if the
+            # secrets are absent the image is signed but not notarized, exactly like the app.
+            [ -f "$RUNNER_TEMP/asc.p8" ] && ARGS+=(--notarize-key "$RUNNER_TEMP/asc.p8")
+          fi
+          Scripts/make-dmg.sh "${ARGS[@]}"
+          shasum -a 256 "$DMG" > "$DMG.sha256"
+          echo "DMG=$DMG" >> "$GITHUB_ENV"
           Scripts/release-notes.sh "${VERSION%%-*}" > "$RUNNER_TEMP/notes.md"
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
         with:
-          subject-path: ${{ env.ZIP }}
+          subject-path: ${{ env.DMG }}
 
       - name: Publish GitHub Release
         env:
@@ -259,15 +273,17 @@ jobs:
           TAG="v$VERSION"
           NOTES="$RUNNER_TEMP/notes.md"
           if [ "$SIGNED" != "true" ]; then
-            printf '\n> **Unsigned build.** macOS Gatekeeper will warn about it. Verify the checksum, then use Right-click → Open once.\n' >> "$NOTES"
+            printf '\n> **Unsigned build.** The disk image is not signed or notarized; macOS Gatekeeper will warn about it. Verify the SHA-256, then use Right-click → Open once.\n' >> "$NOTES"
           fi
           ARGS=(--title "ChitarraTune $VERSION" --notes-file "$NOTES" --target "$GITHUB_SHA")
           if [ "$PRERELEASE" = "true" ] || [[ "$VERSION" == *-* ]]; then ARGS+=(--prerelease); fi
-          gh release create "$TAG" "$ZIP" "$ZIP.sha256" "${ARGS[@]}"
+          gh release create "$TAG" "$DMG" "$DMG.sha256" "${ARGS[@]}"
 
       - name: Remove signing material
         if: always()
         run: |
+          hdiutil detach "$RUNNER_TEMP/dmg/volume" -force -quiet 2>/dev/null || true
+          rm -rf "$RUNNER_TEMP/dmg"
           rm -f "$RUNNER_TEMP/certificate.p12" "$RUNNER_TEMP/asc.p8" "$RUNNER_TEMP/notarize.zip"
           if [ -n "${KEYCHAIN:-}" ]; then security delete-keychain "$KEYCHAIN" || true; fi
 

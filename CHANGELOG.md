@@ -10,6 +10,7 @@ Version 2.0 is a ground-up rewrite, and the first release for the App Store (iPh
 
 ### Changed
 
+- **Distribution outside the store.** The Mac download is a notarized **disk image**, `ChitarraTune-X.Y.Z.dmg`, instead of a zip: the app and an `Applications` symlink on a UDZO image, signed under an identifier of its own (`com.chitarratune.app.dmg`), notarized in a second submission and stapled, so Gatekeeper is satisfied offline. The app inside is notarized and stapled too, so it keeps working once dragged out. `Scripts/make-dmg.sh` builds and checks it, and CI builds an ad-hoc image on every push ([ADR 0014](docs/adr/0014-disk-image-distribution.md)). The `.zip` asset is gone.
 - **Architecture.** The code is now a local Swift package, `ChitarraTuneKit` (`TunerCore`, `TunerAudio`, `TunerFeature`), under a single multiplatform SwiftUI app. It replaces `ChitarraTuneCore`, `Apps/Shared` and the separate macOS and iOS targets.
 - **Pitch detection.** YIN now evaluates the difference function through an FFT cross-correlation (Accelerate) instead of a direct `O(N · lags)` loop, with octave-error correction and a search range that follows the tuning and A4.
 - **Capture.** `AVAudioEngine` replaces `AVCaptureSession`; capture is an actor, samples arrive in order through an `AsyncThrowingStream`, and a slow consumer never builds a backlog.

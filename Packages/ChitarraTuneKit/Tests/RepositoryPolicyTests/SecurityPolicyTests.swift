@@ -131,7 +131,7 @@ struct SecurityPolicyTests {
         let patterns = ["-----BEGIN (RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----", "ghp_[A-Za-z0-9]{36}", "github_pat_[A-Za-z0-9_]{60,}",
                         "AKIA[0-9A-Z]{16}", "xox[baprs]-[A-Za-z0-9-]{10,}", "AIza[0-9A-Za-z_-]{35}"]
         let regexes = try patterns.map { try NSRegularExpression(pattern: $0) }
-        let skip: Set<String> = ["png", "jpg", "jpeg", "icns", "ico", "gif", "zip", "bundle", "svg"]
+        let skip: Set<String> = ["png", "jpg", "jpeg", "icns", "ico", "gif", "zip", "dmg", "bundle", "svg"]
         let ignored = ["/.git/", "/.build/", "/build/", "/DerivedData/", "/.swiftpm/"]
         let forbiddenFiles: Set<String> = ["p12", "p8", "cer", "mobileprovision", "provisionprofile", "keychain", "pem"]
         var scanned = 0

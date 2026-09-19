@@ -9,7 +9,7 @@
 
 <br>
 
-[Features](#features) &nbsp;·&nbsp; [Tunings](#tunings) &nbsp;·&nbsp; [How it works](#how-it-works) &nbsp;·&nbsp; [Siri & Shortcuts](#siri--shortcuts) &nbsp;·&nbsp; [Getting started](#getting-started) &nbsp;·&nbsp; [Privacy & security](#privacy--security) &nbsp;·&nbsp; [Italiano](#italiano)
+[Features](#features) &nbsp;·&nbsp; [Tunings](#tunings) &nbsp;·&nbsp; [How it works](#how-it-works) &nbsp;·&nbsp; [Siri & Shortcuts](#siri--shortcuts) &nbsp;·&nbsp; [Install](#install) &nbsp;·&nbsp; [Getting started](#getting-started) &nbsp;·&nbsp; [Privacy & security](#privacy--security) &nbsp;·&nbsp; [Italiano](#italiano)
 
 <br>
 
@@ -71,7 +71,7 @@
 <br>
 
 > [!NOTE]
-> **Version 2.0** is a ground-up rewrite for iOS 26, iPadOS 26 and macOS 26, free on the App Store (as an unlisted app: it is not in search results, only reachable through its direct link) and as a notarized download for the Mac on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). See the [changelog](CHANGELOG.md).
+> **Version 2.0** is a ground-up rewrite for iOS 26, iPadOS 26 and macOS 26, free on the App Store (as an unlisted app: it is not in search results, only reachable through its direct link) and as a notarized disk image for the Mac on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). See the [changelog](CHANGELOG.md).
 
 <table>
   <tr>
@@ -179,6 +179,19 @@ Try *"Start tuning in ChitarraTune"* or add the actions to your own shortcuts. T
 - **macOS 26** (Tahoe), **iOS 26** or **iPadOS 26**
 - **Xcode 26** or later to build
 
+## Install
+
+**iPhone and iPad** are on the App Store, free (an unlisted app: it is not in search results, only reachable through its direct link).
+
+**Mac**, outside the store: download `ChitarraTune-<version>.dmg` from the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases), open it, and drag **ChitarraTune** onto **Applications**. Both the disk image and the app inside are Developer ID signed, notarized and stapled, so nothing warns even if you have never been online.
+
+To check what you downloaded before opening it:
+
+```bash
+shasum -a 256 -c ChitarraTune-<version>.dmg.sha256
+spctl --assess --type open --context context:primary-signature -v ChitarraTune-<version>.dmg
+```
+
 ## Getting started
 
 ```bash
@@ -213,11 +226,11 @@ xcodebuild -project ChitarraTune.xcodeproj -scheme ChitarraTune \
 
 <br>
 
-Pushing a tag such as `v2.0.0` (from a commit on `main`) runs the [release workflow](.github/workflows/release.yml): it runs the tests, builds and signs the app with your Developer ID certificate, checks the Hardened Runtime flag and the entitlements, notarizes and staples it, and publishes `ChitarraTune-<version>-macOS.zip` with a SHA-256 checksum and a build-provenance attestation.
+Pushing a tag such as `v2.0.0` (from a commit on `main`) runs the [release workflow](.github/workflows/release.yml): it runs the tests, builds and signs the app with your Developer ID certificate, checks the Hardened Runtime flag and the entitlements, notarizes and staples it, then wraps it in a disk image with an `Applications` symlink, signs the image under its own identifier (`com.chitarratune.app.dmg`), notarizes and staples the image too, and publishes `ChitarraTune-<version>.dmg` with a SHA-256 checksum and a build-provenance attestation. Two notarizations, one artifact; the rules are in [ADR 0014](docs/adr/0014-disk-image-distribution.md).
 
 Signing needs repository secrets; the full list and the reasoning are in [`CODE_SIGNING.md`](CODE_SIGNING.md). Without them the workflow refuses to publish, unless you start it by hand and explicitly allow an unsigned build.
 
-An unsigned build makes Gatekeeper warn. Verify the checksum, then use **Right-click → Open** once.
+An unsigned disk image makes Gatekeeper warn. Verify the SHA-256 checksum, then use **Right-click → Open** once.
 
 </details>
 
@@ -297,7 +310,7 @@ BSD 3-Clause. See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 **ChitarraTune** è un accordatore per chitarra per **Mac, iPhone e iPad**, scritto in Swift 6 e SwiftUI. Misura l'intonazione con l'algoritmo YIN calcolato via FFT, mostra un ago fluido e conferma «intonato» solo quando la nota si è davvero stabilizzata.
 
 > [!NOTE]
-> **La versione 2.0** è una riscrittura completa per iOS 26, iPadOS 26 e macOS 26, gratuita sull'App Store (come app non in elenco: non compare nelle ricerche, si raggiunge solo dal suo link diretto) e scaricabile per Mac, autenticata da Apple, dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
+> **La versione 2.0** è una riscrittura completa per iOS 26, iPadOS 26 e macOS 26, gratuita sull'App Store (come app non in elenco: non compare nelle ricerche, si raggiunge solo dal suo link diretto) e scaricabile per Mac come immagine disco, autenticata da Apple, dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
 
 <!-- app-store-badges:it:start -->
 <!-- Official App Store badges: Scripts/app-store-badges.sh <App Store ID> adds them once the app is live. -->
@@ -315,6 +328,8 @@ BSD 3-Clause. See [`LICENSE`](LICENSE) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 - Siri e Comandi Rapidi: avvia e ferma l'accordatura, scegli accordatura, corda, ingresso e frequenza di riferimento
 
 **Privacy.** L'audio viene analizzato sul dispositivo e non viene mai registrato né inviato: l'app non ha alcun accesso alla rete e non usa codice di terze parti. Sandbox, Hardened Runtime ed Enhanced Security sono attivi. Vedi [`SECURITY.md`](SECURITY.md) per segnalare una vulnerabilità in privato.
+
+**Installare su Mac.** Scarica `ChitarraTune-<versione>.dmg` dalla [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases), aprilo e trascina **ChitarraTune** su **Applicazioni**. Sia l'immagine disco sia l'app dentro sono firmate, autenticate e con il ticket applicato, quindi nessun avviso anche senza connessione.
 
 **Requisiti.** macOS 26, iOS 26 o iPadOS 26; Xcode 26 o successivo.
 

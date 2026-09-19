@@ -117,10 +117,11 @@ jobs:
             --filter "RealisticSignalTests|RecordingCorpusTests|RealTimeBudgetTests|PitchDetectorTests"
 
   # The Mac app built exactly as a release and checked the way notarization and App Review would
-  # (bundle, architectures, linked libraries, entitlements, no debug entitlement, symbols), on every
-  # push, so that release day holds no surprise (ADR 0013). Ad-hoc signed: no certificate needed.
+  # (bundle, architectures, linked libraries, entitlements, no debug entitlement, symbols), plus the
+  # disk image it ships in (Apple's layout, ad hoc: no certificate needed), on every push, so that
+  # release day holds no surprise (ADR 0013, ADR 0014).
   release:
-    name: Release readiness · macOS
+    name: Release readiness · macOS (app and disk image)
     runs-on: macos-26
     timeout-minutes: 30
     steps:
@@ -131,6 +132,10 @@ jobs:
         env:
           SCRATCH: ${{ runner.temp }}
         run: Scripts/release-check.sh
+      - name: Disk image, built and verified as the release does
+        env:
+          SCRATCH: ${{ runner.temp }}
+        run: Scripts/make-dmg.sh
 
   # End-to-end tests in demo mode (synthetic guitar, no microphone), including Xcode's accessibility
   # audit of every screen in light, dark, landscape and the largest text size.

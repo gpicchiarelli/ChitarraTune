@@ -40,3 +40,7 @@ coverage.txt
 
 # Generated App Store screenshots (Scripts/screenshots.sh); uploaded to App Store Connect, not versioned
 AppStore/screenshots/
+
+# Release artifacts (Scripts/make-dmg.sh writes outside the tree; this is belt and braces)
+*.dmg
+*.dmg.sha256

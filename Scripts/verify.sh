@@ -3,7 +3,8 @@
 #
 #   Scripts/verify.sh          lint + warning-free package build + tests + coverage gate
 #   Scripts/verify.sh --app    ... and also build the app for macOS
-#   Scripts/verify.sh --release ... and build and check the Mac app as a release (Scripts/release-check.sh)
+#   Scripts/verify.sh --release ... and build and check the Mac app as a release, and wrap it in a
+#                                    disk image (Scripts/release-check.sh, Scripts/make-dmg.sh)
 #
 # Install it as a pre-push hook once:   git config core.hooksPath .githooks
 set -euo pipefail
@@ -48,6 +49,8 @@ fi
 if $RELEASE; then
   step "Mac app as a release (notarization and App Review checks)"
   Scripts/release-check.sh
+  step "Disk image (Apple's layout, ad hoc)"
+  Scripts/make-dmg.sh
 fi
 
 printf '\n\033[1;32m✓ all checks passed\033[0m\n'
