@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release, e.g. 2.0.0 (the tag becomes v2.0.0)"
+        description: "Version to release, e.g. 1.0.0 (the tag becomes v1.0.0)"
         required: true
         type: string
       channels:

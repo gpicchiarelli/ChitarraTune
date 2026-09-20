@@ -1,6 +1,6 @@
 # Release readiness
 
-What still stands between this repository and a public release of ChitarraTune 2.0.0, on each channel, as of 20 September 2026. Update this page whenever an item changes state; delete it once 2.0.0 is out and move anything left into issues.
+What still stands between this repository and a public release of ChitarraTune 1.0.0, on each channel, as of 20 September 2026. Update this page whenever an item changes state; delete it once 1.0.0 is out and move anything left into issues.
 
 **Legend:** ⛔ blocks the release · ⚠️ must be done before release · ✅ done
 
@@ -42,7 +42,7 @@ The user guide has no pictures either, for the same reason: an image of an inter
 
 ### B5. A first end-to-end release ⛔
 
-The current release workflow has never run: its last runs are from the 2025 pipeline. Signing, both notarizations, the disk image, the attestation and the App Store upload have only been checked piece by piece, ad hoc. **Action:** once B1 and B2 are done, push a pre-release tag such as `v2.0.0-rc.1`. Pre-releases go to the Developer ID channel only, so this exercises signing, notarization and the disk image without touching the App Store. Then install the disk image on a Mac that has never seen the app.
+The current release workflow has never run: its last runs are from the 2025 pipeline. Signing, both notarizations, the disk image, the attestation and the App Store upload have only been checked piece by piece, ad hoc. **Action:** once B1 and B2 are done, push a pre-release tag such as `v1.0.0-rc.1`. Pre-releases go to the Developer ID channel only, so this exercises signing, notarization and the disk image without touching the App Store. Then install the disk image on a Mac that has never seen the app.
 
 ### B6. The Mac screens are not tested on any push ⛔
 
@@ -106,8 +106,8 @@ In manual rendering the audio engine delivers 100 ms buffers although the tap as
 ## Release day, in order
 
 1. `Scripts/verify.sh --release` on a clean `main`, and a green Gate on GitHub.
-2. `CHANGELOG.md`: turn *Unreleased* into `2.0.0` with the date; `Scripts/bump-version.sh 2.0.0`; update `AppStore/metadata/*/release_notes.txt`.
-3. Tag `v2.0.0` and push it. The release workflow publishes the notarized disk image and uploads both App Store builds.
+2. `CHANGELOG.md`: turn *Unreleased* into `1.0.0` with the date; `Scripts/bump-version.sh 1.0.0`; update `AppStore/metadata/*/release_notes.txt`.
+3. Tag `v1.0.0` and push it. The release workflow publishes the notarized disk image and uploads both App Store builds.
 4. TestFlight: run the device test plan on both builds.
 5. App Store Connect: screenshots, metadata, accessibility labels, review notes, *Manually release this version*; submit iOS and macOS.
 6. After approval: request unlisted distribution, then release.

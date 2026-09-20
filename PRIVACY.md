@@ -17,7 +17,7 @@ If this policy changes, the new version is published at this address before the 
 
 | Date | Version | What changed |
 | :-- | :-- | :-- |
-| 19 September 2026 | 2.0.0 | First published policy for the 2.0 rewrite: microphone, no network, preferences, diagnostics a user copies, crash reports from Apple. |
+| 19 September 2026 | 1.0.0 | First published policy: microphone, no network, preferences, diagnostics a user copies, crash reports from Apple. |
 
 Questions: [gpicchiarelli@gmail.com](mailto:gpicchiarelli@gmail.com?subject=ChitarraTune%20privacy) or an [issue](https://github.com/gpicchiarelli/ChitarraTune/issues/new/choose). To report a security problem privately, see [SECURITY.md](SECURITY.md).
 
@@ -42,6 +42,6 @@ Se questa informativa cambierà, la nuova versione sarà pubblicata a questo ind
 
 | Data | Versione | Che cosa è cambiato |
 | :-- | :-- | :-- |
-| 19 settembre 2026 | 2.0.0 | Prima informativa pubblicata per la riscrittura 2.0: microfono, nessuna rete, preferenze, diagnostica che l'utente copia, rapporti sugli arresti anomali forniti da Apple. |
+| 19 settembre 2026 | 1.0.0 | Prima informativa pubblicata: microfono, nessuna rete, preferenze, diagnostica che l'utente copia, rapporti sugli arresti anomali forniti da Apple. |
 
 Domande: [gpicchiarelli@gmail.com](mailto:gpicchiarelli@gmail.com?subject=ChitarraTune%20privacy) o una [issue](https://github.com/gpicchiarelli/ChitarraTune/issues/new/choose). Per segnalare un problema di sicurezza in privato vedi [SECURITY.md](SECURITY.md).

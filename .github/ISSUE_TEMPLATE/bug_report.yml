@@ -31,7 +31,7 @@ body:
     attributes:
       label: App version · Versione dell'app
       description: Shown in About (macOS) — use "Copy info". · Visibile in Informazioni (macOS) — usa «Copia informazioni».
-      placeholder: "2.0.0 (build 1, a1b2c3d)"
+      placeholder: "1.0.0 (build 1, a1b2c3d)"
     validations:
       required: true
   - type: dropdown

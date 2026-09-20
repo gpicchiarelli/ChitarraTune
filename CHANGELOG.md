@@ -4,7 +4,7 @@ All notable changes to ChitarraTune, for the people who use it. The format follo
 
 ## [Unreleased]
 
-**2.0.0** is a ground-up rewrite for macOS 27, iOS 27 and iPadOS 27, and the first release on the App Store: free, for iPhone, iPad and Mac, as an unlisted app. On the Mac it is also available outside the store as a notarized disk image.
+**1.0.0** is the first release of ChitarraTune: free on the App Store, for iPhone, iPad and Mac, as an unlisted app, and on the Mac also outside the store as a notarized disk image. It requires macOS 27, iOS 27 or iPadOS 27.
 
 ### Added
 
@@ -39,14 +39,8 @@ All notable changes to ChitarraTune, for the people who use it. The format follo
 
 ### For developers
 
-- The code is a local Swift package, `ChitarraTuneKit` (`TunerCore`, `TunerAudio`, `TunerFeature`), under one multiplatform SwiftUI app, in Swift 6 with complete strict concurrency. It replaces `ChitarraTuneCore`, `Apps/` and the separate macOS and iOS targets.
+- The code is a local Swift package, `ChitarraTuneKit` (`TunerCore`, `TunerAudio`, `TunerFeature`), under one multiplatform SwiftUI app, in Swift 6 with complete strict concurrency.
 - Binding [architecture decision records](docs/adr/README.md), each enforced by a test; 100 % line coverage outside the hardware boundary; golden readings and an accuracy envelope that protect every measurement.
 - Every push runs the tests, UI tests with Xcode's accessibility audit on iPhone, iPad and Mac, and builds the Mac app and its disk image exactly as a release, checked as notarization and App Review would.
-- Removed: the XCTest unit-test target, the generated `VersionInfo.swift` and the legacy sources.
-
-## [1.0.0] and earlier
-
-Initial releases: a guitar tuner for macOS and iOS with several tunings, A4 calibration, Siri and Shortcuts, English and Italian localization, and Italian note names (Do, Re, Mi).
 
 [Unreleased]: https://github.com/gpicchiarelli/ChitarraTune/commits/main
-[1.0.0]: https://github.com/gpicchiarelli/ChitarraTune/releases

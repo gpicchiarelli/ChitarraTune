@@ -20,7 +20,7 @@
 <p>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/gpicchiarelli/ChitarraTune/ci.yml?branch=main&style=flat-square&logo=github&label=CI"></a>
   <a href="https://github.com/gpicchiarelli/ChitarraTune/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://img.shields.io/github/actions/workflow/status/gpicchiarelli/ChitarraTune/codeql.yml?branch=main&style=flat-square&logo=github&label=CodeQL"></a>
-  <img alt="Version 2.0.0" src="https://img.shields.io/badge/version-2.0.0-4F46E5?style=flat-square">
+  <img alt="Version 1.0.0" src="https://img.shields.io/badge/version-1.0.0-4F46E5?style=flat-square">
   <img alt="macOS, iOS and iPadOS 27 or later" src="https://img.shields.io/badge/macOS_·_iOS_·_iPadOS-27%2B-000000?style=flat-square&logo=apple&logoColor=white">
   <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?style=flat-square&logo=swift&logoColor=white">
   <img alt="No network, no recording, no third-party code" src="https://img.shields.io/badge/privacy-no_network_·_no_recording-2EA44F?style=flat-square">
@@ -36,7 +36,7 @@
 <br>
 
 > [!NOTE]
-> **Version 2.0** is a ground-up rewrite for macOS 27, iOS 27 and iPadOS 27. It is not released yet: it will be free on the App Store, as an unlisted app reachable only through its direct link, and on the Mac also as a notarized disk image on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). What is left before release is tracked in [docs/RELEASE_READINESS.md](docs/RELEASE_READINESS.md).
+> **Version 1.0** is the first release, for macOS 27, iOS 27 and iPadOS 27. It is not out yet: it will be free on the App Store, as an unlisted app reachable only through its direct link, and on the Mac also as a notarized disk image on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). What is left before release is tracked in [docs/RELEASE_READINESS.md](docs/RELEASE_READINESS.md).
 
 <table>
   <tr>
@@ -175,7 +175,7 @@ BSD 3-Clause, © 2025–2026 ChitarraTune contributors. See [LICENSE](LICENSE) a
 **ChitarraTune** è un accordatore per chitarra per **Mac, iPhone e iPad**. Misura la fondamentale della corda stessa, così gli armonici crescenti delle corde in acciaio non falsano la lettura, e dice «intonata» solo quando la nota si è davvero stabilizzata.
 
 > [!NOTE]
-> **La versione 2.0** è una riscrittura completa per macOS 27, iOS 27 e iPadOS 27, non ancora pubblicata. Sarà gratuita sull'App Store, come app non in elenco raggiungibile solo dal suo link diretto, e per Mac anche come immagine disco autenticata da Apple nella [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
+> **La versione 1.0** è il primo rilascio, per macOS 27, iOS 27 e iPadOS 27, non ancora pubblicato. Sarà gratuita sull'App Store, come app non in elenco raggiungibile solo dal suo link diretto, e per Mac anche come immagine disco autenticata da Apple nella [pagina delle release](https://github.com/gpicchiarelli/ChitarraTune/releases).
 
 <!-- app-store-badges:it:start -->
 <!-- Official App Store badges: Scripts/app-store-badges.sh <App Store ID> adds them once the app is live. -->

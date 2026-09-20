@@ -1,6 +1,6 @@
 name: Release checklist · Lista di controllo per una release
 description: Open one per release candidate, and record what real hardware showed. · Aprine una per ogni candidata, e registra cosa ha mostrato l'hardware vero.
-title: "Release 2.0.0-rc.1"
+title: "Release 1.0.0-rc.1"
 labels: ["release"]
 body:
   - type: markdown
@@ -11,7 +11,7 @@ body:
     id: build
     attributes:
       label: Version and build
-      placeholder: "2.0.0 (build 42, a1b2c3d)"
+      placeholder: "1.0.0 (build 42, a1b2c3d)"
     validations:
       required: true
   - type: input
