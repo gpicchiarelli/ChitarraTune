@@ -242,8 +242,13 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath "$RUNNER_TEMP/dd" \
             CODE_SIGNING_ALLOWED=NO
-      # Two workers, not more: the runner has three cores and seven gigabytes, and each worker is a
-      # cloned simulator. Every test launches the app for itself, so nothing is shared between them.
+      # Serial, and measured: `-parallel-testing-enabled YES` with two workers was tried here and
+      # made the job SLOWER — iPhone went from 854 s to 936 s, of which the tests alone were 867 s.
+      # XCUITest distributes work by test CLASS, and all 18 tests live in one
+      # (`ChitarraTuneUITests`; `AppStoreScreenshots` is skipped unless Scripts/screenshots.sh runs
+      # it). One class over two workers is no concurrency at all, and a second cloned simulator is
+      # booted for nothing. Splitting the class is what would have to come first — until somebody
+      # does that and measures it, this stays serial.
       - name: UI tests
         run: |
           set -euo pipefail
@@ -252,8 +257,6 @@ jobs:
             -scheme ChitarraTune \
             -destination "$DESTINATION" \
             -derivedDataPath "$RUNNER_TEMP/dd" \
-            -parallel-testing-enabled YES \
-            -maximum-parallel-testing-workers 2 \
             -skip-testing:ChitarraTuneUITests/ChitarraTuneUITests/testLaunchPerformance \
             -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
             CODE_SIGNING_ALLOWED=NO
