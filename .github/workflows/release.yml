@@ -39,9 +39,7 @@ concurrency:
 jobs:
   prepare:
     name: Version and tests
-    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
-    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
-    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    # Runner image: see the note at the top of .github/workflows/ci.yml.
     runs-on: xcode-27
     timeout-minutes: 30
     outputs:
@@ -103,15 +101,13 @@ jobs:
             || { echo "::error::CHANGELOG.md has no section for $CORE"; exit 1; }
 
       - name: Test ChitarraTuneKit
-        run: swift test --package-path Packages/ChitarraTuneKit
+        run: swift test --package-path Packages/ChitarraTuneKit --scratch-path "$RUNNER_TEMP/kit-build"
 
   developer-id:
     name: Developer ID (macOS, notarized)
     needs: prepare
     if: needs.prepare.outputs.developer_id == 'true'
-    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
-    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
-    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    # Runner image: see the note at the top of .github/workflows/ci.yml.
     runs-on: xcode-27
     timeout-minutes: 60
     permissions:
@@ -297,9 +293,7 @@ jobs:
     name: App Store Connect · ${{ matrix.name }}
     needs: prepare
     if: needs.prepare.outputs.app_store == 'true'
-    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
-    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
-    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    # Runner image: see the note at the top of .github/workflows/ci.yml.
     runs-on: xcode-27
     timeout-minutes: 60
     strategy:

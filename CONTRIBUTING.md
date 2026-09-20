@@ -42,13 +42,15 @@ git config core.hooksPath .githooks
 
 Every script says what it does and how to run it: `Scripts/<name>.sh --help`.
 
-Nothing is built inside the working tree: iCloud stamps anything under `~/Documents` with extended attributes and code signing fails on them, so every build goes to `~/Library/Caches/ChitarraTune/`, and a build you run by hand belongs there too, under `dd-<purpose>` ([ADR 0016](docs/adr/0016-build-artifacts-and-disk.md)). `Scripts/clean-caches.sh` empties it: by default whatever has not been touched for a day, `--now` for today's as well, `--dry-run` to look first. It refuses to run while a build is in flight and never touches a git worktree.
+Nothing is built inside the working tree: iCloud stamps anything under `~/Documents` with extended attributes and code signing fails on them, so every build goes to `~/Library/Caches/ChitarraTune/`, and a build you run by hand belongs there too, under `dd-<purpose>` ([ADR 0017](docs/adr/0017-build-artifacts-disk-and-reuse.md)). `Scripts/clean-caches.sh` empties it: by default whatever has not been touched for a day, `--now` for today's as well, `--dry-run` to look first. It refuses to run while a build is in flight and never touches a git worktree.
 
 Put behavior in `TunerCore` or `TunerFeature`, where synthetic signals and test doubles can exercise it, and keep `App/` thin.
 
 ## The quality gate
 
-`Scripts/verify.sh` runs what the pre-push hook runs: SwiftLint in strict mode, a warning-free package build, every test, and the coverage floors in `Scripts/coverage-thresholds.json`. `--app` also builds the app; `--release` also builds the Mac app exactly as a release and checks it as notarization and App Review would. CI repeats all of it on GitHub (**Gate**, **Lint**, **CodeQL**), adds the app builds, the UI tests on iPhone, iPad and Mac, and the optimized DSP matrix; a red run is fixed before anything else.
+`Scripts/verify.sh` runs what the pre-push hook runs: SwiftLint in strict mode, a warning-free package build, every test, and the coverage floors in `Scripts/coverage-thresholds.json`. `--app` also builds the app; `--release` also builds the Mac app exactly as a release and checks it as notarization and App Review would. It keeps the package build between runs, so the second run is incremental and only the first is slow ([ADR 0017](docs/adr/0017-build-artifacts-disk-and-reuse.md)); it prints what the cache holds when it finishes.
+
+Because changes go straight to `main` and the ruleset requires no status check, this hook is the gate in practice — GitHub reports, it does not refuse. CI repeats everything on GitHub (**Gate**, **Lint**, **CodeQL**) and adds what a laptop should not have to run: the iOS release build with pointer authentication, the UI tests on iPhone and iPad, the Mac compile, the release check with its disk image, and the optimized DSP matrix. A red run is fixed before anything else. The Mac *UI tests* are the one thing that cannot stop the gate, for a reason and with an end date: [RELEASE_READINESS.md](docs/RELEASE_READINESS.md) B6.
 
 | Guard | What it stops |
 | :-- | :-- |

@@ -197,6 +197,6 @@ if [ "$FAILURES" -gt 0 ]; then
   exit 1
 fi
 # A gigabyte of derived data, kept only so a failed run can be examined. Nothing failed, so it goes
-# (ADR 0016 rule 2); KEEP_BUILD=1 keeps it anyway.
+# (ADR 0017 rule 3); KEEP_BUILD=1 keeps it anyway.
 if [ -z "$VERIFY" ] && [ "${KEEP_BUILD:-0}" != "1" ] && [ -n "${BUILD:-}" ]; then rm -rf "$BUILD"; fi
 printf '\033[1;32m✓ release-ready%s\033[0m\n' "$([ -n "$PROFILE" ] && echo ", notarized" || echo "")"

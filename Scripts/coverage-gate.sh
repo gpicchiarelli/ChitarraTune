@@ -5,9 +5,16 @@
 # measurement is the hardware boundary, Sources/TunerAudio/Hardware/: it drives the real microphone and
 # Core Audio devices, so what it executes depends on the machine. See the README in that folder.
 #
+# The tests are compiled optimised (ADR 0018). They are numeric: the same suite takes three and a
+# half minutes at -Onone and twenty-five seconds at -O, and the coverage it measures is line for line
+# the same.
+#
+# The build tree is kept between runs: it is the one long-lived tree in the project, and the next
+# run reuses it (ADR 0017 rule 2). `Scripts/clean-caches.sh` is what empties it.
+#
 # Usage: Scripts/coverage-gate.sh [extra `swift test` arguments]
 #        SCRATCH=/some/dir Scripts/coverage-gate.sh    (build somewhere other than the cache)
-#        KEEP_BUILD=1 Scripts/coverage-gate.sh       keep the build tree after a passing run
+#        CONFIGURATION=debug Scripts/coverage-gate.sh  (for a debugger, or to compare)
 set -euo pipefail
 source "$(dirname "$0")/lib/help.sh"
 
@@ -15,12 +22,19 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PACKAGE="$ROOT/Packages/ChitarraTuneKit"
 THRESHOLDS="$ROOT/Scripts/coverage-thresholds.json"
 # Never inside the working tree: iCloud stamps anything under ~/Documents with extended
-# attributes that break code signing, and a second copy of the build belongs to nobody (ADR 0016).
+# attributes that break code signing, and a second copy of the build belongs to nobody (ADR 0017).
 BUILD="${SCRATCH:-$HOME/Library/Caches/ChitarraTune/kit-build}"
 
-swift test --package-path "$PACKAGE" --scratch-path "$BUILD" --enable-code-coverage "$@"
+# Identical flags to the build step in Scripts/verify.sh and the `kit` job of ci.yml: SwiftPM plans a
+# build per set of flags, so a single character of difference means compiling the package twice.
+CONFIGURATION="${CONFIGURATION:-release}"
+swift test --package-path "$PACKAGE" --scratch-path "$BUILD" \
+  -c "$CONFIGURATION" -Xswiftc -enable-testing -Xswiftc -warnings-as-errors \
+  --enable-code-coverage "$@"
 
-PROFDATA="$(find "$BUILD" -name default.profdata -print -quit)"
+# The newest, not the first: the build tree outlives the run (ADR 0017 rule 2), so a profile from
+# an earlier one can still be sitting beside the one `swift test` has just written.
+PROFDATA="$(find "$BUILD" -name default.profdata -exec stat -f '%m %N' {} + | sort -rn | head -n 1 | cut -d' ' -f2-)"
 [ -n "$PROFDATA" ] || { echo "error: no coverage data was produced" >&2; exit 1; }
 
 # Every test bundle links the modules it tests, so merge them all as objects.
@@ -88,7 +102,3 @@ if failed:
     sys.exit(1)
 print("\nCoverage gate passed.")
 PY
-
-# The numbers above are the artifact; the build tree that produced them is not (ADR 0016 rule 2).
-# A failing gate exits before this line, with its tree intact.
-[ "${KEEP_BUILD:-0}" = "1" ] || rm -rf "$BUILD"

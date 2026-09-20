@@ -22,7 +22,13 @@ struct SecurityPolicyTests {
         #expect(release.components(separatedBy: "ENABLE_POINTER_AUTHENTICATION=YES").count - 1 >= 2, "both release channels must build arm64e")
         #expect(release.contains("grep -qw arm64e"), "the release must verify the binaries are arm64e")
         let ci = try Repo.text(".github/workflows/ci.yml")
-        #expect(ci.contains("shipping: ENABLE_POINTER_AUTHENTICATION=YES") && ci.contains("grep -qw arm64e"), "CI must build and check arm64e")
+        #expect(ci.contains("ENABLE_POINTER_AUTHENTICATION=YES") && ci.contains("grep -qw arm64e"),
+                "CI must build the iOS slice with pointer authentication and check the result")
+        #expect(ci.contains("run: Scripts/release-check.sh"),
+                "the macOS slice is checked by release-check.sh on every push (ADR 0013)")
+        let checker = try Repo.text("Scripts/release-check.sh")
+        #expect(checker.contains("ENABLE_POINTER_AUTHENTICATION=YES") && checker.contains("arm64e"),
+                "release-check.sh must build with pointer authentication and verify the slices")
         #expect(s["ENABLE_USER_SCRIPT_SANDBOXING"] == "YES")
         #expect(s["SWIFT_VERSION"] == "6.0")
         #expect(s["SWIFT_STRICT_CONCURRENCY"] == "complete")

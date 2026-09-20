@@ -21,4 +21,6 @@ Writing a new one: copy [0000-template.md](0000-template.md) to the next free nu
 | [0013](0013-release-readiness.md) | Release readiness on every push | Accepted |
 | [0014](0014-disk-image-distribution.md) | Disk image distribution outside the App Store | Accepted |
 | [0015](0015-user-guide.md) | The user guide | Accepted |
-| [0016](0016-build-artifacts-and-disk.md) | Build artifacts and disk | Accepted |
+| [0016](0016-build-artifacts-and-disk.md) | Build artifacts and disk | Superseded by ADR 0017 |
+| [0017](0017-build-artifacts-disk-and-reuse.md) | Build artifacts, disk and reuse | Accepted |
+| [0018](0018-the-tests-run-optimised.md) | The tests run optimised | Accepted |

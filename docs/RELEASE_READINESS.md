@@ -46,9 +46,11 @@ The current release workflow has never run: its last runs are from the 2025 pipe
 
 ### B6. The Mac screens are not tested on any push ⛔
 
-A macOS 27 minimum means the app cannot launch on GitHub's GA `macos-26` image, and the only image running macOS 27 is the `xcode-27` **preview**, whose virtual GPU has no shader slice for SwiftUI's renderer (`unable to find air64_v27 slice`, RenderBox): the window never draws and every UI test times out. The `UI · Mac` job therefore runs but does not stop the gate — the one job in `ci.yml` allowed to fail — so the Mac screens, their accessibility audits and the menu commands are currently unverified on every push.
+A macOS 27 minimum means the app cannot launch on GitHub's GA `macos-26` image, and the only image running macOS 27 is the `xcode-27` **preview**, whose virtual GPU has no shader slice for SwiftUI's renderer (`unable to find air64_v27 slice`, RenderBox): the window never draws and every UI test times out. The `ui-mac` job is therefore split in two: compiling the Mac app and its tests blocks the gate, which is where the repository's macOS Debug build check now lives, and *running* those tests does not. So the Mac screens, their accessibility audits and the menu commands are unverified on every push, while the code behind them is still compiled on every push.
 
-**Action:** move every macOS job to `macos-27` the day it is generally available, delete `allowFailure` from the Mac entry of the `ui` matrix and this section. Until then the Mac interface is only as good as the last manual run. Lowering `MACOSX_DEPLOYMENT_TARGET` back to 26 would restore the job immediately, at the cost of the macOS 27 minimum.
+That job was previously written as a matrix entry with `continue-on-error: ${{ matrix.allowFailure == true }}`, which never evaluated true: Actions compares a matrix scalar with a boolean literal by casting both to numbers, and a string casts to `NaN`. The one job documented as unable to stop the gate was stopping it — run `35514845091` is an example. `continue-on-error` is now the literal `true`, and `WorkflowPolicyTests` refuses any workflow that computes it.
+
+**Action:** move every macOS job to `macos-27` the day it is generally available, delete the second step of `ui-mac` so the Mac tests block again, and delete this section. Until then the Mac interface is only as good as the last manual run. Lowering `MACOSX_DEPLOYMENT_TARGET` back to 26 would restore the job immediately, at the cost of the macOS 27 minimum.
 
 ## Validation on real hardware
 

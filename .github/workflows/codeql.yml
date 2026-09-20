@@ -22,9 +22,7 @@ concurrency:
 jobs:
   analyze:
     name: Analyze (Swift)
-    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
-    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
-    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    # Runner image: see the note at the top of .github/workflows/ci.yml.
     runs-on: xcode-27
     timeout-minutes: 45
     permissions:

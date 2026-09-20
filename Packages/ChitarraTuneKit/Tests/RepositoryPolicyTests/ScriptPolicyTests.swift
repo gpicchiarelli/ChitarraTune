@@ -51,8 +51,8 @@ struct ScriptPolicyTests {
         #expect(result.output.contains(name), "\(name) \(flag) does not say how to run the script")
     }
 
-    /// ADR 0016: build output lives in one place outside the working tree, and the caller can move
-    /// that place. A script that hard-codes a path inside the repository fills it with artifacts
+    /// ADR 0017 rule 1: build output lives in one place outside the working tree, and the caller can
+    /// move that place. A script that hard-codes a path inside the repository fills it with artifacts
     /// that iCloud then stamps with extended attributes, and code signing fails on them.
     @Test("Build output goes under the cache root, and the caller can move it", arguments: maintainerScripts)
     func buildOutput(script: URL) throws {
@@ -81,19 +81,67 @@ struct ScriptPolicyTests {
         }
     }
 
-    /// ADR 0016 rule 2: a run that succeeds leaves its artifact and nothing else. A script that
-    /// builds must therefore end by removing what it built, and must take `KEEP_BUILD=1` for the
-    /// runs somebody needs to look inside.
-    @Test("A script that builds takes its build tree away again", arguments: maintainerScripts)
+    /// ADR 0017 rules 2 and 3: one build tree is long-lived — the package build, which the next run
+    /// reuses — and every other one is one-shot and goes when the run succeeds, with `KEEP_BUILD=1`
+    /// for the runs somebody needs to look inside.
+    ///
+    /// The exemptions are named here rather than inferred, so adding one is a visible edit.
+    static let keepsItsTree: Set = [
+        // The package build itself (ADR 0017 rule 2). Deleting it made every pre-push cold.
+        "Scripts/coverage-gate.sh",
+        // The cleaner names xcodebuild only to refuse to run while one is going.
+        "Scripts/clean-caches.sh",
+    ]
+
+    @Test("A one-shot build tree goes when the run succeeds", arguments: maintainerScripts)
     func leavesNothingBehind(script: URL) throws {
         let name = Repo.relativePath(script)
         let text = try Repo.text(name)
-        // The cleaner names xcodebuild only to refuse to run while one is going.
-        guard name != "Scripts/clean-caches.sh" else { return }
+        guard !Self.keepsItsTree.contains(name) else { return }
         let builds = ["swift build", "swift test", "xcodebuild ", "-derivedDataPath", "--scratch-path"]
         guard builds.contains(where: text.contains) else { return }
         #expect(text.contains("KEEP_BUILD"), "\(name) builds but offers no KEEP_BUILD escape hatch")
         #expect(text.contains("rm -rf"), "\(name) builds but never removes what it built")
+    }
+
+    /// ADR 0017 rule 2: the one tree that survives a green run is the package build, and `verify.sh`
+    /// is what tells whoever is working how big the cache has become.
+    @Test("The package build survives a green run, and the cache is reported")
+    func packageBuildIsReused() throws {
+        let gate = try Repo.text("Scripts/coverage-gate.sh")
+        #expect(!gate.contains("rm -rf"), "the package build must outlive a passing run (ADR 0017 rule 2)")
+        let verify = try Repo.text("Scripts/verify.sh")
+        #expect(verify.contains("du -sk") || verify.contains("du -sh"), "verify.sh must report what the cache holds")
+        #expect(verify.contains("Scripts/clean-caches.sh"), "verify.sh must name the command that empties it")
+    }
+
+    /// ADR 0018: the tests are arithmetic, so the optimisation level is the gate's speed. Debug is
+    /// three and a half minutes and release is twenty-five seconds, for line-for-line the same
+    /// coverage — and a gate slow enough to be worth skipping is a gate that gets skipped.
+    @Test("The gate compiles the tests optimised, and every command that builds it agrees")
+    func testsRunOptimised() throws {
+        let gate = try Repo.text("Scripts/coverage-gate.sh")
+        #expect(gate.contains("-c \"$CONFIGURATION\"") && gate.contains(#"CONFIGURATION="${CONFIGURATION:-release}""#),
+                "the coverage gate must compile optimised, and let a debugger session ask for debug")
+        for flag in ["-Xswiftc -enable-testing", "-Xswiftc -warnings-as-errors"] {
+            #expect(gate.contains(flag), "the coverage gate must pass \(flag)")
+        }
+        // SwiftPM plans one build per set of flags: differ by one and the package compiles twice.
+        let verify = try Repo.text("Scripts/verify.sh")
+        for flag in ["-c release", "-Xswiftc -enable-testing", "-Xswiftc -warnings-as-errors"] {
+            #expect(verify.contains(flag), "Scripts/verify.sh builds with different flags than the gate: \(flag)")
+        }
+    }
+
+    /// ADR 0017 rule 5, and the reason it exists: `Packages/ChitarraTuneKit/.build` held 211 MB of
+    /// iCloud-synced build output, put there by two workflow steps that ran `swift build` and
+    /// `swift test` without naming a scratch path. Nothing noticed, because nothing looked.
+    @Test("No build tree inside the working tree")
+    func nothingBuildsInTheTree() {
+        for path in ["Packages/ChitarraTuneKit/.build", "build", "DerivedData", "Packages/ChitarraTuneKit/.swiftpm/cache"] {
+            #expect(!Repo.exists(path),
+                    "\(path) is build output inside the working tree (ADR 0017 rule 5); Scripts/clean-caches.sh and `rm -rf \(path)`")
+        }
     }
 
     /// The one command that empties the cache. It is destructive by design, so what it refuses to do
@@ -106,8 +154,11 @@ struct ScriptPolicyTests {
         #expect(text.contains("$entry/.git"), "it must never delete a git worktree")
         #expect(text.contains("pgrep"), "it must refuse to run while a build is in flight")
 
-        // A dry run against a cache that is not there says so, exits 0 and creates nothing.
-        let absent = Repo.url("Packages/ChitarraTuneKit/.build/absent-cache/ChitarraTune").path
+        // A dry run against a cache that is not there says so, exits 0 and creates nothing. The path
+        // is outside the working tree: nothing may build there, not even a path that is never made
+        // (ADR 0017 rule 5). The name still has to end in /ChitarraTune, which the script demands.
+        let absent = FileManager.default.temporaryDirectory
+            .appendingPathComponent("absent-\(UUID().uuidString)/ChitarraTune").path
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash")
         process.arguments = [Repo.url("Scripts/clean-caches.sh").path, "--dry-run"]

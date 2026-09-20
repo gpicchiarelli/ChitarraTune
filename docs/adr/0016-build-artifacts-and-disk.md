@@ -1,6 +1,6 @@
 # ADR 0016: Build artifacts and disk
 
-Status: Accepted (2026-09-20)
+Status: Superseded by ADR 0017
 
 ## Context
 

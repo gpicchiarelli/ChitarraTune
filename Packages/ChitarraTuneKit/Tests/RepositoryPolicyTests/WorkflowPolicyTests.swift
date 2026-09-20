@@ -82,10 +82,15 @@ struct WorkflowPolicyTests {
 
     @Test("Every job has a timeout and every checkout drops its credentials")
     func hygiene() throws {
+        // Lines that *declare* one, not every mention: a comment naming `runs-on:` is prose.
+        func declarations(_ lines: [String], of key: String) -> Int {
+            lines.filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("\(key):") }.count
+        }
         for file in workflows {
             let text = try String(contentsOf: file, encoding: .utf8)
-            let jobs = text.components(separatedBy: "runs-on:").count - 1
-            #expect(text.components(separatedBy: "timeout-minutes:").count - 1 == jobs, "\(file.lastPathComponent): job without timeout")
+            let all = try lines(file)
+            let jobs = declarations(all, of: "runs-on")
+            #expect(declarations(all, of: "timeout-minutes") == jobs, "\(file.lastPathComponent): job without timeout")
             let checkouts = text.components(separatedBy: "actions/checkout@").count - 1
             #expect(text.components(separatedBy: "persist-credentials: false").count - 1 == checkouts,
                     "\(file.lastPathComponent): checkout keeps credentials")
@@ -124,10 +129,16 @@ struct WorkflowPolicyTests {
     func ciShape() throws {
         let ci = try Repo.text(".github/workflows/ci.yml")
         #expect(ci.contains("coverage-gate.sh") && ci.contains("-warnings-as-errors"))
-        #expect(ci.contains("platform=macOS") && ci.contains("generic/platform=iOS Simulator"))
-        #expect(ci.contains("gate:"), "ci.yml needs the aggregate 'gate' job that branch protection requires")
+        // The four slices the app ships in. Each is built by exactly one job, and the job that
+        // builds it also checks something a bare compile would not: macOS Release by the release
+        // check, iOS Release by the pointer-authentication check, and the two Debug slices by the
+        // UI tests they carry. A job that only repeats one of these builds is weight, not cover.
+        for destination in ["generic/platform=iOS", "generic/platform=iOS Simulator", "platform=macOS"] {
+            #expect(ci.contains(destination), "no job builds for \(destination)")
+        }
         #expect(ci.contains("run: Scripts/release-check.sh"), "every push must build and check the Mac app as a release (ADR 0013)")
-        #expect(ci.contains("needs: [kit, app, dsp, release, ui]"), "the gate must wait for every job")
+        #expect(ci.contains("gate:"), "ci.yml needs the aggregate 'gate' job that branch protection requires")
+        #expect(ci.contains("needs: [kit, app, dsp, release, ui-ios, ui-mac]"), "the gate must wait for every job")
         let release = try Repo.text(".github/workflows/release.yml")
         #expect(release.contains("Scripts/release-check.sh --verify build/Build/Products/Release/ChitarraTune.app --signed"),
                 "the release must pass the same checks, on its signed build")
@@ -146,6 +157,49 @@ struct WorkflowPolicyTests {
         #expect(release.contains(#"gh release create "$TAG" "$DMG" "$DMG.sha256""#),
                 "the release publishes the image and its checksum, and nothing else")
         #expect(!release.contains("-macOS.zip"), "the zip channel is gone (ADR 0014)")
+    }
+
+    /// ADR 0017 rule 5. An unnamed `swift build` writes into the working tree, and a workflow step is
+    /// what people and agents copy their commands from: these two lines put 211 MB of iCloud-synced
+    /// build output under `Packages/ChitarraTuneKit/.build` on a real machine.
+    @Test("Every package build in a workflow names where it builds")
+    func namedScratchPath() throws {
+        for file in workflows {
+            for line in try lines(file) {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("#"), trimmed.contains("swift build") || trimmed.contains("swift test") else { continue }
+                #expect(trimmed.contains("--scratch-path"),
+                        "\(file.lastPathComponent): '\(trimmed)' builds wherever it happens to be run (ADR 0017 rule 5)")
+            }
+        }
+    }
+
+    /// ADR 0018 rules 2 and 5: CI builds the package with the flags the local gate uses, and the full
+    /// accuracy matrix keeps a runner to itself — a real-time budget measured beside a saturated test
+    /// suite measures the suite, not the budget.
+    @Test("CI compiles the package like the local gate, and the accuracy matrix keeps its own job")
+    func optimisedKitJob() throws {
+        let ci = try Repo.text(".github/workflows/ci.yml")
+        for flag in ["-c release", "-Xswiftc -enable-testing", "-Xswiftc -warnings-as-errors"] {
+            #expect(ci.contains(flag), "the kit job must build with \(flag), as Scripts/verify.sh does (ADR 0018 rule 2)")
+        }
+        #expect(ci.contains("CHITARRA_FULL_DSP"), "the full accuracy matrix must still run (ADR 0008)")
+        #expect(ci.contains("dsp:"), "the accuracy matrix and the real-time budgets need a job of their own (ADR 0018 rule 5)")
+    }
+
+    /// Regression, and it cost a red gate: `continue-on-error: ${{ matrix.allowFailure == true }}`
+    /// never evaluated true, so the one job documented as unable to stop the gate stopped it
+    /// (run 35514845091). Actions compares a matrix scalar and a boolean literal by casting both to
+    /// numbers, and a string casts to NaN. Whether a step may fail is not a thing to compute.
+    @Test("`continue-on-error` is a literal, never an expression")
+    func literalContinueOnError() throws {
+        for file in workflows {
+            for line in try lines(file) where line.contains("continue-on-error:") {
+                let value = line.split(separator: ":", maxSplits: 1).last.map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
+                #expect(value == "true" || value == "false",
+                        "\(file.lastPathComponent): continue-on-error must be written out, not computed: '\(value)'")
+            }
+        }
     }
 
     @Test("Runners are pinned to an explicit image, never a moving `-latest` label")

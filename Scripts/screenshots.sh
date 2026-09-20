@@ -93,7 +93,7 @@ done
 
 # The PNGs are the product; the derived data, the result bundles and the exported attachments are
 # scaffolding, and they are two orders of magnitude bigger (1.3 GB against 33 MB). They go as soon
-# as the images are out. KEEP_BUILD=1 keeps them when a run has to be debugged (ADR 0016 rule 2).
+# as the images are out. KEEP_BUILD=1 keeps them when a run has to be debugged (ADR 0017 rule 3).
 if [ "${KEEP_BUILD:-0}" = "1" ]; then
   echo "Working files kept in $WORK"
 else

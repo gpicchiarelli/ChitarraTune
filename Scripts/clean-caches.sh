@@ -13,7 +13,7 @@
 #   Scripts/clean-caches.sh --all           everything, tools included
 #   Scripts/clean-caches.sh --dry-run       say what would go, delete nothing
 #
-# The rules it enforces are ADR 0016; verify.sh says when the cache has grown enough to want it.
+# The rules it enforces are ADR 0017; verify.sh says when the cache has grown enough to want it.
 set -euo pipefail
 source "$(dirname "$0")/lib/help.sh"
 
