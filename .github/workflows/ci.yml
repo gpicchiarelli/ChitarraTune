@@ -275,7 +275,11 @@ jobs:
       # this is where a regression has to be visible without anybody going to look for it (ADR 0020).
       - name: What each test cost
         if: always()
-        run: Scripts/test-timings.sh "$RUNNER_TEMP/ui.xcresult" --all
+        run: |
+          set -euo pipefail
+          # No bundle means the tests never started, which the step above has already said.
+          [ -d "$RUNNER_TEMP/ui.xcresult" ] || { echo "no result bundle: the tests did not run"; exit 0; }
+          Scripts/test-timings.sh "$RUNNER_TEMP/ui.xcresult" --all
       - name: Keep the result bundle when a test fails
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -329,9 +333,14 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/dd" \
             -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
             CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+      # Reporting must not do what the tests themselves are not allowed to do: stop the gate.
       - name: What each test cost
         if: always()
-        run: Scripts/test-timings.sh "$RUNNER_TEMP/ui.xcresult" --all
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          [ -d "$RUNNER_TEMP/ui.xcresult" ] || { echo "no result bundle: the tests did not run"; exit 0; }
+          Scripts/test-timings.sh "$RUNNER_TEMP/ui.xcresult" --all
       - name: Keep the result bundle when a test fails
         if: steps.mac-tests.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
