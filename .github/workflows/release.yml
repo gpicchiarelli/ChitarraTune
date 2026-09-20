@@ -1,0 +1,382 @@
+name: Release
+
+# One tag, two channels:
+#   • Developer ID — a signed, notarized disk image on GitHub Releases, for download outside the store.
+#   • App Store    — iOS/iPadOS and macOS builds uploaded to App Store Connect (TestFlight first,
+#                    then submitted for review by hand; see AppStore/README.md).
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. 2.0.0 (the tag becomes v2.0.0)"
+        required: true
+        type: string
+      channels:
+        description: "Where to publish"
+        type: choice
+        default: both
+        options: [both, developer-id, app-store]
+      prerelease:
+        description: "Mark the GitHub release as pre-release"
+        type: boolean
+        default: false
+      allow_unsigned:
+        description: "Developer ID channel only: publish an unsigned, non-notarized build when no certificate is configured"
+        type: boolean
+        default: false
+
+# Read-only by default; each job asks for exactly what it needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Version and tests
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build: ${{ steps.version.outputs.build }}
+      developer_id: ${{ steps.version.outputs.developer_id }}
+      app_store: ${{ steps.version.outputs.app_store }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Untrusted values (tag name, dispatch inputs) reach the shell only through env vars and are
+      # validated before use.
+      - name: Resolve and validate version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_CHANNELS: ${{ inputs.channels }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then VERSION="$INPUT_VERSION"; CHANNELS="$INPUT_CHANNELS"; else VERSION="${REF_NAME#v}"; CHANNELS=both; fi
+          re='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'
+          [[ "$VERSION" =~ $re ]] || { echo "::error::'$VERSION' is not a valid semantic version"; exit 1; }
+          case "$CHANNELS" in both|developer-id|app-store) ;; *) echo "::error::unknown channel '$CHANNELS'"; exit 1 ;; esac
+          # App Store versions are numeric only; a pre-release goes to the Developer ID channel alone.
+          APP_STORE=false; DEVELOPER_ID=false
+          [ "$CHANNELS" != "app-store" ] && DEVELOPER_ID=true
+          if [ "$CHANNELS" != "developer-id" ]; then
+            if [[ "$VERSION" == *-* ]]; then echo "::warning::pre-release $VERSION is not uploaded to the App Store"; else APP_STORE=true; fi
+          fi
+          {
+            echo "version=$VERSION"
+            echo "build=$GITHUB_RUN_NUMBER"
+            echo "developer_id=$DEVELOPER_ID"
+            echo "app_store=$APP_STORE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Require a commit that is on main
+        run: |
+          set -euo pipefail
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Releases must be cut from a commit reachable from main"
+            exit 1
+          fi
+
+      - name: Version matches the build settings and the changelog
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          CORE="${VERSION%%-*}"
+          grep -Eq "^MARKETING_VERSION = ${CORE//./\\.}$" Config/Base.xcconfig \
+            || { echo "::error::Config/Base.xcconfig MARKETING_VERSION is not $CORE (run Scripts/bump-version.sh)"; exit 1; }
+          Scripts/release-notes.sh "$CORE" > /dev/null \
+            || { echo "::error::CHANGELOG.md has no section for $CORE"; exit 1; }
+
+      - name: Test ChitarraTuneKit
+        run: swift test --package-path Packages/ChitarraTuneKit
+
+  developer-id:
+    name: Developer ID (macOS, notarized)
+    needs: prepare
+    if: needs.prepare.outputs.developer_id == 'true'
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 60
+    permissions:
+      contents: write # create the GitHub Release
+      id-token: write # build-provenance attestation
+      attestations: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      BUILD: ${{ needs.prepare.outputs.build }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Import Developer ID certificate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ALLOW_UNSIGNED: ${{ inputs.allow_unsigned }}
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MACOS_CERT_P12:-}" ] || [ -z "${MACOS_CERT_PASSWORD:-}" ] || [ -z "${APPLE_TEAM_ID:-}" ]; then
+            if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$ALLOW_UNSIGNED" = "true" ]; then
+              echo "::warning::No Developer ID secrets: publishing an UNSIGNED, non-notarized build"
+              echo "SIGNED=false" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            echo "::error::MACOS_CERT_P12, MACOS_CERT_PASSWORD and APPLE_TEAM_ID are required to publish a release"
+            exit 1
+          fi
+          umask 077
+          KEYCHAIN="$RUNNER_TEMP/release.keychain-db"
+          KEYCHAIN_PASS="$(openssl rand -hex 24)"
+          echo "::add-mask::$KEYCHAIN_PASS"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/certificate.p12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASS" "$KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/certificate.p12"
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" | sed -n 's/.*"\(Developer ID Application:.*\)".*/\1/p' | head -n 1)"
+          if [ -z "$IDENTITY" ]; then
+            echo "::error::No 'Developer ID Application' identity found in the imported certificate"
+            exit 1
+          fi
+          {
+            echo "SIGNED=true"
+            echo "KEYCHAIN=$KEYCHAIN"
+            echo "IDENTITY=$IDENTITY"
+          } >> "$GITHUB_ENV"
+
+      # Signing happens inside xcodebuild so Xcode embeds the complete entitlement set (the sandbox
+      # and audio-input entitlements come from build settings, not from Config/*.entitlements).
+      - name: Build Release
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          COMMON=(
+            -project ChitarraTune.xcodeproj
+            -scheme ChitarraTune
+            -configuration Release
+            -destination 'generic/platform=macOS'
+            -derivedDataPath build
+            MARKETING_VERSION="${VERSION%%-*}"
+            CURRENT_PROJECT_VERSION="$BUILD"
+            GIT_COMMIT="$(git rev-parse --short HEAD)"
+            # Pointer authentication (arm64e) for every target, local packages included; an xcconfig
+            # cannot reach SwiftPM targets, the command line can. See Config/App.xcconfig.
+            ENABLE_POINTER_AUTHENTICATION=YES
+          )
+          if [ "$SIGNED" = "true" ]; then
+            xcodebuild "${COMMON[@]}" \
+              CODE_SIGN_STYLE=Manual \
+              CODE_SIGN_IDENTITY="$IDENTITY" \
+              DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+              PROVISIONING_PROFILE_SPECIFIER="" \
+              OTHER_CODE_SIGN_FLAGS="--timestamp --keychain $KEYCHAIN" \
+              ENABLE_HARDENED_RUNTIME=YES \
+              build
+          else
+            xcodebuild "${COMMON[@]}" CODE_SIGNING_ALLOWED=NO build
+          fi
+          for binary in build/Build/Products/Release/ChitarraTune.app/Contents/MacOS/ChitarraTune \
+                        build/Build/Products/Release/ChitarraTune.app/Contents/PlugIns/*.appex/Contents/MacOS/*; do
+            [ -f "$binary" ] || continue
+            lipo -archs "$binary" | grep -qw arm64e || { echo "::error::$binary is not arm64e"; exit 1; }
+          done
+          test -d build/Build/Products/Release/ChitarraTune.app
+
+      # The same checks CI runs on every push (Scripts/release-check.sh), now on the signed build:
+      # bundle, architectures, linked libraries, exactly the allowed entitlements, no get-task-allow,
+      # Hardened Runtime, a Developer ID signature with a secure timestamp.
+      - name: Verify the build as notarization and App Review would
+        if: env.SIGNED == 'true'
+        run: Scripts/release-check.sh --verify build/Build/Products/Release/ChitarraTune.app --signed
+
+      - name: Notarize and staple the app
+        if: env.SIGNED == 'true'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ASC_API_KEY_ID:-}" ] || [ -z "${ASC_API_ISSUER_ID:-}" ] || [ -z "${ASC_API_KEY_P8:-}" ]; then
+            echo "::warning::App Store Connect API secrets not configured: the release is signed but NOT notarized"
+            exit 0
+          fi
+          umask 077
+          APP="build/Build/Products/Release/ChitarraTune.app"
+          echo "$ASC_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/asc.p8"
+          ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/notarize.zip"
+          RESULT="$(xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
+            --key "$RUNNER_TEMP/asc.p8" \
+            --key-id "$ASC_API_KEY_ID" \
+            --issuer "$ASC_API_ISSUER_ID" \
+            --wait --timeout 30m --output-format json)"
+          echo "$RESULT"
+          grep -Eq '"status" *: *"Accepted"' <<< "$RESULT" \
+            || { echo "::error::Notarization was not accepted"; exit 1; }
+          xcrun stapler staple -v "$APP"
+          xcrun stapler validate -v "$APP"
+          spctl --assess --type execute --verbose=2 "$APP"
+
+      # The app is already notarized and stapled: wrap it Apple's way (ditto, hdiutil, UDZO), sign
+      # the image under an identifier of its own, notarize it in a submission of its own and staple
+      # it too (ADR 0014). Stapling rewrites the file, so the checksum and the attestation come after
+      # the script, never before.
+      - name: Disk image
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          SCRATCH: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          DMG="ChitarraTune-${VERSION}.dmg"
+          ARGS=(--app build/Build/Products/Release/ChitarraTune.app --version "$VERSION" --output "$DMG")
+          if [ "$SIGNED" = "true" ]; then
+            ARGS+=(--identity "$IDENTITY" --keychain "$KEYCHAIN")
+            # The App Store Connect key is already on disk if the app was notarized above; if the
+            # secrets are absent the image is signed but not notarized, exactly like the app.
+            [ -f "$RUNNER_TEMP/asc.p8" ] && ARGS+=(--notarize-key "$RUNNER_TEMP/asc.p8")
+          fi
+          Scripts/make-dmg.sh "${ARGS[@]}"
+          shasum -a 256 "$DMG" > "$DMG.sha256"
+          echo "DMG=$DMG" >> "$GITHUB_ENV"
+          Scripts/release-notes.sh "${VERSION%%-*}" > "$RUNNER_TEMP/notes.md"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: ${{ env.DMG }}
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          set -euo pipefail
+          TAG="v$VERSION"
+          NOTES="$RUNNER_TEMP/notes.md"
+          if [ "$SIGNED" != "true" ]; then
+            printf '\n> **Unsigned build.** The disk image is not signed or notarized; macOS Gatekeeper will warn about it. Verify the SHA-256, then use Right-click → Open once.\n' >> "$NOTES"
+          fi
+          ARGS=(--title "ChitarraTune $VERSION" --notes-file "$NOTES" --target "$GITHUB_SHA")
+          if [ "$PRERELEASE" = "true" ] || [[ "$VERSION" == *-* ]]; then ARGS+=(--prerelease); fi
+          gh release create "$TAG" "$DMG" "$DMG.sha256" "${ARGS[@]}"
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          hdiutil detach "$RUNNER_TEMP/dmg/volume" -force -quiet 2>/dev/null || true
+          rm -rf "$RUNNER_TEMP/dmg"
+          rm -f "$RUNNER_TEMP/certificate.p12" "$RUNNER_TEMP/asc.p8" "$RUNNER_TEMP/notarize.zip"
+          if [ -n "${KEYCHAIN:-}" ]; then security delete-keychain "$KEYCHAIN" || true; fi
+
+  app-store:
+    name: App Store Connect · ${{ matrix.name }}
+    needs: prepare
+    if: needs.prepare.outputs.app_store == 'true'
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: iOS and iPadOS
+            destination: generic/platform=iOS
+          - name: macOS
+            destination: generic/platform=macOS
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      BUILD: ${{ needs.prepare.outputs.build }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Cloud-managed signing: xcodebuild obtains the Apple Distribution certificate and the
+      # provisioning profiles through the App Store Connect API key, so no certificate is stored in
+      # the repository secrets. The key needs the App Manager (or Admin) role.
+      - name: App Store Connect API key
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ASC_API_KEY_P8:-}" ] || [ -z "${ASC_API_KEY_ID:-}" ] || [ -z "${ASC_API_ISSUER_ID:-}" ] || [ -z "${APPLE_TEAM_ID:-}" ]; then
+            echo "::error::ASC_API_KEY_P8, ASC_API_KEY_ID, ASC_API_ISSUER_ID and APPLE_TEAM_ID are required for the App Store channel"
+            exit 1
+          fi
+          umask 077
+          echo "$ASC_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/asc.p8"
+
+      - name: Archive
+        env:
+          DESTINATION: ${{ matrix.destination }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project ChitarraTune.xcodeproj \
+            -scheme ChitarraTune \
+            -configuration Release \
+            -destination "$DESTINATION" \
+            -archivePath "$RUNNER_TEMP/ChitarraTune.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/asc.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            ENABLE_POINTER_AUTHENTICATION=YES \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD" \
+            GIT_COMMIT="$(git rev-parse --short HEAD)"
+
+      - name: Export and upload to App Store Connect
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/ChitarraTune.xcarchive" \
+            -exportOptionsPlist Config/ExportOptions-AppStore.plist \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/asc.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
+          echo "Uploaded build $BUILD of $VERSION. It appears in TestFlight once App Store Connect has processed it." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove signing material
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/asc.p8" "$RUNNER_TEMP/ChitarraTune.xcarchive" "$RUNNER_TEMP/export"

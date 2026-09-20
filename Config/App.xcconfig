@@ -1,0 +1,47 @@
+// App.xcconfig — the ChitarraTune application target (macOS + iOS + iPadOS).
+
+PRODUCT_NAME = ChitarraTune
+PRODUCT_BUNDLE_IDENTIFIER = com.chitarratune.app
+ENABLE_PREVIEWS = YES
+COMBINE_HIDPI_IMAGES = YES
+
+// Everything in the app target is UI code: isolate it to the main actor by default.
+SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor
+
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
+
+// MARK: Info.plist (generated, plus Config/Info.plist for custom keys)
+GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_FILE = Config/Info.plist
+INFOPLIST_KEY_CFBundleDisplayName = ChitarraTune
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.music
+INFOPLIST_KEY_NSHumanReadableCopyright = Copyright © 2025–2026 ChitarraTune contributors. BSD 3-Clause License.
+INFOPLIST_KEY_NSMicrophoneUsageDescription = ChitarraTune listens to your guitar through the microphone to measure its pitch. Audio is analyzed on the device and never recorded or sent anywhere.
+INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO
+// The scene manifest comes from Config/Info.plist: one scene on iPhone and iPad (no multiple windows).
+INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO
+INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES
+INFOPLIST_KEY_UILaunchScreen_Generation = YES
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+
+// MARK: Enhanced Security
+// Pointer authentication makes a target arm64e, and an arm64e target can only import arm64e modules.
+// Build settings in an xcconfig never reach local SwiftPM targets, so here it stays off and Xcode's own
+// builds work. The builds that ship pass ENABLE_POINTER_AUTHENTICATION=YES on the xcodebuild command
+// line, which applies to every target including the packages: both release channels in
+// .github/workflows/release.yml, verified with lipo, and the arm64e jobs of ci.yml on every push
+// (macOS x86_64/arm64/arm64e, iOS arm64/arm64e). Everything else in Enhanced Security is always on
+// (security compiler warnings, typed allocators, hardened heap / dyld-ro / platform restrictions).
+ENABLE_POINTER_AUTHENTICATION = NO
+
+// MARK: Entitlements & sandbox
+CODE_SIGN_ENTITLEMENTS = Config/ChitarraTune.entitlements
+ENABLE_APP_SANDBOX[sdk=macosx*] = YES
+ENABLE_RESOURCE_ACCESS_AUDIO_INPUT[sdk=macosx*] = YES
+ENABLE_INCOMING_NETWORK_CONNECTIONS = NO
+ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO
+
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks
+LD_RUNPATH_SEARCH_PATHS[sdk=macosx*] = $(inherited) @executable_path/../Frameworks

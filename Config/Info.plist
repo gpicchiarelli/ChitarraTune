@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Merged with the Info.plist Xcode generates from INFOPLIST_KEY_* settings. -->
+	<key>ChitarraGitCommit</key>
+	<string>$(GIT_COMMIT)</string>
+	<!-- macOS: the app keeps no unsaved state, so it may be killed at logout without being asked.
+	     Automatic termination is deliberately off: with it, a "quit" app stays alive invisibly and a
+	     relaunch reuses that process without opening a tuner window. -->
+	<key>NSSupportsSuddenTermination</key>
+	<true/>
+	<!-- macOS: the user guide, an Apple Help Book built from docs/guide by Scripts/build-help.py and
+	     opened from Help ▸ ChitarraTune Help. Ignored on iPhone and iPad, which have no Help Viewer. -->
+	<key>CFBundleHelpBookFolder</key>
+	<string>ChitarraTune.help</string>
+	<key>CFBundleHelpBookName</key>
+	<string>com.chitarratune.app.help</string>
+	<!-- iPhone and iPad: one scene. iOS has a single audio input for the whole app, so a second
+	     window could only show the same tuner, and closing or minimising one would stop the other. -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+</dict>
+</plist>

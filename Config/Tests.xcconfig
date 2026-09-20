@@ -1,0 +1,19 @@
+// Tests.xcconfig — unit tests for the app target's own code, hosted by the app.
+//
+// Hosted (TEST_HOST) rather than a standalone bundle: the code under test reads the app's string
+// catalog and its preferences, so it needs the app's bundle around it. What lives in the package is
+// tested by `swift test`; this target covers what can only live in the app (ADR 0005).
+
+// The code under test is main-actor isolated by default, as in the app target.
+SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor
+
+PRODUCT_NAME = $(TARGET_NAME)
+PRODUCT_BUNDLE_IDENTIFIER = com.chitarratune.app.tests
+TEST_HOST = $(BUILT_PRODUCTS_DIR)/ChitarraTune.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChitarraTune
+BUNDLE_LOADER = $(TEST_HOST)
+GENERATE_INFOPLIST_FILE = YES
+ENABLE_ENHANCED_SECURITY = NO
+CODE_SIGN_STYLE = Automatic
+// The test bundle never ships. With an ad-hoc signature (CI) library validation would refuse to load
+// it into the app, so the hardened runtime is off for this target only, as for the UI tests.
+ENABLE_HARDENED_RUNTIME = NO

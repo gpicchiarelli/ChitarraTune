@@ -1,0 +1,56 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# On a branch or a pull request a newer push supersedes the run in progress. On `main` it does
+# not: every commit that lands keeps a complete verification of its own, so a burst of pushes
+# cannot leave a commit on the default branch whose longest checks were dropped half-way.
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  analyze:
+    name: Analyze (Swift)
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 45
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
+        with:
+          languages: swift
+          build-mode: manual
+      - name: Build
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ChitarraTune.xcodeproj \
+            -scheme ChitarraTune \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
+        with:
+          category: /language:swift

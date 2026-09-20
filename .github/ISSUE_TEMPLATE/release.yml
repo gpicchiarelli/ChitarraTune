@@ -1,0 +1,77 @@
+name: Release checklist · Lista di controllo per una release
+description: Open one per release candidate, and record what real hardware showed. · Aprine una per ogni candidata, e registra cosa ha mostrato l'hardware vero.
+title: "Release 2.0.0-rc.1"
+labels: ["release"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For the maintainer. This is where the [device test plan](https://github.com/gpicchiarelli/ChitarraTune/blob/main/docs/DEVICE_TEST_PLAN.md) is recorded: the plan says what to check, this issue says what happened, on which build and on which device. A release goes out only with a filled-in copy of this issue closed behind it.
+  - type: input
+    id: build
+    attributes:
+      label: Version and build
+      placeholder: "2.0.0 (build 42, a1b2c3d)"
+    validations:
+      required: true
+  - type: input
+    id: devices
+    attributes:
+      label: Devices used
+      description: Every device class the plan asks for, with its OS version.
+      placeholder: "iPhone 15 (iOS 26.0), iPhone SE (26.0), iPad Pro 13 (26.0), MacBook Pro M4 (macOS 26.0) + Scarlett Solo"
+    validations:
+      required: true
+  - type: checkboxes
+    id: gate
+    attributes:
+      label: Before the tag
+      options:
+        - label: "`Scripts/verify.sh --release` passes on a clean `main`, and the Gate is green on GitHub"
+        - label: "CHANGELOG has the version and its date; `Scripts/bump-version.sh X.Y.Z` has run; release notes updated in both languages"
+        - label: "Screenshots regenerated if the interface changed (`Scripts/screenshots.sh`)"
+  - type: checkboxes
+    id: plan
+    attributes:
+      label: Device test plan, section by section
+      description: Tick a section only when every line of it passed on every device class it applies to. Anything that failed goes in the notes below, with the diagnostic report.
+      options:
+        - label: "Tuning (against a strobe tuner or a tone generator)"
+        - label: "Microphone permission"
+        - label: "Interruptions and routes"
+        - label: "System integration (controls, Siri, Shortcuts, keyboard, the user guide)"
+        - label: "Accessibility on device (VoiceOver, Voice Control, Switch Control, contrast, motion)"
+        - label: "Energy and performance"
+        - label: "Localization"
+  - type: textarea
+    id: accuracy
+    attributes:
+      label: Accuracy against the reference
+      description: Per string, the reference reading and what ChitarraTune showed. Recordings worth keeping go into the corpus with `Scripts/add-recording.sh`.
+      placeholder: |
+        E2: reference 0 ¢ → app 0 ¢ · A2: 0 → +1 · D3: 0 → 0 · G3: 0 → −1 · B3: 0 → +1 · E4: 0 → 0
+        Amplifier at low volume, no extra gain: every string moved the needle.
+    validations:
+      required: true
+  - type: textarea
+    id: stream
+    attributes:
+      label: The `stream:` line from Copy Diagnostics
+      description: One per device class. Analyses must be about 40/s whatever the callback size, and discontinuities 0 in a quiet session.
+      placeholder: "stream: 48000 Hz, 60.0 s, 2812 callbacks of 1024–1024 frames (21.3 ms average), 39.9 analyses/s, 0 discontinuities"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: What failed, and what was decided
+      description: Empty means nothing failed. Anything that ships with a known defect says so here, with the issue that tracks it.
+  - type: checkboxes
+    id: after
+    attributes:
+      label: After approval
+      options:
+        - label: "Accessibility labels in App Store Connect declare only what was ticked above"
+        - label: "Unlisted distribution requested or already in place"
+        - label: "Disk image installed on a Mac that has never seen the app, offline"
+        - label: "Badges added once the product page is live (`Scripts/app-store-badges.sh`)"

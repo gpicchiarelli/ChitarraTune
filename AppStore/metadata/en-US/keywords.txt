@@ -1,0 +1,1 @@
+guitar,tuner,tuning,pitch,chromatic,drop d,dadgad,open g,acoustic,electric,432,a4,calibration

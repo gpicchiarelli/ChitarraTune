@@ -1,0 +1,73 @@
+name: Bug report · Segnalazione di bug
+description: Something does not work as expected. · Qualcosa non funziona come dovrebbe.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. English or Italian are both fine. · Grazie del tempo dedicato. Va bene sia l'inglese sia l'italiano.
+
+        **Please do not attach audio recordings or anything personal.** ChitarraTune never records audio, and you should not need to share any.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened? · Cosa è successo?
+      description: Describe the problem and what you expected instead. · Descrivi il problema e cosa ti aspettavi.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce · Passaggi per riprodurlo
+      placeholder: |
+        1. Open the app
+        2. Choose Drop D and set A4 to 432 Hz
+        3. Tap Start and pluck the low string
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version · Versione dell'app
+      description: Shown in About (macOS) — use "Copy info". · Visibile in Informazioni (macOS) — usa «Copia informazioni».
+      placeholder: "2.0.0 (build 1, a1b2c3d)"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform · Piattaforma
+      options:
+        - macOS
+        - iPhone
+        - iPad
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS version · Versione del sistema
+      placeholder: "macOS 26.0 / iOS 26.0"
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Device and audio input · Dispositivo e ingresso audio
+      description: Model, plus the microphone or audio interface you were using. · Modello, più microfono o interfaccia audio usati.
+      placeholder: "MacBook Pro built-in mic / Focusrite Scarlett Solo, input 2"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else? · Altro?
+      description: Tuning, calibration (A4), screenshots, crash logs. · Accordatura, calibrazione (A4), screenshot, log di crash.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched the existing issues. · Ho cercato tra le issue esistenti.
+          required: true
+        - label: This is not a security vulnerability (those go through a private report). · Non è una vulnerabilità di sicurezza.
+          required: true

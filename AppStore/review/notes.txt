@@ -1,0 +1,11 @@
+ChitarraTune is a guitar tuner. It needs no account, has no in-app purchases and makes no network connections.
+
+How to review:
+1. Tap "Start Listening". The app first explains why it needs the microphone, then iOS/macOS asks for permission.
+2. Play a guitar string, hum, whistle, or play a tone from another device (for example A 110 Hz). The note, the frequency and the deviation in cents appear, and the needle moves. When the pitch settles inside ±5 cents the display turns green and says "In tune".
+3. Tap a string chip (1–6) to tune only that string; tap "Auto" to return to automatic detection.
+4. Settings (gear icon on iPhone/iPad, ChitarraTune ▸ Settings on the Mac) holds the A4 reference pitch, note names, gauge style, haptics and the automatic stop after silence.
+
+The microphone is only used while the tuner is listening. Audio is analyzed in memory and never recorded, stored or transmitted. On iPhone and iPad listening stops when the app goes to the background; the app declares no background modes.
+
+Siri and Shortcuts: "Start tuning in ChitarraTune" opens the app and starts listening.

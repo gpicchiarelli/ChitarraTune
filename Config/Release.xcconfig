@@ -1,0 +1,13 @@
+#include "Base.xcconfig"
+
+SWIFT_OPTIMIZATION_LEVEL = -O
+SWIFT_COMPILATION_MODE = wholemodule
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+ENABLE_NS_ASSERTIONS = NO
+VALIDATE_PRODUCT = YES
+STRIP_INSTALLED_PRODUCT = YES
+COPY_PHASE_STRIP = NO
+
+// Never inject the development entitlements (com.apple.security.get-task-allow lets a debugger
+// attach; notarization and App Review reject it), whatever identity signs the build.
+CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO

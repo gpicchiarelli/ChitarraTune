@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- An acoustic guitar standing upright: the needle of the meter, pointing at the in-tune mark. One shape: outer contours wind clockwise, the
+       sound hole and the bridge wind anticlockwise, so they are cut out under the non-zero rule. -->
+  <g transform="translate(512 770) scale(0.66) translate(-512 -820)" fill="#FFFFFF">
+    <path fill-rule="nonzero" d="
+      M 482 92 Q 482 68 506 68 L 518 68 Q 542 68 542 92 L 549 196 Q 550 216 534 220 L 534 470
+      L 490 470 L 490 220 Q 474 216 475 196 Z
+      M 512 400
+      C 612 400 668 452 668 532
+      C 668 590 640 626 640 660
+      C 640 700 720 730 720 820
+      C 720 930 630 990 512 990
+      C 394 990 304 930 304 820
+      C 304 730 384 700 384 660
+      C 384 626 356 590 356 532
+      C 356 452 412 400 512 400 Z
+      M 512 552 A 62 62 0 1 0 512 676 A 62 62 0 1 0 512 552 Z
+      M 446 842 L 446 870 L 578 870 L 578 842 Z" />
+  </g>
+</svg>

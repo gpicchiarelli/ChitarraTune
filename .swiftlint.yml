@@ -1,0 +1,75 @@
+# SwiftLint configuration for ChitarraTune
+# https://github.com/realm/SwiftLint
+
+included:
+  - App
+  - Controls
+  - Shared
+  - Packages/ChitarraTuneKit/Sources
+  - Packages/ChitarraTuneKit/Tests
+  - ChitarraTuneUITests
+  - ChitarraTuneTests
+
+excluded:
+  - "**/.build"
+  - DerivedData
+  - build
+
+opt_in_rules:
+  - force_unwrapping
+  - implicit_return
+  - identical_operands
+  - contains_over_filter_count
+  - contains_over_first_not_nil
+  - last_where
+  - reduce_into
+  - toggle_bool
+  - vertical_whitespace_closing_braces
+  - closure_spacing
+  - fatal_error_message
+  - discouraged_optional_boolean
+  - yoda_condition
+  - private_swiftui_state
+  - unowned_variable_capture
+  - empty_count
+  - explicit_init
+  - first_where
+  - modifier_order
+  - redundant_nil_coalescing
+  - sorted_first_last
+
+disabled_rules:
+  - trailing_whitespace
+  # Trailing commas keep diffs small and are what swift-format produces.
+  - trailing_comma
+
+# DSP code is full of conventional single-letter names (x, r, c, tau…); keep the upper bound.
+identifier_name:
+  min_length: 1
+  max_length:
+    warning: 40
+    error: 60
+
+line_length:
+  warning: 160
+  error: 220
+  ignores_comments: true
+  ignores_urls: true
+  ignores_interpolated_strings: true
+
+# Length limits sized for numeric code: the detector and engine pipelines are long on purpose.
+# (`unused_parameter` is not enabled: it flags parameters that protocols and overrides impose.)
+function_body_length:
+  warning: 70
+  error: 120
+type_body_length:
+  warning: 350
+  error: 600
+cyclomatic_complexity:
+  warning: 20
+  error: 30
+large_tuple:
+  warning: 3
+  error: 5
+
+reporter: "xcode"

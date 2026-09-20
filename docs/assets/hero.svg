@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 550" width="1200" height="550" role="img" aria-labelledby="t d">
+<title id="t">ChitarraTune tuner dial</title>
+<desc id="d">Illustration of the tuning dial reading E2 at 82.4 hertz, two cents sharp, inside the green in-tune zone.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14141E"/><stop offset="1" stop-color="#09090E"/></linearGradient><radialGradient id="glow" cx="600" cy="300" r="430" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#8B93FF" stop-opacity=".22"/><stop offset="1" stop-color="#8B93FF" stop-opacity="0"/></radialGradient><radialGradient id="ok" cx="600" cy="300" r="300" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3DDC84" stop-opacity=".16"/><stop offset="1" stop-color="#3DDC84" stop-opacity="0"/></radialGradient><clipPath id="card"><rect width="1200" height="550" rx="30"/></clipPath></defs>
+<g clip-path="url(#card)">
+<rect width="1200" height="550" fill="url(#bg)"/>
+<rect width="1200" height="550" fill="url(#glow)"/>
+<rect width="1200" height="550" fill="url(#ok)"/>
+<line x1="0" x2="1200" y1="112" y2="112" stroke="#fff" stroke-opacity=".055" stroke-width="3.4"/>
+<line x1="0" x2="1200" y1="160" y2="160" stroke="#fff" stroke-opacity=".055" stroke-width="2.8"/>
+<line x1="0" x2="1200" y1="208" y2="208" stroke="#fff" stroke-opacity=".055" stroke-width="2.3"/>
+<line x1="0" x2="1200" y1="256" y2="256" stroke="#fff" stroke-opacity=".055" stroke-width="1.8"/>
+<line x1="0" x2="1200" y1="304" y2="304" stroke="#fff" stroke-opacity=".055" stroke-width="1.4"/>
+<line x1="0" x2="1200" y1="352" y2="352" stroke="#fff" stroke-opacity=".055" stroke-width="1.0"/>
+<path d="M353.80 210.39 A262 262 0 0 1 846.20 210.39" fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="30" stroke-linecap="butt"/>
+<path d="M353.80 210.39 A262 262 0 0 1 503.72 56.33" fill="none" stroke="#FF6B62" stroke-width="20" stroke-opacity="0.9"/>
+<path d="M508.50 54.50 A262 262 0 0 1 565.53 40.28" fill="none" stroke="#FFB020" stroke-width="20" stroke-opacity="0.9"/>
+<path d="M570.61 39.65 A262 262 0 0 1 629.39 39.65" fill="none" stroke="#3DDC84" stroke-width="20" stroke-opacity="1"/>
+<path d="M634.47 40.28 A262 262 0 0 1 691.50 54.50" fill="none" stroke="#FFB020" stroke-width="20" stroke-opacity="0.9"/>
+<path d="M696.28 56.33 A262 262 0 0 1 846.20 210.39" fill="none" stroke="#FF6B62" stroke-width="20" stroke-opacity="0.9"/>
+<line x1="376.35" y1="218.60" x2="395.15" y2="225.44" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="387.94" y1="191.95" x2="396.85" y2="196.49" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="402.69" y1="166.91" x2="419.27" y2="178.10" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="420.38" y1="143.86" x2="427.93" y2="150.42" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="440.75" y1="123.13" x2="454.13" y2="137.99" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="463.49" y1="105.04" x2="469.22" y2="113.23" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="488.27" y1="89.86" x2="497.66" y2="107.52" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="514.71" y1="77.81" x2="518.29" y2="87.14" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="542.42" y1="69.07" x2="547.26" y2="88.48" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="571.00" y1="63.77" x2="572.21" y2="73.70" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="600.00" y1="62.00" x2="600.00" y2="82.00" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="629.00" y1="63.77" x2="627.79" y2="73.70" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="657.58" y1="69.07" x2="652.74" y2="88.48" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="685.29" y1="77.81" x2="681.71" y2="87.14" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="711.73" y1="89.86" x2="702.34" y2="107.52" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="736.51" y1="105.04" x2="730.78" y2="113.23" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="759.25" y1="123.13" x2="745.87" y2="137.99" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="779.62" y1="143.86" x2="772.07" y2="150.42" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="797.31" y1="166.91" x2="780.73" y2="178.10" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="812.06" y1="191.95" x2="803.15" y2="196.49" stroke="#fff" stroke-opacity="0.28" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="823.65" y1="218.60" x2="804.85" y2="225.44" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round"/>
+<text x="423.3" y="241.7" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="17" font-weight="600" fill="#A1A1A6">−50</text>
+<text x="492.2" y="152.0" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="17" font-weight="600" fill="#A1A1A6">−25</text>
+<text x="600.0" y="118.0" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="17" font-weight="600" fill="#A1A1A6">0</text>
+<text x="707.8" y="152.0" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="17" font-weight="600" fill="#A1A1A6">+25</text>
+<text x="776.7" y="241.7" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="17" font-weight="600" fill="#A1A1A6">+50</text>
+<text x="345.9" y="261.7" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="40" font-weight="600" fill="#6E6E73">♭</text>
+<text x="854.1" y="261.7" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="40" font-weight="600" fill="#6E6E73">♯</text>
+<line x1="598.34" y1="333.96" x2="611.53" y2="64.28" stroke="#3DDC84" stroke-width="7" stroke-linecap="round"/>
+<circle cx="600" cy="300" r="17" fill="#15151F" stroke="#3DDC84" stroke-width="5"/>
+<text x="600" y="418" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="800" font-size="88" fill="#F5F5F7">E<tspan font-size="42" dy="16" fill="#A1A1A6">2</tspan></text>
+<text x="600" y="458" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="600" font-size="24" fill="#A1A1A6" letter-spacing=".4">82.4 Hz  ·  <tspan fill="#3DDC84">+2 cents</tspan></text>
+<rect x="379.0" y="480" width="62" height="42" rx="21" fill="#8B93FF" fill-opacity="1"/>
+<text x="410.0" y="508" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700" font-size="21" fill="#0B0B12">E</text>
+<rect x="455.0" y="480" width="62" height="42" rx="21" fill="#fff" fill-opacity="0.07"/>
+<text x="486.0" y="508" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700" font-size="21" fill="#A1A1A6">A</text>
+<rect x="531.0" y="480" width="62" height="42" rx="21" fill="#fff" fill-opacity="0.07"/>
+<text x="562.0" y="508" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700" font-size="21" fill="#A1A1A6">D</text>
+<rect x="607.0" y="480" width="62" height="42" rx="21" fill="#fff" fill-opacity="0.07"/>
+<text x="638.0" y="508" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700" font-size="21" fill="#A1A1A6">G</text>
+<rect x="683.0" y="480" width="62" height="42" rx="21" fill="#fff" fill-opacity="0.07"/>
+<text x="714.0" y="508" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700" font-size="21" fill="#A1A1A6">B</text>
+<rect x="759.0" y="480" width="62" height="42" rx="21" fill="#fff" fill-opacity="0.07"/>
+<text x="790.0" y="508" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700" font-size="21" fill="#A1A1A6">E</text>
+</g>
+<rect x=".5" y=".5" width="1199" height="549" rx="30" fill="none" stroke="#fff" stroke-opacity=".08"/>
+</svg>

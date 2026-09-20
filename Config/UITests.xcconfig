@@ -1,0 +1,11 @@
+// UITests.xcconfig — XCUITest bundle driving the app.
+
+PRODUCT_NAME = $(TARGET_NAME)
+PRODUCT_BUNDLE_IDENTIFIER = com.chitarratune.app.ui-tests
+TEST_TARGET_NAME = ChitarraTune
+GENERATE_INFOPLIST_FILE = YES
+ENABLE_ENHANCED_SECURITY = NO
+CODE_SIGN_STYLE = Automatic
+// The test runner never ships. With an ad-hoc signature (CI) its library validation would refuse to
+// load the test bundle, so the hardened runtime is off for this target only.
+ENABLE_HARDENED_RUNTIME = NO

@@ -1,0 +1,40 @@
+name: Feature request · Richiesta di funzionalità
+description: Suggest an idea or improvement. · Proponi un'idea o un miglioramento.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve? · Quale problema risolverebbe?
+      description: Start from the situation you are in, not from the solution. · Parti dalla situazione, non dalla soluzione.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see? · Cosa vorresti vedere?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered · Alternative valutate
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform · Piattaforma
+      multiple: true
+      options:
+        - macOS
+        - iPhone
+        - iPad
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched the existing issues. · Ho cercato tra le issue esistenti.
+          required: true
+        - label: I understand ChitarraTune processes audio on the device only, with no network access and no recording. · So che ChitarraTune elabora l'audio solo sul dispositivo, senza rete e senza registrazioni.
+          required: true

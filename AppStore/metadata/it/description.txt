@@ -1,0 +1,27 @@
+ChitarraTune è un accordatore per chitarra per iPhone, iPad e Mac che fa una cosa sola e la fa bene: ti dice, in fretta e con una lettura stabile, quanto ogni corda è lontana da dove dovrebbe essere.
+
+PRECISO
+• Il riconoscimento dell'intonazione misura la fondamentale della corda, così gli armonici crescenti delle corde in acciaio non falsano la lettura.
+• Un ago fluido, la nota, la frequenza e lo scostamento in cent.
+• «Intonata» si accende solo quando la nota si è davvero stabilizzata dentro la zona di ±5 cent.
+
+DIECI ACCORDATURE
+Standard, mezzo tono sotto, un tono sotto, Drop D, Drop C, DADGAD, Open D, Open G, Open E e Open A. L'accordatore riconosce la corda che suoni, oppure puoi fissarne una e accordare solo quella.
+
+IL TUO LA
+Imposta il La (A4) da 415 a 466 Hz: diapason barocco, 432 Hz o il pianoforte scordato a casa di un amico.
+
+COME PREFERISCI
+• Nomi delle note in solfeggio (Do Re Mi Fa Sol La Si) o in inglese (C D E F G A B).
+• Quadrante o barra.
+• Sul Mac scegli qualsiasi microfono o interfaccia audio e apri un accordatore per finestra.
+
+PRIVATO PER PROGETTO
+Il suono viene analizzato sul dispositivo mentre suoni e scartato una frazione di secondo dopo. ChitarraTune non registra mai l'audio, non ha alcun accesso alla rete e non contiene analytics, pubblicità o tracciamento.
+
+RISPETTOSO
+• Smette di ascoltare dopo un periodo di silenzio e rallenta l'analisi in Modalità Risparmio Energetico.
+• VoiceOver, Dynamic Type, Riduci Movimento e controllo completo da tastiera.
+• Siri e Comandi Rapidi: avvia e ferma l'accordatura, scegli accordatura, corda, ingresso o La di riferimento.
+
+ChitarraTune è gratuito, senza pubblicità né acquisti in-app. È open source con licenza BSD.

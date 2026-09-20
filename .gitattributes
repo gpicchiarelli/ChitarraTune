@@ -1,0 +1,12 @@
+# Normalise line endings and keep diffs meaningful.
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.icns binary
+
+# Generated or catalog files should not dominate language statistics.
+*.xcstrings linguist-generated
+*.pbxproj linguist-generated
+docs/assets/*.svg linguist-documentation

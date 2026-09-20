@@ -1,0 +1,30 @@
+name: Links
+
+# The only check in this repository that needs the network for its own sake. It is not part of the
+# Gate: a link that Apple moves, or a host that is down for ten minutes, must never fail a commit
+# that is otherwise correct. It runs weekly, and on demand, and opens nothing by itself — the run
+# turning red is the notification.
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Monday morning, off the hour: shared runners are busiest on it.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: links
+  cancel-in-progress: true
+
+jobs:
+  external:
+    name: External links in the documentation
+    # No Swift, no Xcode: the cheap image is enough.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Every external link still answers
+        run: Scripts/check-links.sh

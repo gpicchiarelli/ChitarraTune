@@ -1,0 +1,72 @@
+import AVFoundation
+#if os(macOS)
+import CoreAudio
+#endif
+
+/// Lists audio inputs and reports changes without polling.
+///
+/// - macOS: Core Audio HAL property listeners (device list + default input).
+/// - iOS/iPadOS: `AVAudioSession` route-change notifications.
+public struct SystemAudioInputs: AudioInputProviding {
+    public init() {}
+
+    #if os(macOS)
+    public func availableInputs() -> [AudioInputDevice] { CoreAudioDevices.inputDevices() }
+
+    public func activeInputName(for selection: AudioInputSelection) -> String? {
+        if let id = selection.deviceID { CoreAudioDevices.name(forUID: id) } else { CoreAudioDevices.defaultInputName() }
+    }
+
+    public func changes() -> AsyncStream<Void> {
+        AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
+            let queue = DispatchQueue(label: "com.chitarratune.audio-inputs", qos: .utility)
+            // The block is immutable and Core Audio invokes it on `queue`; it only yields into a
+            // thread-safe continuation. It must be kept to unregister the listener.
+            nonisolated(unsafe) let block: AudioObjectPropertyListenerBlock = { _, _ in continuation.yield() }
+            let system = AudioObjectID(kAudioObjectSystemObject)
+            var addresses = [CoreAudioDevices.devicesAddress, CoreAudioDevices.defaultInputAddress]
+            for index in addresses.indices {
+                AudioObjectAddPropertyListenerBlock(system, &addresses[index], queue, block)
+            }
+            let registered = addresses
+            continuation.onTermination = { _ in
+                var addresses = registered
+                for index in addresses.indices {
+                    AudioObjectRemovePropertyListenerBlock(system, &addresses[index], queue, block)
+                }
+            }
+        }
+    }
+    #else
+    /// Read-only: it never touches the audio session's configuration. iOS only lists the inputs once
+    /// the session allows recording, which capture sets up when listening starts, so before the first
+    /// start this can be empty (the model refreshes the list when listening begins).
+    public func availableInputs() -> [AudioInputDevice] {
+        (AVAudioSession.sharedInstance().availableInputs ?? []).map { AudioInputDevice(id: $0.uid, name: $0.portName) }
+    }
+
+    public func activeInputName(for selection: AudioInputSelection) -> String? {
+        let session = AVAudioSession.sharedInstance()
+        if let id = selection.deviceID {
+            return session.availableInputs?.first { $0.uid == id }?.portName
+        }
+        return session.currentRoute.inputs.first?.portName
+    }
+
+    public func changes() -> AsyncStream<Void> {
+        SystemNotifications.changes([AVAudioSession.routeChangeNotification])
+    }
+
+    public func resumptions() -> AsyncStream<Void> {
+        SystemNotifications.changes([AVAudioSession.interruptionNotification]) { Self.isResumableEnd($0) }
+    }
+
+    /// `true` for an interruption that has ended with the system's "you may resume" hint.
+    static func isResumableEnd(_ userInfo: [AnyHashable: Any]?) -> Bool {
+        let type = userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+        let options = userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+        return type == AVAudioSession.InterruptionType.ended.rawValue
+            && AVAudioSession.InterruptionOptions(rawValue: options).contains(.shouldResume)
+    }
+    #endif
+}

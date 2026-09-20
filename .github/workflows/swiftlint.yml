@@ -1,0 +1,33 @@
+name: SwiftLint
+
+# No path filters: this check is required by branch protection, so it must run on every change.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# On a branch or a pull request a newer push supersedes the run in progress. On `main` it does
+# not: every commit that lands keeps a complete verification of its own, so a burst of pushes
+# cannot leave a commit on the default branch whose longest checks were dropped half-way.
+concurrency:
+  group: swiftlint-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  lint:
+    name: Lint
+    # SwiftLint only parses source, so the (much cheaper) Linux image is enough.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    container:
+      image: ghcr.io/realm/swiftlint:0.65.1 # keep in step with what Scripts/verify.sh expects
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: SwiftLint in strict mode (warnings fail the build)
+        run: swiftlint lint --strict --reporter github-actions-logging

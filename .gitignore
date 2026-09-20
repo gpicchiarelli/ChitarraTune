@@ -1,0 +1,55 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Xcode
+build/
+DerivedData/
+*.xcworkspace/
+*.xcuserdata/
+*.xccheckout
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+*.xcuserstate
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+*.ipa
+
+# SwiftPM
+.build/
+.swiftpm/
+
+# Local, per-developer configuration (signing team and similar)
+Config/Local.xcconfig
+
+# Signing and notarization material: never commit
+*.p12
+*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+.env
+.env.*
+
+# Logs and CI artifacts
+*.log
+coverage.txt
+
+# Generated App Store screenshots (Scripts/screenshots.sh); uploaded to App Store Connect, not versioned
+AppStore/screenshots/
+
+# Release artifacts (Scripts/make-dmg.sh writes outside the tree; this is belt and braces)
+*.dmg
+*.dmg.sha256
+
+# Local tooling configuration: personal to whoever is working, never part of the project
+.claude/
+.cursor/
+.aider*
+.vscode/
+.idea/
+CLAUDE.md
+AGENTS.md

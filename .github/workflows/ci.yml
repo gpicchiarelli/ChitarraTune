@@ -1,0 +1,261 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege: CI only ever reads the repository.
+permissions:
+  contents: read
+
+# On a branch or a pull request a newer push supersedes the run in progress. On `main` it does
+# not: every commit that lands keeps a complete verification of its own, so a burst of pushes
+# cannot leave a commit on the default branch whose longest checks were dropped half-way.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  kit:
+    name: Kit tests and coverage
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+      - name: Build without warnings
+        run: swift build --package-path Packages/ChitarraTuneKit -Xswiftc -warnings-as-errors
+      - name: Test, with the coverage gate
+        run: Scripts/coverage-gate.sh
+
+  app:
+    name: App · ${{ matrix.name }}
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS Debug
+            configuration: Debug
+            destination: platform=macOS
+            shipping: ""
+          # Built exactly like a release: every architecture, pointer authentication (arm64e) on for
+          # the app, its extension and the local packages.
+          - name: macOS Release (arm64e)
+            configuration: Release
+            destination: generic/platform=macOS
+            shipping: ENABLE_POINTER_AUTHENTICATION=YES
+          - name: iOS Release (arm64e)
+            configuration: Release
+            destination: generic/platform=iOS
+            shipping: ENABLE_POINTER_AUTHENTICATION=YES
+          - name: iOS Simulator
+            configuration: Debug
+            destination: generic/platform=iOS Simulator
+            shipping: ""
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: xcodebuild -version
+      - name: Build without warnings
+        env:
+          CONFIGURATION: ${{ matrix.configuration }}
+          DESTINATION: ${{ matrix.destination }}
+          SHIPPING: ${{ matrix.shipping }}
+        run: |
+          set -euo pipefail
+          # SHIPPING is a fixed build setting from the matrix above (or empty); word splitting intended.
+          # shellcheck disable=SC2086
+          xcodebuild \
+            -project ChitarraTune.xcodeproj \
+            -scheme ChitarraTune \
+            -configuration "$CONFIGURATION" \
+            -destination "$DESTINATION" \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            GCC_TREAT_WARNINGS_AS_ERRORS=YES \
+            GIT_COMMIT="$(git rev-parse --short HEAD)" \
+            $SHIPPING \
+            build
+      - name: Shipping binaries carry pointer authentication
+        if: matrix.shipping != ''
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r binary; do
+            found=1
+            echo "$binary: $(lipo -archs "$binary")"
+            lipo -archs "$binary" | grep -qw arm64e || { echo "::error::$binary is not arm64e"; exit 1; }
+          done < <(find build/Build/Products -type f -perm -u+x \( -name ChitarraTune -o -name ChitarraTuneControls \) -not -path '*dSYM*')
+          [ "$found" = 1 ] || { echo "::error::no app binary found"; exit 1; }
+
+  # The realistic-signal accuracy matrix in full (every tuning × string × detuning × scenario). Too
+  # slow for a debug build on every push, fast in an optimised one.
+  dsp:
+    name: DSP accuracy (full matrix)
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Realistic signals, recorded corpus and real-time budgets, optimised build
+        env:
+          CHITARRA_FULL_DSP: "1"
+        run: |
+          swift test --package-path Packages/ChitarraTuneKit -c release -Xswiftc -enable-testing \
+            --filter "RealisticSignalTests|RecordingCorpusTests|RealTimeBudgetTests|PitchDetectorTests"
+
+  # The Mac app built exactly as a release and checked the way notarization and App Review would
+  # (bundle, architectures, linked libraries, entitlements, no debug entitlement, symbols), plus the
+  # disk image it ships in (Apple's layout, ad hoc: no certificate needed), on every push, so that
+  # release day holds no surprise (ADR 0013, ADR 0014).
+  release:
+    name: Release readiness · macOS (app and disk image)
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Release build and notarization checks
+        env:
+          SCRATCH: ${{ runner.temp }}
+        run: Scripts/release-check.sh
+      - name: Disk image, built and verified as the release does
+        env:
+          SCRATCH: ${{ runner.temp }}
+        run: Scripts/make-dmg.sh
+
+  # End-to-end tests in demo mode (synthetic guitar, no microphone), including Xcode's accessibility
+  # audit of every screen in light, dark, landscape and the largest text size.
+  ui:
+    name: UI · ${{ matrix.name }}
+    # xcode-27 is GitHub's preview image and the only one carrying Xcode 27, which the SDK 27
+    # deployment target needs. The GA macos-26 image tops out at Xcode 26.6. Move to macos-27
+    # as soon as it exists: a preview image can change or be withdrawn without notice.
+    runs-on: xcode-27
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # A family, never a model: Apple renames them every year (`iPhone 17 Pro` exists on the
+          # Xcode 26 image and does not on the Xcode 27 one), and a job that names one breaks on an
+          # image update for no reason. The step below takes whichever device of the family is there.
+          - name: iPhone
+            family: iPhone
+            signing: CODE_SIGNING_ALLOWED=NO
+          - name: iPad
+            family: iPad
+            signing: CODE_SIGNING_ALLOWED=NO
+          - name: Mac
+            destination: platform=macOS
+            # The macOS test runner must be signed; an ad-hoc signature is enough on the runner.
+            signing: CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+            # TEMPORARY, and the only job in this file allowed to fail without stopping the gate.
+            # A macOS 27 minimum means the app cannot launch on the GA macos-26 image, and the only
+            # image that runs macOS 27 is the xcode-27 preview, whose virtual GPU has no shader slice
+            # for SwiftUI's renderer ("unable to find air64_v27 slice", RenderBox): the window never
+            # draws and every wait times out. Nothing here is ours to fix. Delete this line — and the
+            # note in docs/RELEASE_READINESS.md — the day a GA macos-27 image exists, and the Mac
+            # screens go back to being tested on every push.
+            allowFailure: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Toolchain and simulators
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available
+      - name: Pick a simulator of the family
+        if: matrix.family != ''
+        env:
+          FAMILY: ${{ matrix.family }}
+        run: |
+          set -euo pipefail
+          udid="$(xcrun simctl list devices available -j | python3 -c "
+          import json, os, sys
+          family = os.environ['FAMILY']
+          runtimes = json.load(sys.stdin)['devices']
+          best = ()
+          for runtime, devices in runtimes.items():
+              if 'SimRuntime.iOS-' not in runtime:
+                  continue
+              version = [int(p) for p in runtime.rsplit('iOS-', 1)[1].split('-') if p.isdigit()]
+              for device in devices:
+                  if device['name'].startswith(family) and (not best or version > best[0]):
+                      best = (version, device['udid'], device['name'])
+          if not best:
+              sys.exit(f'no available {family} simulator')
+          print(best[1], best[2], sep='\t')
+          ")"
+          echo "Using ${udid#*$'\t'}"
+          echo "DESTINATION=platform=iOS Simulator,id=${udid%%$'\t'*}" >> "$GITHUB_ENV"
+      - name: UI tests
+        continue-on-error: ${{ matrix.allowFailure == true }}
+        env:
+          DESTINATION: ${{ matrix.destination || env.DESTINATION }}
+          SIGNING: ${{ matrix.signing }}
+        run: |
+          set -euo pipefail
+          # SIGNING holds several build settings, so it is split on purpose.
+          # shellcheck disable=SC2086
+          xcodebuild test \
+            -project ChitarraTune.xcodeproj \
+            -scheme ChitarraTune \
+            -destination "$DESTINATION" \
+            -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
+            $SIGNING
+      - name: Keep the result bundle when a test fails
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ui-${{ matrix.name }}
+          path: ${{ runner.temp }}/ui.xcresult
+          retention-days: 7
+
+  # One check that stands for all of the above, so the result of the whole run is a single line on
+  # the commit. Add every new job to `needs` below.
+  gate:
+    name: Gate
+    if: always()
+    needs: [kit, app, dsp, release, ui]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Every required job must have succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: $RESULTS"
+          for result in $RESULTS; do
+            if [ "$result" != "success" ]; then
+              echo "::error::A required job finished with '$result'"
+              exit 1
+            fi
+          done
