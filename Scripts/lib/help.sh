@@ -3,7 +3,7 @@
 # that script's header — the comment block under its shebang — and exits 0, before the script looks
 # at its arguments or touches anything. Sourced and not called, so `$0` is still the script the user
 # ran and the header printed is its own. These scripts are not installed on the PATH, so `--help` is
-# their manual page (ADR 0009); `ScriptPolicyTests` checks that every one of them answers it.
+# their manual page (ADR 0021 rule 8); `ScriptPolicyTests` checks that every one of them answers it.
 
 case "${1:-}" in
 -h | --help)

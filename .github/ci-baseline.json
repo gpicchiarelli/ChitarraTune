@@ -9,8 +9,13 @@
     "makes it, instead of being reconstructed by hand three pushes later — which is exactly what",
     "happened when parallel UI testing took iPhone from 854 s to 936 s and broke iPad.",
     "",
-    "A job with no entry here is reported as unbaselined and warns. When you change what a job does,",
-    "change its number here in the same commit and say in the message what you measured."
+    "A job with no entry here is reported as unbaselined and warns, and a policy test refuses it: the",
+    "gate cannot wait for a job whose cost nobody wrote down. Its timeout is held to this number",
+    "too — at least twice it, and no more than four times it or five minutes, whichever is larger —",
+    "so a hung job stops in minutes instead of burning a runner for half an hour.",
+    "",
+    "When you change what a job does, change its number here in the same commit and say in the",
+    "message what you measured."
   ],
   "tolerance": 1.25,
   "jobs": {
@@ -21,7 +26,7 @@
     "Release readiness · macOS (app and disk image)": 110,
     "UI · iPhone": 900,
     "UI · iPad": 1250,
-    "UI · Mac": 400,
+    "Mac · build and unit tests": 90,
     "Gate": 30
   }
 }

@@ -95,7 +95,7 @@ In manual rendering the audio engine delivers 100 ms buffers although the tap as
 
 - **Privacy and security:** no network, no recording in any build, App Sandbox with audio input only, Hardened Runtime, Enhanced Security, pointer authentication, no third-party code. All of it is enforced by tests ([ADR 0002](adr/0002-audio-never-leaves-memory.md), [ADR 0003](adr/0003-least-privilege-and-platform-security.md)).
 - **Measurement:** frozen golden readings, an accuracy envelope, and invariance to device callback sizes, mains hum and Low Power Mode ([ADR 0008](adr/0008-measurement-integrity.md)).
-- **Quality gate:** 100 % line coverage outside the hardware boundary, warnings as errors, strict SwiftLint, UI tests with the accessibility audit on iPhone, iPad and Mac ([ADR 0009](adr/0009-quality-gate-and-change-process.md)).
+- **Quality gate:** 100 % line coverage outside the hardware boundary, warnings as errors, strict SwiftLint, UI tests with the accessibility audit on iPhone and iPad, and weekly on Mac ([ADR 0021](adr/0021-the-gate-and-the-change-process.md)).
 - **Release pipeline:** every push builds the Mac app and its disk image exactly as a release and checks them as notarization and App Review would ([ADR 0013](adr/0013-release-readiness.md), [ADR 0014](adr/0014-disk-image-distribution.md)).
 - **Localization:** English and Italian throughout: app, permission text, Siri phrases, store listing, policies.
 

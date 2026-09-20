@@ -1,6 +1,6 @@
 # ADR 0009: Quality gate and change process
 
-Status: Accepted (2026-09-19)
+Status: Superseded by ADR 0021
 
 ## Context
 

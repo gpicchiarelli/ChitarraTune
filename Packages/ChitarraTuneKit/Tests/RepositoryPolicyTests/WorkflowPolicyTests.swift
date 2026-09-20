@@ -139,7 +139,7 @@ struct WorkflowPolicyTests {
         }
         #expect(ci.contains("run: Scripts/release-check.sh"), "every push must build and check the Mac app as a release (ADR 0013)")
         #expect(ci.contains("gate:"), "ci.yml needs the aggregate 'gate' job that branch protection requires")
-        #expect(ci.contains("needs: [lint, kit, app, dsp, release, ui-ios, ui-mac]"), "the gate must wait for every job")
+        #expect(ci.contains("needs: [lint, kit, app, dsp, release, ui-ios, mac]"), "the gate must wait for every job")
         let release = try Repo.text(".github/workflows/release.yml")
         #expect(release.contains("Scripts/release-check.sh --verify build/Build/Products/Release/ChitarraTune.app --signed"),
                 "the release must pass the same checks, on its signed build")
@@ -203,6 +203,48 @@ struct WorkflowPolicyTests {
         }
     }
 
+    /// Every job of `ci.yml` the `gate` waits for, as GitHub names it, with its timeout in seconds.
+    /// A matrix job is named once per entry, with the `matrix` placeholders filled in, which is what
+    /// appears on the run and what `.github/ci-baseline.json` has to match.
+    static func ciJobs() throws -> [(name: String, timeout: Double)] {
+        let program = """
+        import re, sys, yaml
+        doc = yaml.safe_load(open(sys.argv[1]))
+        jobs = doc["jobs"]
+        needed = set(jobs["gate"].get("needs", [])) | {"gate"}
+        for key, job in jobs.items():
+            if key not in needed:
+                continue
+            timeout = float(job["timeout-minutes"]) * 60
+            template = job.get("name", key)
+            include = (job.get("strategy", {}).get("matrix", {}) or {}).get("include")
+            if not include:
+                print(f"{template}\\t{timeout}")
+                continue
+            for entry in include:
+                name = re.sub(r"\\$\\{\\{\\s*matrix\\.(\\w+)\\s*\\}\\}",
+                              lambda m: str(entry.get(m.group(1), "")), template)
+                print(f"{name}\\t{timeout}")
+        """
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
+        process.arguments = ["-c", program, Repo.url(".github/workflows/ci.yml").path]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        try process.run()
+        let output = String(bytes: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        process.waitUntilExit()
+        try #require(process.terminationStatus == 0, "python3 with PyYAML is needed to read the workflow")
+        let rows = output.split(separator: "\n").compactMap { line -> (String, Double)? in
+            let parts = line.split(separator: "\t")
+            guard parts.count == 2, let seconds = Double(parts[1]) else { return nil }
+            return (String(parts[0]), seconds)
+        }
+        try #require(rows.count >= 7, "only \(rows.count) jobs were read out of ci.yml")
+        return rows
+    }
+
     /// ADR 0020. The run that makes the gate slower is the run that has to say so — this repository
     /// went three pushes before noticing that parallel UI testing had cost iPhone 82 seconds and
     /// broken iPad, because the durations lived only in the API, one run at a time.
@@ -225,11 +267,15 @@ struct WorkflowPolicyTests {
             let value = try #require(seconds as? Double, "\(job) has no number")
             #expect(value > 0, "\(job) is baselined at \(value)s")
         }
-        // Every job the gate waits for has a baseline. `ui-ios` is a matrix, so its jobs are named
-        // after the devices it runs on, which is what GitHub reports and what the table matches.
-        for job in ["Shell and workflows", "Kit tests and coverage", "DSP accuracy (full matrix)",
-                    "UI · iPhone", "UI · iPad", "UI · Mac", "Gate"] {
-            #expect(jobs[job] != nil, "\(job) has no entry in .github/ci-baseline.json (ADR 0020 rule 3)")
+        // Which jobs exist, and what they are called, is read out of the workflow itself: a list
+        // written here by hand is a list that does not notice a job somebody adds (ADR 0021).
+        for (job, timeout) in try Self.ciJobs() {
+            let budget = try #require(jobs[job] as? Double,
+                                      "\(job) has no entry in .github/ci-baseline.json (ADR 0020 rule 3)")
+            // Jidoka: a hung job stops in minutes instead of burning a runner for half an hour, and
+            // a timeout under twice the expected cost would fail on nothing but a slow morning.
+            #expect(timeout >= 2 * budget, "\(job): a \(timeout)s timeout is tight for a \(budget)s job")
+            #expect(timeout <= max(300, 4 * budget), "\(job): \(timeout)s for a \(budget)s job is not a stop")
         }
     }
 

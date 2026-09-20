@@ -6,7 +6,7 @@ private let maintainerScripts: [URL] = Repo.files(in: "Scripts", extensions: ["s
     .filter { !$0.path.contains("/lib/") }
 
 /// The scripts in `Scripts/` are the maintainer's tools. They are not installed on the PATH, so they
-/// have no manual page: `--help` is it (ADR 0009). These tests check that every one of them answers
+/// have no manual page: `--help` is it (ADR 0021 rule 8). These tests check that every one of them answers
 /// it, with its own header, before it looks at its arguments or touches anything.
 @Suite("Every script explains itself")
 struct ScriptPolicyTests {

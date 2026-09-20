@@ -42,7 +42,7 @@ jobs:
   lint:
     name: Shell and workflows
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -76,11 +76,11 @@ jobs:
         run: shellcheck -x --severity=warning Scripts/*.sh Scripts/lib/*.sh .githooks/pre-push
 
   # The iOS device slice: the only build in this file that nothing else already produces. macOS
-  # Debug comes from `ui-mac`, macOS Release from `release`, the iOS Simulator from `ui-ios`.
+  # Debug comes from `mac`, macOS Release from `release`, the iOS Simulator from `ui-ios`.
   app:
     name: App · iOS Release (arm64e)
     runs-on: xcode-27
-    timeout-minutes: 30
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -115,7 +115,7 @@ jobs:
   kit:
     name: Kit tests and coverage
     runs-on: xcode-27
-    timeout-minutes: 30
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -143,7 +143,7 @@ jobs:
   dsp:
     name: DSP accuracy (full matrix)
     runs-on: xcode-27
-    timeout-minutes: 30
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -164,7 +164,7 @@ jobs:
   release:
     name: Release readiness · macOS (app and disk image)
     runs-on: xcode-27
-    timeout-minutes: 30
+    timeout-minutes: 7
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -203,9 +203,17 @@ jobs:
           # fifteen seconds, so it is gated once — on iPhone — rather than three times.
           - name: iPhone
             family: iPhone
+            prefer: ""
             bundles: ""
+          # The picker took whichever iPad was newest, which is the heaviest one on the image:
+          # iPad Pro 13-inch (M5), 381 s of test bodies against the iPhone's 276 s and about 700 s
+          # of simulator overhead against 278 s. Every iPad is regular/regular in full screen, so a
+          # smaller one exercises the same layout — and a smaller screen is a stricter check for the
+          # clipping the accessibility audit looks for at the largest text size, not a weaker one.
+          # This is a preference and not a model: if none of these is on the image, any iPad does.
           - name: iPad
             family: iPad
+            prefer: "iPad mini,iPad Air 11,iPad Pro 11,iPad Air"
             bundles: "-only-testing:ChitarraTuneUITests"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -218,20 +226,34 @@ jobs:
       - name: Pick a simulator of the family
         env:
           FAMILY: ${{ matrix.family }}
+          PREFER: ${{ matrix.prefer }}
         run: |
           set -euo pipefail
           udid="$(xcrun simctl list devices available -j | python3 -c "
           import json, os, sys
           family = os.environ['FAMILY']
+          prefer = [p for p in os.environ.get('PREFER', '').split(',') if p]
           runtimes = json.load(sys.stdin)['devices']
+          def rank(name):
+              # Lower is better: the first preference that matches, or last place for the rest.
+              for index, wanted in enumerate(prefer):
+                  if name.startswith(wanted):
+                      return index
+              return len(prefer)
           best = ()
           for runtime, devices in runtimes.items():
               if 'SimRuntime.iOS-' not in runtime:
                   continue
               version = [int(p) for p in runtime.rsplit('iOS-', 1)[1].split('-') if p.isdigit()]
               for device in devices:
-                  if device['name'].startswith(family) and (not best or version > best[0]):
-                      best = (version, device['udid'], device['name'])
+                  name = device['name']
+                  if not name.startswith(family):
+                      continue
+                  # The newest runtime first — the deployment target is 27.0, and an older
+                  # runtime cannot install the app at all — and only then the lighter device.
+                  key = ([-v for v in version], rank(name))
+                  if not best or key < best[0]:
+                      best = (key, device['udid'], name)
           if not best:
               sys.exit(f'no available {family} simulator')
           print(best[1], best[2], sep='\t')
@@ -269,6 +291,7 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/dd" \
             $BUNDLES \
             -skip-testing:ChitarraTuneUITests/ChitarraTuneUITests/testLaunchPerformance \
+            -skip-testing:ChitarraTuneUITests/AppStoreScreenshots \
             -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
             CODE_SIGNING_ALLOWED=NO
       # What each test cost, on the run itself. The UI jobs are the longest thing in the gate, so
@@ -288,23 +311,20 @@ jobs:
           path: ${{ runner.temp }}/ui.xcresult
           retention-days: 7
 
-  # The Mac screens, in two halves that are worth different things.
+  # The Mac on every push: the Debug build, which is this repository's macOS compile check, and the
+  # app's own unit tests, which pass. Both block the gate.
   #
-  # The build is the macOS Debug check for the whole repository and it blocks the gate. Running the
-  # tests does not, TEMPORARILY: a macOS 27 minimum means the app cannot launch on the GA macos-26
-  # image, and the only image that runs macOS 27 is the xcode-27 preview, whose virtual GPU has no
-  # shader slice for SwiftUI's renderer ("unable to find air64_v27 slice", RenderBox): the window
-  # never draws and every wait times out. Nothing there is ours to fix.
-  #
-  # `continue-on-error` is written as the literal `true` and not as a matrix expression. It used to
-  # be `${{ matrix.allowFailure == true }}`, which never evaluated true, so the one job documented as
-  # unable to stop the gate was stopping it (run 35514845091). Delete this job's second step — and
-  # the note in docs/RELEASE_READINESS.md — the day a GA macos-27 image exists, and fold the Mac
-  # screens back into a blocking run.
-  ui-mac:
-    name: UI · Mac
+  # The Mac *screens* are not here. They cannot pass on any image GitHub offers — a macOS 27 minimum
+  # means the app will not launch on the GA macos-26 image, and the xcode-27 preview's virtual GPU
+  # has no shader slice for SwiftUI's renderer ("unable to find air64_v27 slice", RenderBox), so the
+  # window never draws and every wait times out — and a check that cannot fail the gate must not run
+  # on every push (ADR 0021 rule 4). They run weekly in mac-screens.yml. The evidence that they were
+  # failing all along, while this job reported success, is that the artifact uploaded only on failure
+  # was there on every run: 78 MB, 78 MB, 139 MB.
+  mac:
+    name: Mac · build and unit tests
     runs-on: xcode-27
-    timeout-minutes: 45
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -321,9 +341,7 @@ jobs:
             -destination 'platform=macOS' \
             -derivedDataPath "$RUNNER_TEMP/dd" \
             CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
-      - name: UI tests on Mac (cannot stop the gate; see the note above)
-        id: mac-tests
-        continue-on-error: true
+      - name: The app's own unit tests
         run: |
           set -euo pipefail
           xcodebuild test-without-building \
@@ -331,22 +349,21 @@ jobs:
             -scheme ChitarraTune \
             -destination 'platform=macOS' \
             -derivedDataPath "$RUNNER_TEMP/dd" \
-            -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
+            -only-testing:ChitarraTuneTests \
+            -resultBundlePath "$RUNNER_TEMP/unit.xcresult" \
             CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
-      # Reporting must not do what the tests themselves are not allowed to do: stop the gate.
       - name: What each test cost
         if: always()
-        continue-on-error: true
         run: |
           set -euo pipefail
-          [ -d "$RUNNER_TEMP/ui.xcresult" ] || { echo "no result bundle: the tests did not run"; exit 0; }
-          Scripts/test-timings.sh "$RUNNER_TEMP/ui.xcresult" --all
+          [ -d "$RUNNER_TEMP/unit.xcresult" ] || { echo "no result bundle: the tests did not run"; exit 0; }
+          Scripts/test-timings.sh "$RUNNER_TEMP/unit.xcresult" --all
       - name: Keep the result bundle when a test fails
-        if: steps.mac-tests.outcome == 'failure'
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ui-Mac
-          path: ${{ runner.temp }}/ui.xcresult
+          name: mac-unit
+          path: ${{ runner.temp }}/unit.xcresult
           retention-days: 7
 
   # One check that stands for all of the above, so the result of the whole run is a single line on
@@ -354,7 +371,7 @@ jobs:
   gate:
     name: Gate
     if: always()
-    needs: [lint, kit, app, dsp, release, ui-ios, ui-mac]
+    needs: [lint, kit, app, dsp, release, ui-ios, mac]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

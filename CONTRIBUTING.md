@@ -83,7 +83,7 @@ ChitarraTune is a measuring instrument, so what it reads is protected separately
 
 ## Sending a change
 
-Maintainers push to `main` through the gate. Everyone else opens a pull request from a fork; it passes the same gate before it is merged ([ADR 0009](docs/adr/0009-quality-gate-and-change-process.md)).
+Maintainers push to `main` through the gate. Everyone else opens a pull request from a fork; it passes the same gate before it is merged ([ADR 0021](docs/adr/0021-the-gate-and-the-change-process.md)).
 
 - Run `Scripts/verify.sh` first.
 - Add or update tests for what you changed. `TunerCore` tests use generated signals, so no microphone is needed.

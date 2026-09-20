@@ -1,0 +1,75 @@
+name: Mac screens
+
+# The Mac interface end to end, with Xcode's accessibility audit, in demo mode.
+#
+# This is not part of the Gate and does not run on a push, because today it cannot pass: a macOS 27
+# minimum means the app will not launch on GitHub's generally available `macos-26` image, and the
+# only image running macOS 27 is the `xcode-27` preview, whose virtual GPU has no shader slice for
+# SwiftUI's renderer ("unable to find air64_v27 slice", RenderBox), so the window never draws and
+# every wait times out. It used to run on every push behind `continue-on-error`, which cost 308
+# seconds and 78 MB of artifacts each time to produce a red result nothing was allowed to act on
+# (ADR 0021 rule 4).
+#
+# So it runs once a week instead, and the run itself is the notification: red means the Mac screens
+# are still unverified, green means they can be verified again — and on that day this file goes
+# away, the job returns to ci.yml behind the Gate, and section B6 of docs/RELEASE_READINESS.md is
+# deleted with it.
+on:
+  schedule:
+    - cron: "23 5 * * 2" # Tuesday, off the hour: shared runners are busiest on it.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mac-screens
+  cancel-in-progress: true
+
+jobs:
+  screens:
+    name: Mac screens and accessibility audit
+    # Runner image: see the note at the top of .github/workflows/ci.yml.
+    runs-on: xcode-27
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: xcodebuild -version
+      # The macOS test runner must be signed; an ad-hoc signature is enough on the runner.
+      - name: Build the Mac app and its tests (Debug)
+        run: |
+          set -euo pipefail
+          xcodebuild build-for-testing \
+            -project ChitarraTune.xcodeproj \
+            -scheme ChitarraTune \
+            -destination 'platform=macOS' \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
+            CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+      - name: The Mac screens
+        run: |
+          set -euo pipefail
+          xcodebuild test-without-building \
+            -project ChitarraTune.xcodeproj \
+            -scheme ChitarraTune \
+            -destination 'platform=macOS' \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
+            -only-testing:ChitarraTuneUITests \
+            -skip-testing:ChitarraTuneUITests/ChitarraTuneUITests/testLaunchPerformance \
+            -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
+            CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+      - name: What each test cost
+        if: always()
+        run: |
+          set -euo pipefail
+          [ -d "$RUNNER_TEMP/ui.xcresult" ] || { echo "no result bundle: the tests did not run"; exit 0; }
+          Scripts/test-timings.sh "$RUNNER_TEMP/ui.xcresult" --all
+      - name: Keep the result bundle when a test fails
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: mac-screens
+          path: ${{ runner.temp }}/ui.xcresult
+          retention-days: 14
