@@ -12,6 +12,10 @@
 #
 # A notarytool profile is created once with:
 #   xcrun notarytool store-credentials PROFILE --apple-id you@example.com --team-id TEAMID
+# The derived data (about 1 GB) is deleted when every check passes, and kept when one fails so
+# it can be examined. KEEP_BUILD=1 keeps it either way, which is what building the disk image
+# from it needs.
+#
 set -euo pipefail
 source "$(dirname "$0")/lib/help.sh"
 
@@ -192,4 +196,7 @@ if [ "$FAILURES" -gt 0 ]; then
   printf '\033[1;31m✗ %d check(s) failed\033[0m\n' "$FAILURES"
   exit 1
 fi
+# A gigabyte of derived data, kept only so a failed run can be examined. Nothing failed, so it goes
+# (ADR 0016 rule 2); KEEP_BUILD=1 keeps it anyway.
+if [ -z "$VERIFY" ] && [ "${KEEP_BUILD:-0}" != "1" ] && [ -n "${BUILD:-}" ]; then rm -rf "$BUILD"; fi
 printf '\033[1;32m✓ release-ready%s\033[0m\n' "$([ -n "$PROFILE" ] && echo ", notarized" || echo "")"

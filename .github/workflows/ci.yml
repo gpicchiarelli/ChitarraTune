@@ -144,6 +144,9 @@ jobs:
       - name: Release build and notarization checks
         env:
           SCRATCH: ${{ runner.temp }}
+          # The next step builds the disk image from this app, so the build outlives the check;
+          # the runner is thrown away a minute later (ADR 0016 rule 2).
+          KEEP_BUILD: "1"
         run: Scripts/release-check.sh
       - name: Disk image, built and verified as the release does
         env:

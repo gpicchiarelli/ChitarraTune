@@ -6,14 +6,17 @@
 # Core Audio devices, so what it executes depends on the machine. See the README in that folder.
 #
 # Usage: Scripts/coverage-gate.sh [extra `swift test` arguments]
-#        SCRATCH=/some/dir Scripts/coverage-gate.sh    (build somewhere other than .build)
+#        SCRATCH=/some/dir Scripts/coverage-gate.sh    (build somewhere other than the cache)
+#        KEEP_BUILD=1 Scripts/coverage-gate.sh       keep the build tree after a passing run
 set -euo pipefail
 source "$(dirname "$0")/lib/help.sh"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PACKAGE="$ROOT/Packages/ChitarraTuneKit"
 THRESHOLDS="$ROOT/Scripts/coverage-thresholds.json"
-BUILD="${SCRATCH:-$PACKAGE/.build}"
+# Never inside the working tree: iCloud stamps anything under ~/Documents with extended
+# attributes that break code signing, and a second copy of the build belongs to nobody (ADR 0016).
+BUILD="${SCRATCH:-$HOME/Library/Caches/ChitarraTune/kit-build}"
 
 swift test --package-path "$PACKAGE" --scratch-path "$BUILD" --enable-code-coverage "$@"
 
@@ -85,3 +88,7 @@ if failed:
     sys.exit(1)
 print("\nCoverage gate passed.")
 PY
+
+# The numbers above are the artifact; the build tree that produced them is not (ADR 0016 rule 2).
+# A failing gate exits before this line, with its tree intact.
+[ "${KEEP_BUILD:-0}" = "1" ] || rm -rf "$BUILD"

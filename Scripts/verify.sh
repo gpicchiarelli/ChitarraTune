@@ -49,9 +49,21 @@ fi
 
 if $RELEASE; then
   step "Mac app as a release (notarization and App Review checks)"
-  Scripts/release-check.sh
+  # The disk image is built from this app, so the derived data has to outlive the check…
+  KEEP_BUILD=1 Scripts/release-check.sh
   step "Disk image (Apple's layout, ad hoc)"
   Scripts/make-dmg.sh
+  # …and not a moment longer: a gigabyte that nothing reads again (ADR 0016 rule 2).
+  rm -rf "$SCRATCH/release-check"
+fi
+
+# Everything passed, so the build tree has nothing left to say: it goes (ADR 0016 rule 2). A failed
+# run never reaches this line and keeps its tree, which is when reading it is worth something.
+# KEEP_BUILD=1 keeps it anyway, at the price of the next run starting cold.
+if [ "${KEEP_BUILD:-0}" = "1" ]; then
+  printf '\n  build kept in %s\n' "$SCRATCH"
+else
+  rm -rf "$SCRATCH"
 fi
 
 printf '\n\033[1;32m✓ all checks passed\033[0m\n'

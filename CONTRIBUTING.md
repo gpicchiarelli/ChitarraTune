@@ -42,6 +42,8 @@ git config core.hooksPath .githooks
 
 Every script says what it does and how to run it: `Scripts/<name>.sh --help`.
 
+Nothing is built inside the working tree: iCloud stamps anything under `~/Documents` with extended attributes and code signing fails on them, so every build goes to `~/Library/Caches/ChitarraTune/`, and a build you run by hand belongs there too, under `dd-<purpose>` ([ADR 0016](docs/adr/0016-build-artifacts-and-disk.md)). `Scripts/clean-caches.sh` empties it: by default whatever has not been touched for a day, `--now` for today's as well, `--dry-run` to look first. It refuses to run while a build is in flight and never touches a git worktree.
+
 Put behavior in `TunerCore` or `TunerFeature`, where synthetic signals and test doubles can exercise it, and keep `App/` thin.
 
 ## The quality gate

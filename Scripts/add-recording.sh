@@ -81,3 +81,6 @@ PY
 echo "Added $DEST ($(du -h "$DEST" | cut -f1 | tr -d ' ')). Running the corpus tests:"
 swift test --package-path "$ROOT/Packages/ChitarraTuneKit" \
   --scratch-path "${SCRATCH:-$HOME/Library/Caches/ChitarraTune/kit-build}" --filter RecordingCorpusTests
+
+# The recording and its manifest entry are the artifact; the build tree the tests needed is not.
+[ "${KEEP_BUILD:-0}" = "1" ] || rm -rf "${SCRATCH:-$HOME/Library/Caches/ChitarraTune/kit-build}"

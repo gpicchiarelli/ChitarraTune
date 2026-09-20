@@ -4,6 +4,7 @@
 #
 #   Scripts/screenshots.sh                 every device and language
 #   DEVICES="iPhone" LANGUAGES="it" Scripts/screenshots.sh
+#   KEEP_BUILD=1 Scripts/screenshots.sh    keep the derived data and result bundles for debugging
 #
 # Builds outside the repository (iCloud extended attributes under ~/Documents break code signing).
 # Leaves each simulator in the language of the last screenshots taken on it, and with Apple's
@@ -89,4 +90,13 @@ PY
 for device in $DEVICES; do
   for language in $LANGUAGES; do run "$device" "$language"; done
 done
+
+# The PNGs are the product; the derived data, the result bundles and the exported attachments are
+# scaffolding, and they are two orders of magnitude bigger (1.3 GB against 33 MB). They go as soon
+# as the images are out. KEEP_BUILD=1 keeps them when a run has to be debugged (ADR 0016 rule 2).
+if [ "${KEEP_BUILD:-0}" = "1" ]; then
+  echo "Working files kept in $WORK"
+else
+  rm -rf "$WORK"/DerivedData-* "$WORK"/*.xcresult "$WORK"/attachments-*
+fi
 echo "Screenshots in $OUT"

@@ -51,6 +51,77 @@ struct ScriptPolicyTests {
         #expect(result.output.contains(name), "\(name) \(flag) does not say how to run the script")
     }
 
+    /// ADR 0016: build output lives in one place outside the working tree, and the caller can move
+    /// that place. A script that hard-codes a path inside the repository fills it with artifacts
+    /// that iCloud then stamps with extended attributes, and code signing fails on them.
+    @Test("Build output goes under the cache root, and the caller can move it", arguments: maintainerScripts)
+    func buildOutput(script: URL) throws {
+        let name = Repo.relativePath(script)
+        let text = try Repo.text(name)
+        for line in text.components(separatedBy: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.hasPrefix("#"), trimmed.contains("Library/Caches") else { continue }
+            #expect(trimmed.contains("$HOME/Library/Caches/ChitarraTune"), "\(name): \(trimmed)")
+            // `${SCRATCH:-…}` or `${WORK:-…}`: the cache is the default, never the only choice.
+            #expect(trimmed.contains(":-"), "\(name): the cache path must be overridable")
+        }
+        for line in text.components(separatedBy: "\n") where line.contains("-derivedDataPath") {
+            #expect(!line.contains("$ROOT/"), "\(name): derived data must not land in the working tree")
+        }
+        // Regression: `coverage-gate.sh` defaulted to `$PACKAGE/.build`, a second copy of the whole
+        // build inside ~/Documents, where iCloud stamps it with the attributes that break signing.
+        for line in text.components(separatedBy: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.hasPrefix("#"), trimmed.contains("BUILD=") || trimmed.contains("WORK=")
+                    || trimmed.contains("SCRATCH=") || trimmed.contains("--scratch-path")
+            else { continue }
+            for inside in ["$ROOT/", "$PACKAGE/", "./"] {
+                #expect(!trimmed.contains(inside), "\(name): builds in the working tree: \(trimmed)")
+            }
+        }
+    }
+
+    /// ADR 0016 rule 2: a run that succeeds leaves its artifact and nothing else. A script that
+    /// builds must therefore end by removing what it built, and must take `KEEP_BUILD=1` for the
+    /// runs somebody needs to look inside.
+    @Test("A script that builds takes its build tree away again", arguments: maintainerScripts)
+    func leavesNothingBehind(script: URL) throws {
+        let name = Repo.relativePath(script)
+        let text = try Repo.text(name)
+        // The cleaner names xcodebuild only to refuse to run while one is going.
+        guard name != "Scripts/clean-caches.sh" else { return }
+        let builds = ["swift build", "swift test", "xcodebuild ", "-derivedDataPath", "--scratch-path"]
+        guard builds.contains(where: text.contains) else { return }
+        #expect(text.contains("KEEP_BUILD"), "\(name) builds but offers no KEEP_BUILD escape hatch")
+        #expect(text.contains("rm -rf"), "\(name) builds but never removes what it built")
+    }
+
+    /// The one command that empties the cache. It is destructive by design, so what it refuses to do
+    /// matters as much as what it does.
+    @Test("The cleanup script exists, previews without deleting, and guards the root")
+    func cleanup() throws {
+        #expect(Repo.exists("Scripts/clean-caches.sh"))
+        let text = try Repo.text("Scripts/clean-caches.sh")
+        #expect(text.contains("*/ChitarraTune) ;;"), "it must refuse a root that is not this project's cache")
+        #expect(text.contains("$entry/.git"), "it must never delete a git worktree")
+        #expect(text.contains("pgrep"), "it must refuse to run while a build is in flight")
+
+        // A dry run against a cache that is not there says so, exits 0 and creates nothing.
+        let absent = Repo.url("Packages/ChitarraTuneKit/.build/absent-cache/ChitarraTune").path
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/bash")
+        process.arguments = [Repo.url("Scripts/clean-caches.sh").path, "--dry-run"]
+        process.environment = ProcessInfo.processInfo.environment.merging(["CACHE": absent]) { _, new in new }
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        try process.run()
+        let output = String(bytes: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        process.waitUntilExit()
+        #expect(process.terminationStatus == 0, "\(output)")
+        #expect(!FileManager.default.fileExists(atPath: absent), "a dry run must create nothing")
+    }
+
     /// Regression: `--help` used to be unknown, so a script with required arguments answered it with
     /// its usage error. Help comes first, whatever the script needs.
     @Test("A script that needs arguments still answers --help")
