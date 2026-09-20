@@ -203,6 +203,48 @@ struct WorkflowPolicyTests {
         }
     }
 
+    /// ADR 0020. The run that makes the gate slower is the run that has to say so — this repository
+    /// went three pushes before noticing that parallel UI testing had cost iPhone 82 seconds and
+    /// broken iPad, because the durations lived only in the API, one run at a time.
+    @Test("The gate reports what it cost, against a baseline, and cannot fail a run for it")
+    func gateReportsItsCost() throws {
+        let ci = try Repo.text(".github/workflows/ci.yml")
+        #expect(ci.contains(".github/ci-baseline.json"), "the gate must compare against the baseline (ADR 0020 rule 1)")
+        #expect(ci.contains("actions: read"), "reading the run's own durations needs that one permission")
+        #expect(ci.contains("::warning::"), "a timing must warn, never fail (ADR 0020 rule 2)")
+        #expect(!ci.contains("::error::A job took"), "a timing must never be a verdict")
+
+        let baseline = try #require(
+            JSONSerialization.jsonObject(with: Data(contentsOf: Repo.url(".github/ci-baseline.json"))) as? [String: Any],
+            "the baseline must be an object")
+        let tolerance = try #require(baseline["tolerance"] as? Double)
+        #expect(tolerance > 1, "a tolerance of \(tolerance) would warn on every run")
+        let jobs = try #require(baseline["jobs"] as? [String: Any], "the baseline must name jobs")
+        #expect(!jobs.isEmpty)
+        for (job, seconds) in jobs {
+            let value = try #require(seconds as? Double, "\(job) has no number")
+            #expect(value > 0, "\(job) is baselined at \(value)s")
+        }
+        // Every job the gate waits for has a baseline. `ui-ios` is a matrix, so its jobs are named
+        // after the devices it runs on, which is what GitHub reports and what the table matches.
+        for job in ["Shell and workflows", "Kit tests and coverage", "DSP accuracy (full matrix)",
+                    "UI · iPhone", "UI · iPad", "UI · Mac", "Gate"] {
+            #expect(jobs[job] != nil, "\(job) has no entry in .github/ci-baseline.json (ADR 0020 rule 3)")
+        }
+    }
+
+    /// ADR 0020 rule 4: the result bundle knows what each test cost, and it used to be thrown away
+    /// on every green run. `UI · iPad` spends about 68 seconds per test; where that goes is a
+    /// question the run should answer by itself.
+    @Test("Every job that runs tests reports what each test cost")
+    func testsReportTheirCost() throws {
+        let ci = try Repo.text(".github/workflows/ci.yml")
+        let reports = ci.components(separatedBy: "Scripts/test-timings.sh").count - 1
+        #expect(reports >= 2, "both UI jobs must report per-test timings, passing or failing")
+        #expect(ci.components(separatedBy: "-resultBundlePath").count - 1 >= 2, "…which needs a result bundle")
+        #expect(Repo.exists("Scripts/test-timings.sh"))
+    }
+
     /// ADR 0019: the shell that builds, signs and publishes the product is read by something that
     /// does not get tired. Both linters are pinned and checksum-verified, because a linter runs with
     /// the job's full permissions — it is supply chain like every action pinned to a commit.

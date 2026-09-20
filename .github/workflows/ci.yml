@@ -198,10 +198,15 @@ jobs:
           # A family, never a model: Apple renames them every year (`iPhone 17 Pro` exists on the
           # Xcode 26 image and does not on the Xcode 27 one), and a job that names one breaks on an
           # image update for no reason. The step below takes whichever device of the family is there.
+          # ChitarraTuneTests is the app's own unit-test bundle. It is the same code, the same OS
+          # and the same architecture on both devices, and one of its tests reads the log store for
+          # fifteen seconds, so it is gated once — on iPhone — rather than three times.
           - name: iPhone
             family: iPhone
+            bundles: ""
           - name: iPad
             family: iPad
+            bundles: "-only-testing:ChitarraTuneUITests"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -250,16 +255,27 @@ jobs:
       # booted for nothing. Splitting the class is what would have to come first — until somebody
       # does that and measures it, this stays serial.
       - name: UI tests
+        env:
+          BUNDLES: ${{ matrix.bundles }}
         run: |
           set -euo pipefail
+          # BUNDLES is a fixed -only-testing flag from the matrix, or empty. The value is ours and
+          # not an input, and it has to become argv words, so the splitting is intended.
+          # shellcheck disable=SC2086
           xcodebuild test-without-building \
             -project ChitarraTune.xcodeproj \
             -scheme ChitarraTune \
             -destination "$DESTINATION" \
             -derivedDataPath "$RUNNER_TEMP/dd" \
+            $BUNDLES \
             -skip-testing:ChitarraTuneUITests/ChitarraTuneUITests/testLaunchPerformance \
             -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
             CODE_SIGNING_ALLOWED=NO
+      # What each test cost, on the run itself. The UI jobs are the longest thing in the gate, so
+      # this is where a regression has to be visible without anybody going to look for it (ADR 0020).
+      - name: What each test cost
+        if: always()
+        run: Scripts/test-timings.sh "$RUNNER_TEMP/ui.xcresult" --all
       - name: Keep the result bundle when a test fails
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -313,6 +329,9 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/dd" \
             -resultBundlePath "$RUNNER_TEMP/ui.xcresult" \
             CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+      - name: What each test cost
+        if: always()
+        run: Scripts/test-timings.sh "$RUNNER_TEMP/ui.xcresult" --all
       - name: Keep the result bundle when a test fails
         if: steps.mac-tests.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -329,7 +348,14 @@ jobs:
     needs: [lint, kit, app, dsp, release, ui-ios, ui-mac]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    permissions:
+      contents: read
+      # Reading this run's own job durations, and nothing else.
+      actions: read
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       - name: Every required job must have succeeded
         env:
           RESULTS: ${{ join(needs.*.result, ' ') }}
@@ -341,3 +367,51 @@ jobs:
               exit 1
             fi
           done
+      # What the gate cost, beside what it is expected to cost. A run that makes the gate slower
+      # says so on itself; nobody has to go and reconstruct it afterwards (ADR 0020). It warns and
+      # never fails: these runners are too variable for a timing to be a verdict.
+      - name: What the gate cost
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs" \
+            --jq '.jobs[] | select(.completed_at != null) | [.name, .conclusion, .started_at, .completed_at] | @tsv' \
+            > jobs.tsv
+          python3 - jobs.tsv .github/ci-baseline.json <<'PY'
+          import datetime, json, os, sys
+
+          def when(text):
+              return datetime.datetime.fromisoformat(text.replace("Z", "+00:00"))
+
+          baseline = json.load(open(sys.argv[2]))
+          expected, tolerance = baseline["jobs"], baseline["tolerance"]
+
+          rows, total, warnings = [], 0.0, []
+          for line in open(sys.argv[1]):
+              name, conclusion, started, completed = line.rstrip("\n").split("\t")
+              seconds = (when(completed) - when(started)).total_seconds()
+              total += seconds
+              budget = expected.get(name)
+              if budget is None:
+                  mark, note = "❓", "unbaselined"
+                  warnings.append(f"{name} has no entry in .github/ci-baseline.json ({seconds:.0f}s)")
+              elif seconds > budget * tolerance:
+                  mark, note = "⚠️", f"{seconds / budget:.2f}× of {budget}s"
+                  warnings.append(f"{name} took {seconds:.0f}s, {seconds / budget:.2f}× its {budget}s baseline")
+              else:
+                  mark, note = "✅", f"{budget}s"
+              rows.append(f"| {name} | {seconds:.0f} | {note} | {conclusion} | {mark} |")
+
+          report = "\n".join(
+              [f"Runner time for this run: **{total / 60:.1f} minutes** across {len(rows)} jobs.", "",
+               "| Job | Seconds | Baseline | Result | |", "| --- | ---: | ---: | --- | :---: |"] + rows)
+          print(report)
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a") as handle:
+                  handle.write("### What the gate cost\n" + report + "\n")
+          for warning in warnings:
+              print(f"::warning::{warning}")
+          PY

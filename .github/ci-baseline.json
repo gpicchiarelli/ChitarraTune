@@ -1,0 +1,27 @@
+{
+  "comment": [
+    "What each CI job is expected to cost, in seconds. The Gate prints the run's real durations",
+    "beside these numbers and warns when one is over `tolerance` times its baseline (ADR 0020).",
+    "",
+    "These are observed medians with a little headroom, not budgets and not promises: the xcode-27",
+    "preview image is variable, and the same job has been seen at 57 s and at 158 s with no change",
+    "to it at all. The point is that a change to the shape of the gate shows up on the run that",
+    "makes it, instead of being reconstructed by hand three pushes later — which is exactly what",
+    "happened when parallel UI testing took iPhone from 854 s to 936 s and broke iPad.",
+    "",
+    "A job with no entry here is reported as unbaselined and warns. When you change what a job does,",
+    "change its number here in the same commit and say in the message what you measured."
+  ],
+  "tolerance": 1.25,
+  "jobs": {
+    "Shell and workflows": 20,
+    "Kit tests and coverage": 100,
+    "App · iOS Release (arm64e)": 90,
+    "DSP accuracy (full matrix)": 90,
+    "Release readiness · macOS (app and disk image)": 110,
+    "UI · iPhone": 900,
+    "UI · iPad": 1250,
+    "UI · Mac": 400,
+    "Gate": 30
+  }
+}
