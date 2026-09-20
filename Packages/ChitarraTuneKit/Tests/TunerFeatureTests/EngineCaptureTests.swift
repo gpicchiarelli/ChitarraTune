@@ -87,9 +87,21 @@ struct EngineCaptureTests {
         #expect(chunks.contains { $0.samples.contains { abs($0) > 0.2 } }, "the sine must come through")
         let times = chunks.compactMap(\.sampleTime)
         #expect(times.count == chunks.count, "every chunk carries its sample time")
+        // This failed once on a loaded CI runner (run 35528246927) and has never been reproduced:
+        // rendering far ahead of the collector does not do it — 400 renders against a stream that
+        // keeps the newest 8 chunks still passes, because the collector drains concurrently. So the
+        // gap itself is the evidence that is missing. A gap that is an exact multiple of a chunk
+        // means chunks were dropped between these two; anything else means something other than a
+        // drop, and the numbers below are what tells them apart.
         for (previous, next) in zip(chunks, chunks.dropFirst()) {
             if let start = previous.sampleTime, let following = next.sampleTime {
-                #expect(following == start + Int64(previous.samples.count), "chunks must be contiguous")
+                let gap = following - start
+                let expected = Int64(previous.samples.count)
+                #expect(
+                    following == start + expected,
+                    """
+                    chunks must be contiguous: \(start) + \(expected) ≠ \(following)                     (gap \(gap), \(Double(gap) / Double(expected)) chunks;                     sample times \(chunks.map(\.sampleTime)), sizes \(chunks.map(\.samples.count)))
+                    """)
             }
         }
         await capture.stop()
