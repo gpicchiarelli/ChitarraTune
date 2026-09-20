@@ -31,6 +31,50 @@ concurrency:
 # it is nobody else's to poison — see ADR 0017 and Scripts/verify.sh.
 
 jobs:
+  # The scripts and the workflows are the development process, and they used to be the only code
+  # here that nothing checked: `ci.yml` even carried two `# shellcheck disable=` directives for a
+  # linter that never ran. actionlint would have caught the `continue-on-error` expression that made
+  # the Mac job stop the gate it was documented as unable to stop (ADR 0019).
+  #
+  # Both tools are downloaded at a pinned version and refused unless their SHA-256 matches, the way
+  # every action here is pinned to a commit: a linter runs with the runner's full permissions, so it
+  # is supply chain like any other (ADR 0010). Linux, so it is minutes of nobody's machine.
+  lint:
+    name: Shell and workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Pinned linters, checksum-verified
+        env:
+          ACTIONLINT_SHA: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+          SHELLCHECK_SHA: 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/linters"
+          cd "$RUNNER_TEMP/linters"
+          curl -fsSL -o actionlint.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          curl -fsSL -o shellcheck.tar.xz \
+            https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz
+          echo "$ACTIONLINT_SHA  actionlint.tar.gz" | sha256sum --check --strict
+          echo "$SHELLCHECK_SHA  shellcheck.tar.xz" | sha256sum --check --strict
+          tar xzf actionlint.tar.gz actionlint
+          tar xJf shellcheck.tar.xz --strip-components=1 shellcheck-v0.11.0/shellcheck
+          echo "$RUNNER_TEMP/linters" >> "$GITHUB_PATH"
+      - name: Versions
+        run: |
+          actionlint --version | head -n 1
+          shellcheck --version | sed -n '2p'
+      # actionlint runs shellcheck over every `run:` block itself, so the two steps together cover
+      # all of the shell in this repository.
+      - name: Workflows
+        run: actionlint -color
+      - name: Scripts
+        run: shellcheck -x --severity=warning Scripts/*.sh Scripts/lib/*.sh .githooks/pre-push
+
   # The iOS device slice: the only build in this file that nothing else already produces. macOS
   # Debug comes from `ui-mac`, macOS Release from `release`, the iOS Simulator from `ui-ios`.
   app:
@@ -279,7 +323,7 @@ jobs:
   gate:
     name: Gate
     if: always()
-    needs: [kit, app, dsp, release, ui-ios, ui-mac]
+    needs: [lint, kit, app, dsp, release, ui-ios, ui-mac]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

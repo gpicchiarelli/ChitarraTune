@@ -27,6 +27,12 @@ Then enable the pre-push hook once:
 git config core.hooksPath .githooks
 ```
 
+The hook also lints the shell and the workflows ([ADR 0019](docs/adr/0019-the-process-is-code-too.md)). It works without the two linters and says so, but then it is weaker than the CI job it stands for, so fetch the pinned versions once — the same ones CI verifies by checksum:
+
+```bash
+Scripts/fetch-tools.sh
+```
+
 ## Where things live
 
 | Path | What it is |

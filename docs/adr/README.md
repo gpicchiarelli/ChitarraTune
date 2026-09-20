@@ -24,3 +24,4 @@ Writing a new one: copy [0000-template.md](0000-template.md) to the next free nu
 | [0016](0016-build-artifacts-and-disk.md) | Build artifacts and disk | Superseded by ADR 0017 |
 | [0017](0017-build-artifacts-disk-and-reuse.md) | Build artifacts, disk and reuse | Accepted |
 | [0018](0018-the-tests-run-optimised.md) | The tests run optimised | Accepted |
+| [0019](0019-the-process-is-code-too.md) | The process is code too | Accepted |

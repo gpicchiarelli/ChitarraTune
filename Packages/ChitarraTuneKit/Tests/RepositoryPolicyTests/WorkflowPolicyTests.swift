@@ -29,7 +29,8 @@ struct WorkflowPolicyTests {
     /// nothing in this repository noticed until after the push.
     @Test("Every workflow and issue form is syntactically valid YAML")
     func validYAML() {
-        let files = (workflows + Repo.files(in: ".github/ISSUE_TEMPLATE", extensions: ["yml"]) + [Repo.url(".github/dependabot.yml")]).map(\.path)
+        let files = (workflows + Repo.files(in: ".github/ISSUE_TEMPLATE", extensions: ["yml"])
+            + [Repo.url(".github/dependabot.yml"), Repo.url(".github/actionlint.yaml")]).map(\.path)
         #expect(files.count >= 8)
         let parsers: [(tool: String, arguments: [String])] = [
             ("/usr/bin/ruby", ["-ryaml", "-e", "ARGV.each { |f| YAML.load_file(f) }"]),
@@ -138,7 +139,7 @@ struct WorkflowPolicyTests {
         }
         #expect(ci.contains("run: Scripts/release-check.sh"), "every push must build and check the Mac app as a release (ADR 0013)")
         #expect(ci.contains("gate:"), "ci.yml needs the aggregate 'gate' job that branch protection requires")
-        #expect(ci.contains("needs: [kit, app, dsp, release, ui-ios, ui-mac]"), "the gate must wait for every job")
+        #expect(ci.contains("needs: [lint, kit, app, dsp, release, ui-ios, ui-mac]"), "the gate must wait for every job")
         let release = try Repo.text(".github/workflows/release.yml")
         #expect(release.contains("Scripts/release-check.sh --verify build/Build/Products/Release/ChitarraTune.app --signed"),
                 "the release must pass the same checks, on its signed build")
@@ -198,6 +199,43 @@ struct WorkflowPolicyTests {
                 let value = line.split(separator: ":", maxSplits: 1).last.map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
                 #expect(value == "true" || value == "false",
                         "\(file.lastPathComponent): continue-on-error must be written out, not computed: '\(value)'")
+            }
+        }
+    }
+
+    /// ADR 0019: the shell that builds, signs and publishes the product is read by something that
+    /// does not get tired. Both linters are pinned and checksum-verified, because a linter runs with
+    /// the job's full permissions — it is supply chain like every action pinned to a commit.
+    @Test("The gate lints the shell and the workflows, with linters it has verified")
+    func shellAndWorkflowsAreLinted() throws {
+        let ci = try Repo.text(".github/workflows/ci.yml")
+        #expect(ci.contains("  lint:"), "ci.yml needs the lint job (ADR 0019 rule 1)")
+        #expect(ci.contains("run: actionlint") && ci.contains("shellcheck -x --severity=warning"),
+                "both linters must run, at the agreed severity (ADR 0019 rules 1 and 2)")
+        #expect(ci.components(separatedBy: "sha256sum --check --strict").count - 1 >= 1,
+                "a downloaded linter must be refused unless its checksum matches (ADR 0019 rule 4)")
+        // A regex literal does not interpolate, so this one is built at runtime.
+        for tool in ["ACTIONLINT_SHA", "SHELLCHECK_SHA"] {
+            let recorded = try Regex("\(tool): [0-9a-f]{64}")
+            #expect(ci.firstMatch(of: recorded) != nil, "\(tool) is not recorded as a SHA-256")
+        }
+        #expect(Repo.exists(".github/actionlint.yaml"), "the runner label actionlint does not know is declared, not silenced")
+    }
+
+    /// ADR 0019 rule 3. Two of these sat in `ci.yml` for a linter this project did not run: a comment
+    /// wearing the clothes of a control.
+    @Test("A shellcheck directive names a rule and says why")
+    func justifiedDirectives() throws {
+        for file in workflows {
+            let all = try lines(file)
+            // A directive is a comment line of its own, before the command it covers. Prose that
+            // merely mentions one — as the note above the lint job does — is not a directive.
+            for (number, line) in all.enumerated()
+            where line.trimmingCharacters(in: .whitespaces).hasPrefix("# shellcheck disable=") {
+                #expect(try #/shellcheck disable=SC\d+/#.firstMatch(in: line) != nil,
+                        "\(file.lastPathComponent):\(number + 1): a directive must name the rule it turns off")
+                let reason = all[max(0, number - 2)..<number].contains { $0.trimmingCharacters(in: .whitespaces).hasPrefix("#") }
+                #expect(reason, "\(file.lastPathComponent):\(number + 1): say why the rule does not apply")
             }
         }
     }

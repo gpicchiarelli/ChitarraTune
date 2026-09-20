@@ -115,6 +115,23 @@ struct ScriptPolicyTests {
         #expect(verify.contains("Scripts/clean-caches.sh"), "verify.sh must name the command that empties it")
     }
 
+    /// ADR 0019 rules 1 and 6: the hook is the gate in practice, so it lints the shell too — and
+    /// says so plainly rather than failing when a contributor has not fetched the pinned tools.
+    @Test("The local gate lints the shell and the workflows")
+    func verifyLintsTheProcess() throws {
+        let verify = try Repo.text("Scripts/verify.sh")
+        #expect(verify.contains("shellcheck -x --severity=warning") || verify.contains(#""$SHELLCHECK" -x --severity=warning"#),
+                "Scripts/verify.sh must run shellcheck at the agreed severity")
+        #expect(verify.contains("ACTIONLINT"), "Scripts/verify.sh must run actionlint")
+        // Each linter says, by name, how to get it and that CI runs it anyway — counting a shared
+        // phrase was the first version of this check, and it counted SwiftLint's message too.
+        for linter in ["swiftlint", "shellcheck", "actionlint"] {
+            #expect(verify.contains("\(linter) is not here (Scripts/fetch-tools.sh); CI will run it."),
+                    "a missing \(linter) must be said out loud, not silently skipped (ADR 0019 rule 6)")
+        }
+        #expect(Repo.exists("Scripts/fetch-tools.sh"), "the message must name a script that exists")
+    }
+
     /// ADR 0018: the tests are arithmetic, so the optimisation level is the gate's speed. Debug is
     /// three and a half minutes and release is twenty-five seconds, for line-for-line the same
     /// coverage — and a gate slow enough to be worth skipping is a gate that gets skipped.

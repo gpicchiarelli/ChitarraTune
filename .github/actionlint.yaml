@@ -1,0 +1,13 @@
+# actionlint configuration.
+#
+# `xcode-27` is a real GitHub-hosted runner label — the preview image, and the only one carrying
+# Xcode 27 — but it is not in actionlint's built-in list, which knows only the generally available
+# images. Declaring it here is what stops every macOS job in this repository from being reported as
+# an unknown label. It is not a self-hosted runner; this is the only place actionlint offers to say
+# "this label exists".
+#
+# The day a GA `macos-27` image appears, this entry goes with the `runs-on:` lines it covers. See
+# the note at the top of .github/workflows/ci.yml.
+self-hosted-runner:
+  labels:
+    - xcode-27

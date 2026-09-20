@@ -38,11 +38,32 @@ if command -v swiftlint >/dev/null 2>&1; then
   fi
   swiftlint lint --strict --quiet
 else
-  echo "swiftlint is not installed (brew install swiftlint); CI will run it."
+  echo "swiftlint is not here (Scripts/fetch-tools.sh); CI will run it."
 fi
 
 # The same flags the coverage gate uses, so both share one build tree (ADR 0018). SwiftPM plans a
 # build per set of flags: differ by one and the package is compiled twice for no reason.
+step "Shell and workflows"
+# The pinned copies first, so what passes here passes in CI: same versions, same findings.
+# Scripts/clean-caches.sh leaves pinned tools alone. Neither tool is required to be installed —
+# CI runs both on every push — but without them the hook is weaker than the gate it stands for.
+SHELLCHECK="$CACHE/shellcheck-0.11.0/shellcheck-v0.11.0/shellcheck"
+ACTIONLINT="$CACHE/actionlint-1.7.12/actionlint"
+[ -x "$SHELLCHECK" ] || SHELLCHECK="$(command -v shellcheck 2>/dev/null || true)"
+[ -x "$ACTIONLINT" ] || ACTIONLINT="$(command -v actionlint 2>/dev/null || true)"
+if [ -n "$ACTIONLINT" ] && [ -x "$ACTIONLINT" ]; then
+  # actionlint shells out to shellcheck for every `run:` block, so it wants it on PATH.
+  [ -x "$SHELLCHECK" ] && PATH="$(dirname "$SHELLCHECK"):$PATH"
+  "$ACTIONLINT"
+else
+  echo "actionlint is not here (Scripts/fetch-tools.sh); CI will run it."
+fi
+if [ -n "$SHELLCHECK" ] && [ -x "$SHELLCHECK" ]; then
+  "$SHELLCHECK" -x --severity=warning Scripts/*.sh Scripts/lib/*.sh .githooks/pre-push
+else
+  echo "shellcheck is not here (Scripts/fetch-tools.sh); CI will run it."
+fi
+
 step "Package builds without warnings"
 swift build --package-path Packages/ChitarraTuneKit --scratch-path "$KIT_BUILD" --build-tests \
   -c release -Xswiftc -enable-testing -Xswiftc -warnings-as-errors

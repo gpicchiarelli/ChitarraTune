@@ -79,10 +79,11 @@ trap cleanup EXIT INT TERM
 
 # attach <image> [writable]
 attach() {
-  local image="$1" mode="${2:-readonly}" try
+  local image="$1" mode="${2:-readonly}"
   local flags=(-nobrowse -noverify -noautoopen -mountpoint "$MOUNT")
   [ "$mode" = writable ] || flags+=(-readonly)
-  for try in 1 2 3; do
+  # Three attempts; the counter is never read, so it has no name.
+  for _ in 1 2 3; do
     limited 120 hdiutil attach "$image" "${flags[@]}" >/dev/null 2>&1 \
       && { ATTACHED=true; return 0; }
     sleep 3
@@ -131,10 +132,10 @@ volume_icon() {
   else
     # com.apple.FinderInfo is 32 bytes (64 hex digits): bytes 0-7 are frRect (unused here), bytes
     # 8-9 are frFlags, bytes 10-31 are reserved. kHasCustomIcon is flag bit 0x0400.
-    local flags="0000000000000000" reserved
-    flags+="0400"
+    local finderFlags="0000000000000000" reserved
+    finderFlags+="0400"
     reserved="$(printf '0%.0s' $(seq 1 44))"
-    xattr -wx com.apple.FinderInfo "$flags$reserved" "$folder" 2>/dev/null \
+    xattr -wx com.apple.FinderInfo "$finderFlags$reserved" "$folder" 2>/dev/null \
       || note "the custom-icon flag could not be set"
   fi
   :
@@ -230,7 +231,16 @@ ENTRIES="$(ls "$MOUNT" | sort | tr '\n' ' ')"
   || fail "Applications is not a symlink to /Applications (ditto preserves it, cp does not)"
 check "no .DS_Store (no Finder ever touched this volume)" test ! -e "$MOUNT/.DS_Store"
 if [ -f "$MOUNT/.VolumeIcon.icns" ]; then pass "volume icon present"; else note "no volume icon"; fi
-HIDDEN="$(ls -A "$MOUNT" 2>/dev/null | grep '^\.' | grep -vx -e .VolumeIcon.icns -e .fseventsd -e .Trashes | tr '\n' ' ' || true)"
+# A glob, not `ls` piped into `grep`: this is the check that the shipped image carries nothing it
+# should not, so it must hold for a filename of any shape.
+HIDDEN=""
+for entry in "$MOUNT"/.*; do
+  [ -e "$entry" ] || continue
+  case "$(basename "$entry")" in
+  . | .. | .VolumeIcon.icns | .fseventsd | .Trashes) continue ;;
+  *) HIDDEN="$HIDDEN$(basename "$entry") " ;;
+  esac
+done
 [ -z "$HIDDEN" ] && pass "no unexpected hidden items" || fail "unexpected hidden items: $HIDDEN"
 
 step "The app inside"
