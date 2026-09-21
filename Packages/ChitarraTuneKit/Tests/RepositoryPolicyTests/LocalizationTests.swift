@@ -99,6 +99,40 @@ struct LocalizationTests {
         }
     }
 
+    /// A key nothing looks up is a promise nobody keeps. `intent.error.unavailable` sat translated
+    /// and unreachable while `StartTuningIntent` reported a tuner it had not started, and
+    /// `tuner.status.close` sat translated while the user guide named a status the app never showed;
+    /// three accessibility strings described elements that are deliberately hidden from VoiceOver.
+    @Test("Every string in the catalogs is looked up, by name or by its generated symbol")
+    func noDeadStrings() throws {
+        let sources = ["App", "Shared", "Controls"]
+            .flatMap { Repo.files(in: $0, extensions: ["swift"]) }
+            .compactMap { try? String(contentsOf: $0, encoding: .utf8) }
+            .joined(separator: "\n")
+        let lowered = sources.lowercased()
+        for path in ["App/Resources/Localizable.xcstrings", "Controls/Localizable.xcstrings"] {
+            let strings = try catalog(path).strings
+            #expect(!strings.isEmpty)
+            for key in strings.keys {
+                let symbol = Self.generatedSymbol(for: key)
+                // Xcode extracts the format string of an interpolated `Text` under its own value
+                // ("%@"), which is no identifier and which the interpolation itself looks up.
+                guard symbol.wholeMatch(of: /[A-Za-z][A-Za-z0-9]*/) != nil else { continue }
+                // Case-insensitively: Xcode spells a segment carrying a digit its own way
+                // (`input.a11y` becomes `inputA11Y`).
+                #expect(sources.contains("\"\(key)\"") || lowered.contains(".\(symbol.lowercased())"),
+                        "\(path): nothing uses '\(key)'")
+            }
+        }
+    }
+
+    /// The Swift symbol Xcode generates for a catalog key: `tuner.status.close` → `tunerStatusClose`.
+    static func generatedSymbol(for key: String) -> String {
+        key.split(separator: ".").enumerated()
+            .map { $0.offset == 0 ? String($0.element) : $0.element.prefix(1).uppercased() + $0.element.dropFirst() }
+            .joined()
+    }
+
     @Test("The microphone permission text is translated")
     func permissionText() throws {
         let (_, strings) = try catalog("App/Resources/InfoPlist.xcstrings")

@@ -21,7 +21,17 @@ public struct TuningEngine {
     public static let supportedSampleRates: ClosedRange<Double> = 8_000...384_000
 
     private var sampleRate: Double = 0
-    private var detector: PitchDetector?
+    /// The detector is a reference type — it owns an FFT plan and scratch memory — living inside a
+    /// value type. Two copies of an engine sharing one would be one instrument again, and the test
+    /// that says they are not (`EngineValueSemanticsTests`) would keep passing right up until the day
+    /// the detector kept something between calls. So a copy takes its own: the box is checked for
+    /// uniqueness before each analysis and replaced when it turns out to be shared, which costs one
+    /// FFT plan per copy of the engine and nothing at all per chunk.
+    private final class DetectorBox {
+        let detector: PitchDetector
+        init(_ detector: PitchDetector) { self.detector = detector }
+    }
+    private var detectorBox: DetectorBox?
     /// `true` once building a detector for the current configuration and sample rate has failed, so
     /// it is not retried (together with the string filters) on every chunk.
     private var detectorUnavailable = false
@@ -33,10 +43,20 @@ public struct TuningEngine {
     ///
     /// All strings are filtered even when one is pinned: switching back to automatic, or to another
     /// string, then finds settled filter history and the fundamental can be refined at once. The whole
-    /// engine costs 0.8 % of real time on Apple silicon (`RealTimeBudgetTests`), so saving five
+    /// engine stays under 3 % of real time, the ceiling `RealTimeBudgetTests` enforces, so saving five
     /// filters is not worth a measurement that briefly loses its refinement.
+    ///
+    /// That was prose for a while: ``reconfigure(_:)`` dropped the detector, and the rebuild below
+    /// rebuilt every filter along with it, so pinning a string threw away exactly the settled history
+    /// this paragraph promises. `filterBasis` is what makes it true — a filter is redesigned when
+    /// the tuning, the reference pitch or the sample rate changes, and not because the user picked a
+    /// different string to look at.
     private var partialFilters: [PartialFilter?] = []
     private var filtered: [[Float]] = []
+    /// Tuning and reference pitch the string filters and the level meter were designed for. The
+    /// target is deliberately not part of it: pinning a string changes which one is followed, not
+    /// what any filter has to pass.
+    private var filterBasis: (tuning: Tuning, referenceA: Double)?
     /// The level the gate judges, in the band a string of this tuning could occupy (``PresenceMeter``).
     private var presence = PresenceMeter()
     /// Samples the filters have processed since they were created; they need a moment to settle.
@@ -48,7 +68,7 @@ public struct TuningEngine {
     /// Where the next chunk should start on the device timeline, if the source reports timestamps.
     private var nextSampleTime: Int64?
 
-    private lazy var gate = NoiseGate(parameters: parameters)
+    private var gate: NoiseGate
     private var level = 0.0
     private var smoothedCents = 0.0
     private var stableCount = 0
@@ -64,6 +84,7 @@ public struct TuningEngine {
     public init(configuration: TunerConfiguration = .init(), parameters: EngineParameters = .standard) {
         self.configuration = configuration
         self.parameters = parameters
+        gate = NoiseGate(parameters: parameters)
     }
 
     /// Applies a new configuration. Changing tuning, A4 or target discards the current reading and
@@ -72,7 +93,7 @@ public struct TuningEngine {
         guard newValue != configuration else { return }
         configuration = newValue
         resetReading()
-        detector = nil
+        detectorBox = nil
         detectorUnavailable = false
     }
 
@@ -85,6 +106,14 @@ public struct TuningEngine {
         filteredSampleCount = 0
         samplesSinceAttack = 0
         samplesSinceAnalysis = 0
+        // The attack test compares this analysis with the previous one. Across a gap there is no
+        // previous one: the meter's filter restarts from zero and under-reports while it settles, so
+        // a level from before the gap would read as a decay that never happened. Zero makes whatever
+        // comes back a new pluck, which is what `samplesSinceAttack = 0` above already assumes.
+        previousLevel = 0
+        // The noise floor is deliberately kept: it describes the room, and a dropped buffer says
+        // nothing about the room. Relearning it would put the gate back at its loud-room level and
+        // stop hearing a soft source that was being heard a moment earlier.
     }
 
     /// Clears smoothing, stability and the held reading (keeps buffered audio).
@@ -111,7 +140,8 @@ public struct TuningEngine {
         guard Self.supportedSampleRates.contains(sampleRate), !samples.isEmpty else { return nil }
         if sampleRate != self.sampleRate {
             self.sampleRate = sampleRate
-            detector = nil
+            detectorBox = nil
+            filterBasis = nil
             buffer.removeAll(keepingCapacity: true)
             samplesSinceAnalysis = 0
             nextSampleTime = nil
@@ -128,27 +158,29 @@ public struct TuningEngine {
         // A non-finite sample is not audio. Fed to the filters it would stay in their state for ever:
         // every later output NaN, the refinement silently declining, and a low string reading 3 cents
         // sharp with nothing on screen to say so. Dropped like audio lost between two callbacks.
+        //
+        // One pass over the chunk, in Swift, on a path that already runs about thirty biquads per
+        // sample in double precision a few lines further down: it is a thirtieth of the arithmetic
+        // beside it at the very most, and the whole engine sits at a fifth of its budget
+        // (`RealTimeBudgetTests`). Accelerate has no "is any of this non-finite", and reaching for a
+        // sum to infer one would answer a different question on an input large enough to overflow.
         if samples.contains(where: { !$0.isFinite }) {
             counts.discontinuities += 1
             discardHistory()
             return nil
         }
-        if detector == nil, !detectorUnavailable {
-            detector = PitchDetector(sampleRate: sampleRate, frequencyRange: searchRange())
-            detectorUnavailable = detector == nil
-            partialFilters = configuration.tuning.strings.map {
-                PartialFilter(frequency: $0.frequency(referenceA: configuration.referenceA), sampleRate: sampleRate)
+        // A shared box means this engine was copied: take a detector of our own before touching its
+        // scratch memory. The filters below are value types and have already copied themselves.
+        if detectorBox != nil, !isKnownUniquelyReferenced(&detectorBox) { detectorBox = nil }
+        if detectorBox == nil, !detectorUnavailable {
+            detectorBox = PitchDetector(sampleRate: sampleRate, frequencyRange: searchRange()).map(DetectorBox.init)
+            detectorUnavailable = detectorBox == nil
+            if filterBasis?.tuning != configuration.tuning || filterBasis?.referenceA != configuration.referenceA {
+                rebuildFilters()
+                filterBasis = (configuration.tuning, configuration.referenceA)
             }
-            filtered = Array(repeating: [], count: partialFilters.count)
-            presence.prepare(
-                corner: configuration.tuning.detectionRange(referenceA: configuration.referenceA).lowerBound,
-                sampleRate: sampleRate,
-                windowDuration: parameters.levelWindowDuration
-            )
-            filteredSampleCount = 0
-            samplesSinceAttack = 0
         }
-        guard let detector else { return nil }
+        guard let detector = detectorBox?.detector else { return nil }
 
         // Analyse at the same sample positions however the stream is cut into chunks: a device that
         // delivers 100 ms at a time must get the same stability count, smoothing and readings as one
@@ -170,6 +202,23 @@ public struct TuningEngine {
             frame = analyse(detector: detector, hops: hops, hop: hop)
         }
         return frame
+    }
+
+    /// Designs one low-pass per string of the tuning and the level meter's high-pass, and forgets
+    /// everything they had heard: their state belongs to the filters that have just been replaced.
+    private mutating func rebuildFilters() {
+        partialFilters = configuration.tuning.strings.map {
+            PartialFilter(frequency: $0.frequency(referenceA: configuration.referenceA), sampleRate: sampleRate)
+        }
+        filtered = Array(repeating: [], count: partialFilters.count)
+        presence.prepare(
+            corner: configuration.tuning.detectionRange(referenceA: configuration.referenceA).lowerBound,
+            sampleRate: sampleRate,
+            windowDuration: parameters.levelWindowDuration
+        )
+        filteredSampleCount = 0
+        samplesSinceAttack = 0
+        previousLevel = 0
     }
 
     private mutating func append(_ samples: [Float], capacity: Int) {
@@ -212,7 +261,7 @@ public struct TuningEngine {
         }
         let correction = correct(&selection, detector: detector)
         smooth(selection.cents, string: selection.index, clarity: estimate.clarity, correction: correction)
-        updateStability(hops: hops)
+        updateStability()
 
         let note = configuration.tuning.strings[selection.index]
         let reading = TunerReading(
@@ -280,8 +329,13 @@ public struct TuningEngine {
         smoothedCents = alpha * cents + (1 - alpha) * smoothedCents
     }
 
-    /// "In tune" with hysteresis, counted in real analyses (ADR 0008).
-    private mutating func updateStability(hops: Int) {
+    /// "In tune" with hysteresis, counted in real analyses (ADR 0008 rule 6).
+    ///
+    /// One analysis is one count. It used to add the number of hops that had gone by, which is the
+    /// same thing once the window is full and is not while it is filling: the first analysis of a
+    /// session arrives two hops after the previous one and was credited with both, so "in tune"
+    /// could be declared on five analyses of evidence instead of six.
+    private mutating func updateStability() {
         let magnitude = abs(smoothedCents)
         if inTune {
             if magnitude > parameters.inTuneThreshold + parameters.inTuneExitMargin {
@@ -289,8 +343,8 @@ public struct TuningEngine {
                 stableCount = 0
             }
         } else if magnitude <= parameters.inTuneThreshold {
-            stableCount += hops
-            if stableCount >= parameters.stableHopsRequired { inTune = true }
+            stableCount += 1
+            if stableCount >= parameters.stableAnalysesRequired { inTune = true }
         } else {
             stableCount = 0
         }

@@ -37,6 +37,23 @@
         }
       }
     },
+    "intent.error.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChitarraTune isn't ready. Open the app and try again."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChitarraTune non è pronta. Apri l'app e riprova."
+          }
+        }
+      }
+    },
     "intent.start.description": {
       "extractionState": "manual",
       "localizations": {

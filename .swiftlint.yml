@@ -59,6 +59,16 @@ line_length:
 
 # Length limits sized for numeric code: the detector and engine pipelines are long on purpose.
 # (`unused_parameter` is not enabled: it flags parameters that protocols and overrides impose.)
+#
+# `file_length` counts code and not prose. This project explains itself in the file it is explaining —
+# a third of `TuningEngine.swift` is comment — so a limit that counts comment lines is a limit on how
+# much a file may explain, which is the opposite of what is wanted. The numbers agree with
+# `type_body_length` below: a type may be 600 lines, so the file holding it has to be able to be.
+file_length:
+  warning: 400
+  error: 700
+  ignore_comment_only_lines: true
+
 function_body_length:
   warning: 70
   error: 120

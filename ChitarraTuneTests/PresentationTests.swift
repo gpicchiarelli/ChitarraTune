@@ -54,6 +54,21 @@ struct PresentationTests {
     }
 
     /// Every failure the capture layer can report must reach the user as text they can act on.
+    /// Every state the app draws differently must read differently too. `.flat(.close)` and
+    /// `.flat(.far)` were amber and red with one word and one symbol between them, which is colour
+    /// as the only signal — the thing this app's accessibility documentation, its user guide and the
+    /// comment above `TuneState.tint` all say it never does.
+    @Test("No two tuning states are told apart by colour alone")
+    func statesReadDifferently() {
+        let states: [TuneState] = [.idle, .inTune, .flat(.close), .flat(.far), .sharp(.close), .sharp(.far)]
+        let spoken = states.map { state in
+            [state.title.map { String(localized: $0) } ?? "", state.symbol].joined(separator: "|")
+        }
+        #expect(Set(spoken).count == states.count, "two states share a word and a symbol: \(spoken)")
+        #expect(Set(states.compactMap(\.title).map { String(localized: $0) }).count == 4,
+                "the user guide names four statuses")
+    }
+
     @Test("Every capture failure has a title, a message and a symbol")
     func failures() {
         let failures: [CaptureFailure] = [

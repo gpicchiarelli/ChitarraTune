@@ -120,6 +120,14 @@ public final class PitchDetector {
 
         // Octave-error correction: a genuine period P also makes 2P, 3P… dip, so multiples are
         // only preferred when their dip is *clearly deeper* (weak-fundamental strings).
+        //
+        // Multiples only, never sub-multiples, and that asymmetry is deliberate rather than an
+        // oversight: this pass exists for a string whose fundamental is weak or gone, where YIN
+        // settles on P/2 and the true period is *longer*. The opposite error — settling on 2P as a
+        // note decays into hum — is not a property of the window but of the history, so it is
+        // answered where the history is, by `TuningEngine.followingOctave(of:isNewPluck:)`, which
+        // asks the spectrum whether the lower note is really there. Both are under test:
+        // `FalsificationTests.missingFundamental()` removes the fundamental outright.
         let primary = best
         for multiple in 2...4 {
             let centre = primary * multiple

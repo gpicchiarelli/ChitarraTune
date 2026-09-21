@@ -19,7 +19,7 @@ struct SpecConformanceTests {
         #expect(p.maximumDeviation == 300)       // "deviations beyond ±300 cents are ignored"
         #expect(p.inTuneThreshold == 5)          // "in tune is ±5 cents"
         #expect(p.inTuneExitMargin == 2)         // "with 2 cents of exit margin"
-        #expect(p.stableHopsRequired == 6)       // "six consecutive stable analyses"
+        #expect(p.stableAnalysesRequired == 6)       // "six consecutive stable analyses"
         #expect(p.holdDuration == 0.8)           // "held for 0.8 s after the signal fades"
     }
 

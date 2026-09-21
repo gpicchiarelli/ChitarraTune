@@ -72,7 +72,7 @@ public final class TunerModel: Identifiable {
     /// How many automatic restarts a route change may still trigger before the failure is shown.
     @ObservationIgnored private var restartBudget = TunerModel.restartLimit
     @ObservationIgnored private var processor: TunerProcessor?
-    /// Configuration last handed to ``processor``.
+    /// Configuration last handed to `processor`.
     @ObservationIgnored private var appliedConfiguration: TunerConfiguration?
     @ObservationIgnored private var appliedParameters: EngineParameters?
     @ObservationIgnored private var lastSignal = ContinuousClock.Instant.now

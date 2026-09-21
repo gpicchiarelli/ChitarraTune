@@ -62,8 +62,9 @@ public struct EngineParameters: Sendable, Hashable {
     public var inTuneThreshold: Double = 5
     /// Extra tolerance before an in-tune string is considered out of tune again.
     public var inTuneExitMargin: Double = 2
-    /// Consecutive in-tune analyses required to declare "in tune".
-    public var stableHopsRequired: Int = 6
+    /// Consecutive in-tune analyses required to declare "in tune". Analyses, not hops: ADR 0008
+    /// rule 6 asks for evidence, and a slower analysis rate must take longer to confirm, never less.
+    public var stableAnalysesRequired: Int = 6
     /// How long the last reading stays visible after the signal fades.
     public var holdDuration: Double = 0.8
     /// A level rise by this factor counts as a new pluck (which may be a different string).

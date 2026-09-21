@@ -148,13 +148,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Realistic signals, recorded corpus and real-time budgets, optimised build
+      - name: Realistic signals, falsification, recorded corpus and real-time budgets, optimised build
         env:
           CHITARRA_FULL_DSP: "1"
         run: |
           swift test --package-path Packages/ChitarraTuneKit --scratch-path "$RUNNER_TEMP/dsp-build" \
             -c release -Xswiftc -enable-testing \
-            --filter "RealisticSignalTests|RecordingCorpusTests|RealTimeBudgetTests|PitchDetectorTests"
+            --filter "RealisticSignalTests|RecordingCorpusTests|FalsificationTests|RealTimeBudgetTests|PitchDetectorTests"
 
   # The Mac app built exactly as a release and checked the way notarization and App Review would
   # (bundle, architectures, linked libraries, entitlements, no debug entitlement, symbols), plus the

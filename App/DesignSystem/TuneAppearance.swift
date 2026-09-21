@@ -22,10 +22,15 @@ extension TuneState {
         }
     }
 
+    /// `.close` has a word of its own, not only a colour. Amber and red were the whole difference
+    /// between “within fifteen cents” and “not close yet” — same word, same symbol — while this
+    /// file, `docs/ACCESSIBILITY.md` and the user guide's own tip all said colour is never the only
+    /// signal, and the guide's status table named an “Almost there” nothing could ever show.
     var title: LocalizedStringResource? {
         switch self {
         case .idle: nil
         case .inTune: .tunerStatusInTune
+        case .flat(.close), .sharp(.close): .tunerStatusClose
         case .flat: .tunerStatusFlat
         case .sharp: .tunerStatusSharp
         }

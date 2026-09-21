@@ -79,7 +79,7 @@ The package is built in Swift 6 language mode; the app with `SWIFT_STRICT_CONCUR
 
 ## Preferences
 
-`TunerSettings` persists to `UserDefaults`. The keys `A4`, `tuningPresetID` and `preferredInputUID` are the ones used by 1.x, so calibration and tuning survive the upgrade. A4 is clamped to 415–466 Hz.
+`TunerSettings` persists to `UserDefaults`. The keys `A4`, `tuningPresetID` and `preferredInputUID` are frozen: they are written to a user's device and named by App Intents, so renaming one would silently reset somebody's calibration. A4 is clamped to 415–466 Hz.
 
 ## Siri and Shortcuts
 

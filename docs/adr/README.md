@@ -27,3 +27,5 @@ Writing a new one: copy [0000-template.md](0000-template.md) to the next free nu
 | [0019](0019-the-process-is-code-too.md) | The process is code too | Accepted |
 | [0020](0020-the-gate-reports-its-own-cost.md) | The gate reports its own cost | Accepted |
 | [0021](0021-the-gate-and-the-change-process.md) | The gate and the change process | Accepted |
+| [0022](0022-the-audio-thread.md) | The audio thread | Accepted |
+| [0023](0023-the-deployment-target.md) | The deployment target | Accepted |

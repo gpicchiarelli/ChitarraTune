@@ -74,13 +74,20 @@ public final class TunerHub {
     public func waitForVisibleTuner(timeout: Duration) async -> Bool {
         if hasVisibleTuner { return true }
         let waiter = UUID()
-        return await withCheckedContinuation { continuation in
-            visibilityWaiters[waiter] = continuation
-            Task { [weak self] in
-                try? await Task.sleep(for: timeout)
-                self?.resumeWaiter(waiter, visible: false)
-            }
+        // Started before the continuation is installed, and harmless there: creating a task on this
+        // actor only enqueues it, and `withCheckedContinuation` runs its body — the line that
+        // installs the waiter — before the first suspension.
+        let deadline = Task { [weak self] in
+            try? await Task.sleep(for: timeout)
+            self?.resumeWaiter(waiter, visible: false)
         }
+        let visible = await withCheckedContinuation { continuation in
+            visibilityWaiters[waiter] = continuation
+        }
+        // A window appeared: the deadline has nothing left to answer, and must not outlive the wait
+        // it was timing.
+        deadline.cancel()
+        return visible
     }
 
     private func resumeWaiter(_ waiter: UUID, visible: Bool) {

@@ -51,7 +51,11 @@ enum CoreAudioDevices {
         guard AudioObjectGetPropertyDataSize(system, &address, 0, nil, &size) == noErr, size > 0 else { return [] }
         var ids = [AudioObjectID](repeating: 0, count: Int(size) / MemoryLayout<AudioObjectID>.size)
         guard AudioObjectGetPropertyData(system, &address, 0, nil, &size, &ids) == noErr else { return [] }
-        return ids
+        // `size` comes back as the number of bytes actually written, which is not always what the
+        // size query asked for: a device that goes away between the two calls leaves the tail of the
+        // array as it was, a run of zeros that reads as `kAudioObjectUnknown` and that every later
+        // query would be made against.
+        return Array(ids.prefix(Int(size) / MemoryLayout<AudioObjectID>.size))
     }
 
     /// A device is an input if it exposes at least one input stream. (The stream list is a plain

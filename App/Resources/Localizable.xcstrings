@@ -137,42 +137,6 @@
         }
       }
     },
-    "a11y.frequency": {
-      "comment": "Accessibility label of the frequency readout",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frequency"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frequenza"
-          }
-        }
-      }
-    },
-    "a11y.hertz": {
-      "comment": "Spoken frequency. %@ = formatted number",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ hertz"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ hertz"
-          }
-        }
-      }
-    },
     "a11y.inTune": {
       "comment": "Announcement when a string reaches pitch. %@ = note name",
       "extractionState": "manual",
@@ -187,24 +151,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ è intonata"
-          }
-        }
-      }
-    },
-    "a11y.level": {
-      "comment": "Accessibility label of the input level meter",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Input level"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Livello d'ingresso"
           }
         }
       }

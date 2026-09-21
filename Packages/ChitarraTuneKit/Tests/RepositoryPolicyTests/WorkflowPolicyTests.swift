@@ -54,6 +54,24 @@ struct WorkflowPolicyTests {
         #expect(checked, "neither ruby nor python3 with PyYAML is available to validate the YAML")
     }
 
+    /// ADR 0021 rule 4 and ADR 0023 rule 4: a check that cannot pass on any image GitHub offers does
+    /// not run on every push. The Mac screens live in a workflow of their own, on a schedule, and the
+    /// file says by name how to bring them back the day an image can run them.
+    @Test("A check that cannot pass is kept off the push path, and says how to come back")
+    func macScreensAreNotOnThePushPath() throws {
+        let screens = try Repo.text(".github/workflows/mac-screens.yml")
+        let triggers = try #require(screens.components(separatedBy: "\non:\n").dropFirst().first?
+            .components(separatedBy: "\njobs:").first)
+        #expect(triggers.contains("schedule:"), "it must run on a rhythm of its own")
+        #expect(!triggers.contains("push:") && !triggers.contains("pull_request:"),
+                "it must not run on a push: nothing is allowed to act on its result")
+        #expect(screens.contains("ci.yml"), "it must name where the job goes back to")
+        #expect(screens.contains("RELEASE_READINESS.md"), "…and the blocker it is waiting on")
+        // The gate is expected to name it, so that the push path says where the missing check went.
+        #expect(try Repo.text(".github/workflows/ci.yml").contains("mac-screens.yml"),
+                "ci.yml must say where the Mac screens went")
+    }
+
     @Test("The expected workflows exist")
     func present() {
         let names = Set(workflows.map(\.lastPathComponent))

@@ -28,6 +28,7 @@ ChitarraTune is a measuring instrument. A refactor that shifts readings by a cen
 
 - `Packages/ChitarraTuneKit/Tests/TunerCoreTests/GoldenReadingsTests.swift` and `Packages/ChitarraTuneKit/Tests/TunerCoreTests/Fixtures/golden-readings.txt`.
 - `Packages/ChitarraTuneKit/Tests/TunerCoreTests/ChunkingTests.swift` (chunking invariance, value semantics, real-time budget).
+- `Packages/ChitarraTuneKit/Tests/TunerCoreTests/FalsificationTests.swift` (signals that break each assumption `StringModel` makes, held to the in-tune window rather than to the medians a generator produces).
 - `Packages/ChitarraTuneKit/Tests/TunerCoreTests/RealisticSignalTests.swift` (mains hum at 50 and 60 Hz at both analysis rates; no ringing measured after an attack) and `Packages/ChitarraTuneKit/Tests/TunerCoreTests/GoldenReadingsTests.swift` (Low Power envelope).
 - `Packages/ChitarraTuneKit/Tests/TunerCoreTests/PresenceMeterTests.swift` and `Packages/ChitarraTuneKit/Tests/TunerCoreTests/QuietInputTests.swift` (the gate's band, and an idling amplifier that must not mask the strings above it).
 - `Packages/ChitarraTuneKit/Tests/TunerCoreTests/PartialFilterTests.swift`, `Packages/ChitarraTuneKit/Tests/TunerCoreTests/RecordingCorpusTests.swift`, `Packages/ChitarraTuneKit/Tests/TunerCoreTests/SpecConformanceTests.swift`.

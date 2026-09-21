@@ -29,6 +29,25 @@ struct RecordingCorpusTests {
         return try JSONDecoder().decode([Entry].self, from: data)
     }
 
+    /// The corpus is empty, and an empty corpus is not a passing one.
+    ///
+    /// Every accuracy figure in this repository presently comes from `StringModel`, a generator this
+    /// project wrote — and whose inharmonicity law, `f_k = k·f0·√(1 + B·k²)`, is the very law
+    /// ``PitchDetector/refine(_:lowPassed:)`` exists to correct. The refinement is therefore checked
+    /// against a signal that assumes the same physics as the correction: self-consistent, and not yet
+    /// evidence about a real string. `docs/ACCURACY.md` says so in prose and
+    /// `docs/RELEASE_READINESS.md` calls it blocker B1; this says it on every run instead.
+    ///
+    /// It is a known issue, not an expectation: the suite reports it, the gate stays honest, and the
+    /// day a recording is added this test fails and whoever added it deletes the wrapper.
+    @Test("The corpus holds at least one real recording")
+    func corpusIsNotEmpty() throws {
+        let entries = try Self.entries()
+        withKnownIssue("no guitar has been recorded yet — Scripts/add-recording.sh, Fixtures/Recordings/README.md") {
+            #expect(!entries.isEmpty, "the accuracy numbers rest on a synthetic string model alone")
+        }
+    }
+
     @Test("The manifest is valid and every listed file exists")
     func manifest() throws {
         for entry in try Self.entries() {
@@ -40,6 +59,10 @@ struct RecordingCorpusTests {
         }
     }
 
+    /// `(try? entries()) ?? []` degrades to no cases rather than throwing, because an `arguments:`
+    /// expression cannot throw. A manifest that will not parse would therefore be silence here — so it
+    /// is not read here alone: ``manifest()`` and ``corpusIsNotEmpty()`` both call `entries()` with
+    /// `try`, and either of them fails the suite before this one can quietly run zero times.
     @Test("Each recording reads as its string, within its tolerance", arguments: (try? entries()) ?? [])
     func recording(entry: Entry) throws {
         let audio = try WAV(contentsOf: Self.directory.appendingPathComponent(entry.file))

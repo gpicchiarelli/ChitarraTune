@@ -4,8 +4,8 @@ import TunerCore
 
 /// User preferences shared by every tuner window. Persisted in `UserDefaults`.
 ///
-/// The keys `A4`, `tuningPresetID` and `preferredInputUID` are the ones used by earlier releases,
-/// so existing users keep their calibration and tuning after updating.
+/// The keys `A4`, `tuningPresetID` and `preferredInputUID` are frozen. They live on a user's device
+/// and are named by App Intents, so renaming one would silently reset somebody's calibration.
 @MainActor
 @Observable
 public final class TunerSettings {

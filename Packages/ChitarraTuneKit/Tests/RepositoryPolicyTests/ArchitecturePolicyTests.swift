@@ -152,6 +152,56 @@ struct ArchitecturePolicyTests {
         #expect(window.contains("hub.activate(id)") && window.contains("hub.discard(id)"))
     }
 
+    // MARK: ADR 0022 — the audio thread
+
+    /// Files that run on the real-time tap thread, or are called from it.
+    static let onTheAudioThread = ["Packages/ChitarraTuneKit/Sources/TunerAudio/ChannelSelector.swift"]
+
+    /// ADR 0022 rules 1, 2 and 4, written as forbidden spellings because that is the kind of rule a
+    /// reviewer forgets. The selector used to allocate a `[Float]` for the per-channel levels and take
+    /// a `Mutex`, on every callback, on the one thread that must not wait for an allocator or for a
+    /// thread the scheduler has just preempted.
+    @Test("ADR 0022: the audio thread neither allocates, nor locks, nor logs")
+    func audioThread() throws {
+        let forbidden = [
+            "[Float](repeating:", "[Double](repeating:", "Array(repeating:", "ContiguousArray(",
+            "Mutex", "NSLock", "os_unfair_lock", "DispatchQueue", "DispatchSemaphore",
+            "Logger", "print(", "String(format:", "NumberFormatter", "Date(",
+        ]
+        for path in Self.onTheAudioThread {
+            let source = try #require(Self.shipped.first { $0.path == path }, "\(path) is not scanned")
+            for token in forbidden {
+                #expect(!source.code.contains(token), "\(path) does \(token) on the audio thread")
+            }
+            #expect(source.code.contains("withUnsafeTemporaryAllocation"), "\(path): scratch must be stack memory")
+            #expect(source.code.contains("Atomic<"), "\(path): shared state must be atomic, not locked")
+        }
+        // Rule 3: the one allocation allowed there is the one that carries the samples away.
+        let selector = try #require(Self.shipped.first { $0.path == Self.onTheAudioThread[0] })
+        #expect(selector.code.components(separatedBy: "Array(").count - 1 == 1,
+                "the samples are the only array the tap may build (ADR 0022 rule 3)")
+
+        // And the tap block itself calls nothing but the selector and the stream.
+        let capture = try Repo.text("Packages/ChitarraTuneKit/Sources/TunerAudio/EngineAudioCapture.swift")
+        let body = try #require(capture.components(separatedBy: "installTap(onBus: 0").dropFirst().first?
+            .components(separatedBy: "\n            }").first)
+        for token in forbidden where token != "Logger" {
+            #expect(!body.contains(token), "the tap block does \(token)")
+        }
+    }
+
+    // MARK: ADR 0023 — the deployment target
+
+    /// ADR 0023 rule 2. A deployment target at the current major version is what lets this code base
+    /// have one concurrency story, one observation story and one security posture; an availability
+    /// fence inside these sources means the target is wrong, not that the check is clever.
+    @Test("ADR 0023: no availability fences in the app's own sources", arguments: shipped)
+    func noAvailabilityFences(source: Source) {
+        for token in ["#available", "@available(macOS", "@available(iOS"] {
+            #expect(!source.code.contains(token), "\(source.path) carries \(token)")
+        }
+    }
+
     // MARK: ADR 0007 — concurrency
 
     /// The audited escape hatches, each with the reason it is safe written next to it in the code.

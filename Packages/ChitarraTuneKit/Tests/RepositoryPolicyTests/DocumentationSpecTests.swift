@@ -43,7 +43,77 @@ struct DocumentationSpecTests {
                          "\(PitchMath.referenceARange.lowerBound.formatted(.number.precision(.fractionLength(0)))) to \(PitchMath.referenceARange.upperBound.formatted(.number.precision(.fractionLength(0)))) Hz"] {
             #expect(accuracy.contains(expected), "docs/ACCURACY.md no longer promises '\(expected)'")
         }
-        #expect(accuracy.contains("six consecutive") == (p.stableHopsRequired == 6), "stability is \(p.stableHopsRequired) analyses")
+        #expect(accuracy.contains("six consecutive") == (p.stableAnalysesRequired == 6), "stability is \(p.stableAnalysesRequired) analyses")
+    }
+
+    /// The guide's status table, the catalog and the code are one vocabulary, in both languages.
+    /// They were three: `tuner.status.close` ("Almost there", "Quasi") was translated, named by the
+    /// guide as one of four statuses, and shown by nothing — `.flat(.close)` and `.flat(.far)` had
+    /// the same word and the same symbol and differed only in colour, which `docs/ACCESSIBILITY.md`
+    /// and the guide's own tip both say never happens.
+    @Test("The statuses the guide names are the statuses the app can show, in both languages")
+    func statusVocabulary() throws {
+        let data = try Data(contentsOf: Repo.url("App/Resources/Localizable.xcstrings"))
+        let root = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let strings = try #require(root["strings"] as? [String: [String: Any]])
+        let keys = strings.keys.filter { $0.hasPrefix("tuner.status.") }.sorted()
+        #expect(keys == ["tuner.status.close", "tuner.status.flat", "tuner.status.inTune", "tuner.status.sharp"])
+
+        let appearance = try Repo.text("App/DesignSystem/TuneAppearance.swift")
+        for key in keys {
+            #expect(appearance.contains(".\(LocalizationTests.generatedSymbol(for: key))"),
+                    "no tuning state ever shows \(key)")
+        }
+        for language in ["en", "it"] {
+            let guide = try Repo.text("docs/guide/\(language)/read-display.md")
+            for key in keys {
+                let word = try #require(
+                    ((strings[key]?["localizations"] as? [String: Any])?[language] as? [String: Any])
+                        .flatMap { ($0["stringUnit"] as? [String: Any])?["value"] as? String },
+                    "\(key) has no \(language) value")
+                #expect(guide.contains(word), "docs/guide/\(language)/read-display.md does not name '\(word)'")
+            }
+        }
+    }
+
+    /// What is promised about cost is the ceiling the test enforces, never a measurement: a
+    /// measurement belongs to a machine and a toolchain, and the documents carried two different ones
+    /// for the same figure (0.7 % and 0.8 %) while the test measured a third.
+    @Test("The real-time budget quoted in the documents is the one the test enforces")
+    func realTimeCeiling() throws {
+        let test = try Repo.text("Packages/ChitarraTuneKit/Tests/TunerCoreTests/RealTimeBudgetTests.swift")
+        let ceiling = try #require(test.firstMatch(of: #/\n *static let ceiling = 0\.(\d+)\n/#)?.output.1)
+        let percent = "\(Int(ceiling.prefix(2)) ?? 0) %"
+        #expect(test.contains("#expect(fraction < Self.ceiling)"), "the ceiling must be what is asserted")
+        for document in ["docs/ACCURACY.md", "Packages/ChitarraTuneKit/Sources/TunerCore/TuningEngine.swift"] {
+            let text = try Repo.text(document)
+            #expect(text.contains(percent), "\(document) does not quote the \(percent) ceiling")
+            #expect(text.contains("RealTimeBudgetTests"), "\(document) must name where the number comes from")
+        }
+    }
+
+    /// No release has shipped, so no document may promise continuity with one. The changelog said
+    /// settings "carry over from 1.x" three lines under "1.0.0 is the first release".
+    @Test("No document claims a release that was never made")
+    func noPhantomReleases() throws {
+        for document in ["CHANGELOG.md", "README.md", "docs/ARCHITECTURE.md", "docs/PLATFORMS.md"] {
+            let text = try Repo.text(document)
+            #expect(text.firstMatch(of: #/\b\d+\.x\b/#) == nil, "\(document) refers to a version that does not exist")
+        }
+    }
+
+    /// DocC resolves a ``link`` only to a symbol it can see. A link to a `private` one renders as
+    /// literal double backticks and warns on every documentation build.
+    @Test("No documentation link points at a private symbol", arguments: ["Packages/ChitarraTuneKit/Sources", "App", "Shared", "Controls"])
+    func documentationLinks(directory: String) throws {
+        for file in Repo.files(in: directory, extensions: ["swift"]) {
+            let text = try String(contentsOf: file, encoding: .utf8)
+            let hidden = Set(text.matches(of: #/private +(?:static +)?(?:var|let|func) +([A-Za-z_]\w*)/#)
+                .map { String($0.output.1) })
+            for link in text.matches(of: #/``([A-Za-z_]\w*)``/#) where hidden.contains(String(link.output.1)) {
+                Issue.record("\(Repo.relativePath(file)) links to ``\(link.output.1)``, which is private there")
+            }
+        }
     }
 
     @Test("Every Siri and Shortcuts action the README lists is implemented, and no other")

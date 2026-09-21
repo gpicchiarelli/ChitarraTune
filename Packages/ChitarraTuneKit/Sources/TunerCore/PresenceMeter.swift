@@ -41,7 +41,7 @@ struct PresenceMeter: Sendable {
     private(set) var corner: Double?
     private var sections: [PartialFilter.Section] = []
     private var windowSamples = 1
-    /// The newest ``windowSamples`` of the filtered stream.
+    /// The newest `windowSamples` of the filtered stream.
     private var window: [Float] = []
 
     /// Designs the filter for one corner, sample rate and window, and forgets the stream so far.
