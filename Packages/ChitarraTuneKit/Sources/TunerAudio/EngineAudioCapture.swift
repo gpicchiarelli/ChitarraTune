@@ -60,12 +60,7 @@ public actor EngineAudioCapture: AudioCapturing {
             // an audio interface the guitar is rarely in channel 0, so the selector follows the loudest
             // one. Nothing here touches actor state.
             let selector = ChannelSelector()
-            // Deprecated from macOS 27 in favour of a variant that reports why it refused. That one is
-            // still `NS_REFINED_FOR_SWIFT` with no refinement shipped, so its only Swift spelling is
-            // `__installTap`, taking an error pointer — an underscored symbol Apple has not settled.
-            // This stays until the replacement has a stable Swift signature; the build says so every
-            // time it compiles (`DeprecatedDeclaration`, see Package.swift).
-            inputNode.installTap(onBus: 0, bufferSize: Self.tapFrames, format: format) { buffer, when in
+            try Self.installTap(on: inputNode, frames: Self.tapFrames, format: format) { buffer, when in
                 if let chunk = selector.chunk(from: buffer, sampleRate: sampleRate, sampleTime: Self.sampleTime(of: when)) {
                     continuation.yield(chunk)
                 }
@@ -148,6 +143,33 @@ public actor EngineAudioCapture: AudioCapturing {
             Task { await self?.fail(.configurationChanged) }
         })
         #endif
+    }
+
+    /// Installs the tap that carries the audio off the engine, and turns a refusal into a failure.
+    ///
+    /// `installTapOnBus:bufferSize:format:error:block:` replaced the plain form in macOS 27, and the
+    /// replacement earns its spelling: the old one returns nothing and raises an Objective-C exception
+    /// when it refuses — a format the node will not accept, an engine in the wrong state — which Swift
+    /// cannot catch, so a rejected tap took the app down with it. This one hands back the reason, and
+    /// the session ends the way every other refusal does.
+    ///
+    /// The spelling: AVFAudio marks the new method `NS_REFINED_FOR_SWIFT` and ships no refinement, so
+    /// its only Swift name is the underscored one, and the importer leaves behind an `error:`
+    /// parameter of type `Void` that the throwing convention has already consumed. `error: ()` is
+    /// that scar, not a value. The day Apple publishes the refinement this stops compiling, which is
+    /// the right way to find out.
+    static func installTap(
+        on node: AVAudioNode,
+        frames: AVAudioFrameCount,
+        format: AVAudioFormat,
+        block: @escaping AVAudioNodeTapBlock
+    ) throws(CaptureFailure) {
+        do {
+            try node.__installTap(onBus: 0, bufferSize: frames, format: format, error: (), block: block)
+        } catch {
+            logger.error("the input tap was refused: \(Self.describe(error), privacy: .public)")
+            throw .engineFailed(code: (error as NSError).code)
+        }
     }
 
     /// An error as the log may show it publicly: its domain and code. Descriptions can quote device

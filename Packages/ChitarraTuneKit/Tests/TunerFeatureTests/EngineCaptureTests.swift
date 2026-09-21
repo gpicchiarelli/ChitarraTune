@@ -159,6 +159,24 @@ struct EngineCaptureTests {
         #expect(!rig.engine.isRunning)
     }
 
+    /// Why the capture moved off the deprecated `installTap`: the old form returns nothing and raises
+    /// an Objective-C exception when it refuses — a node in the wrong state, a format it will not
+    /// take — and an Objective-C exception is not catchable from Swift, so a refused tap took the app
+    /// down with it. A node that belongs to no engine is the plainest refusal there is.
+    @Test("A tap the node refuses becomes a failure, not a crash")
+    func refusedTap() throws {
+        let format = try #require(AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 1))
+        let thrown = #expect(throws: CaptureFailure.self) {
+            try EngineAudioCapture.installTap(on: AVAudioMixerNode(), frames: 1_024, format: format) { _, _ in }
+        }
+        guard case .engineFailed(let code) = try #require(thrown) else {
+            Issue.record("a refused tap must be engineFailed, not \(String(describing: thrown))")
+            return
+        }
+        // The code is the system's, not ours; that it is there at all is the point of the new API.
+        #expect(code != 0, "the failure must carry the reason the tap was refused")
+    }
+
     @Test("A tap buffer's time becomes a sample position only when the engine provides one")
     func sampleTimes() {
         #expect(EngineAudioCapture.sampleTime(of: AVAudioTime(sampleTime: 4_410, atRate: 44_100)) == 4_410)

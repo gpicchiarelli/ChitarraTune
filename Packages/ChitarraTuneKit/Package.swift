@@ -6,10 +6,10 @@ import PackageDescription
 ///
 /// Everything is an error except a deprecation. A yearly SDK deprecates APIs that still work, and a
 /// build that refuses to compile because Apple has published a successor — sometimes before that
-/// successor has a stable Swift spelling, as `AVAudioNode.installTap` did in macOS 27 — turns their
-/// release schedule into an outage. A deprecation is a message, so it stays a warning: visible on
-/// every build, migrated when there is somewhere to migrate to, and never a reason for the gate to
-/// go red on a morning nobody touched the code.
+/// successor has a Swift spelling anyone would want to write — turns their release schedule into an
+/// outage. A deprecation is a message, so it stays a warning: visible on every build, migrated when
+/// there is somewhere to migrate to, and never a reason for the gate to go red on a morning nobody
+/// touched the code. Nothing in this package is deprecated today; the rule is for next September.
 let sharedSettings: [SwiftSetting] = [
     .enableUpcomingFeature("ExistentialAny"),
     .enableUpcomingFeature("MemberImportVisibility"),

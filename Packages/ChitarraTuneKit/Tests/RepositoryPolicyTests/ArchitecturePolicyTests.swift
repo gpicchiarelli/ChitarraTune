@@ -183,7 +183,7 @@ struct ArchitecturePolicyTests {
 
         // And the tap block itself calls nothing but the selector and the stream.
         let capture = try Repo.text("Packages/ChitarraTuneKit/Sources/TunerAudio/EngineAudioCapture.swift")
-        let body = try #require(capture.components(separatedBy: "installTap(onBus: 0").dropFirst().first?
+        let body = try #require(capture.components(separatedBy: "{ buffer, when in").dropFirst().first?
             .components(separatedBy: "\n            }").first)
         for token in forbidden where token != "Logger" {
             #expect(!body.contains(token), "the tap block does \(token)")

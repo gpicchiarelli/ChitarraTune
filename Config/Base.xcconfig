@@ -27,7 +27,7 @@ SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES
 SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = YES
 // Everything is an error except a deprecation (see Packages/ChitarraTuneKit/Package.swift): a
 // yearly SDK must be able to deprecate an API without turning the build red on a morning nobody
-// touched the code. The warning stays on screen until there is a stable successor to move to.
+// touched the code. Nothing here is deprecated today; the rule is for next September.
 OTHER_SWIFT_FLAGS = $(inherited) -warnings-as-errors -Wwarning DeprecatedDeclaration
 
 // MARK: Security & hygiene
