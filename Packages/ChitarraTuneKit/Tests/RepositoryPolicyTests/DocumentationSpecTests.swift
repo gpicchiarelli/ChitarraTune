@@ -85,6 +85,11 @@ struct DocumentationSpecTests {
         let ceiling = try #require(test.firstMatch(of: #/\n *static let ceiling = 0\.(\d+)\n/#)?.output.1)
         let percent = "\(Int(ceiling.prefix(2)) ?? 0) %"
         #expect(test.contains("#expect(fraction < Self.ceiling)"), "the ceiling must be what is asserted")
+        // ADR 0018 rule 5: on a loaded machine a timing assertion measures the machine. The ceiling
+        // is held in the job that has the runner to itself, and nowhere else.
+        #expect(test.contains(#"if enforced { #expect(fraction < Self.ceiling) }"#)
+                && test.contains(#"environment["CHITARRA_FULL_DSP"]"#),
+                "the ceiling must only be enforced where the runner is unloaded (ADR 0018 rule 5)")
         for document in ["docs/ACCURACY.md", "Packages/ChitarraTuneKit/Sources/TunerCore/TuningEngine.swift"] {
             let text = try Repo.text(document)
             #expect(text.contains(percent), "\(document) does not quote the \(percent) ceiling")

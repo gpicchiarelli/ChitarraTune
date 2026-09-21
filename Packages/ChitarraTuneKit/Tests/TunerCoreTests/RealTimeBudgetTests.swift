@@ -25,10 +25,18 @@ struct RealTimeBudgetTests {
         let callbacks = signal.chunked(1_024)
         // Unoptimised debug builds are ~60× slower, assert nothing, and would spend a minute here. One
         // pass of them says little: the same build measured 56 % and 205 % of real time on one machine.
+        // ADR 0018 rule 5: the budgets keep a CI job of their own, on an unloaded runner, "because a
+        // timing assertion measured beside a saturated test suite measures the suite". That was a
+        // sentence in a record and not a line of code, so this also ran in the pre-push hook — after
+        // SwiftLint, two linters and a full optimised build — and refused a push. Measured there
+        // under load the five passes were 0.83, 2.19, 2.45, 2.52 and 2.58 % against a 3 % ceiling: it
+        // passed on the one pass that caught a quiet moment. It runs and prints everywhere; it holds
+        // the ceiling only where the ceiling means something.
+        let enforced = ProcessInfo.processInfo.environment["CHITARRA_FULL_DSP"] == "1"
         #if DEBUG
         let (attempts, caveat) = (1, " — one unoptimised pass, indicative only")
         #else
-        let (attempts, caveat) = (5, "")
+        let (attempts, caveat) = (5, enforced ? "" : " — ceiling not enforced outside the DSP job")
         #endif
         let passes = (1...attempts).map { _ in
             var engine = TuningEngine()
@@ -49,7 +57,7 @@ struct RealTimeBudgetTests {
         // `DocumentationSpecTests` holds them to this line. The optimised build runs in the "DSP
         // accuracy" CI job; the room is for slower hardware, not for a regression.
         #if !DEBUG
-        #expect(fraction < Self.ceiling)
+        if enforced { #expect(fraction < Self.ceiling) }
         #endif
     }
 }
