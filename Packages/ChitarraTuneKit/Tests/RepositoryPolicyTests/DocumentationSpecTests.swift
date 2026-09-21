@@ -92,13 +92,27 @@ struct DocumentationSpecTests {
         }
     }
 
-    /// No release has shipped, so no document may promise continuity with one. The changelog said
-    /// settings "carry over from 1.x" three lines under "1.0.0 is the first release".
-    @Test("No document claims a release that was never made")
+    /// No document may date a promise to a release the changelog does not list. This started as the
+    /// settings that "carry over from 1.x", three lines under "1.0.0 is the first release"; the same
+    /// sweep then found the App Store "free (from 2.0)" sitting in the README's Install section,
+    /// which is the line somebody reads before deciding whether the app is for them.
+    @Test("No document dates a promise to a release that was never made")
     func noPhantomReleases() throws {
-        for document in ["CHANGELOG.md", "README.md", "docs/ARCHITECTURE.md", "docs/PLATFORMS.md"] {
+        let changelog = try Repo.text("CHANGELOG.md")
+        let released = Set(changelog.matches(of: #/\n## \[(\d+\.\d+\.\d+)\]/#).map { String($0.output.1) })
+        let documents = ["CHANGELOG.md", "README.md", "CONTRIBUTING.md", "SUPPORT.md",
+                         "docs/ARCHITECTURE.md", "docs/PLATFORMS.md", "docs/ACCURACY.md"]
+        for document in documents {
             let text = try Repo.text(document)
-            #expect(text.firstMatch(of: #/\b\d+\.x\b/#) == nil, "\(document) refers to a version that does not exist")
+            #expect(text.firstMatch(of: #/\b\d+\.x\b/#) == nil, "\(document) names a whole release line that does not exist")
+            // "from 2.0", "since v1.4": a version a sentence hangs a promise on. A bare number is
+            // left alone — this repository is full of hertz and cents.
+            for dated in text.matches(of: #/\b(?:from|since|as of)\s+v?(\d+\.\d+(?:\.\d+)?)\b/#) {
+                let version = String(dated.output.1)
+                let full = version.split(separator: ".").count == 3 ? version : version + ".0"
+                #expect(released.contains(full),
+                        "\(document) promises something from \(version), which CHANGELOG.md does not list")
+            }
         }
     }
 

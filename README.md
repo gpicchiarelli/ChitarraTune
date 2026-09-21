@@ -29,7 +29,7 @@
 
 <br>
 
-<img src="docs/assets/hero.svg" alt="Illustration of the ChitarraTune dial reading E2 at 82.4 Hz, two cents sharp, inside the green in-tune zone" width="100%">
+<img src="docs/assets/hero.svg" width="430" alt="The tuner reading the low E string at 82.4 hertz, two cents sharp and in tune, with standard tuning selected and the six strings listed below the dial">
 
 </div>
 
@@ -38,22 +38,7 @@
 > [!NOTE]
 > **Version 1.0** is the first release, for macOS 27, iOS 27 and iPadOS 27. It is not out yet: it will be free on the App Store, as an unlisted app reachable only through its direct link, and on the Mac also as a notarized disk image on the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases). What is left before release is tracked in [docs/RELEASE_READINESS.md](docs/RELEASE_READINESS.md).
 
-<table>
-  <tr>
-    <td width="33%" valign="top">
-      <h3>Precise</h3>
-      Measures the fundamental of the string itself, so the sharp overtones of steel strings do not pull the reading. "In tune" lights up only once the note has settled.
-    </td>
-    <td width="33%" valign="top">
-      <h3>Private</h3>
-      Sound is analyzed on the device and discarded a fraction of a second later. No recording, no network access, no third-party code.
-    </td>
-    <td width="33%" valign="top">
-      <h3>At home on every device</h3>
-      One app for Mac, iPhone and iPad, with Siri, Shortcuts, keyboard shortcuts, VoiceOver and Dynamic Type.
-    </td>
-  </tr>
-</table>
+**ChitarraTune** is a guitar tuner for **Mac, iPhone and iPad**. It measures the fundamental of the string itself, so the sharp overtones of steel strings do not pull the reading, and it says *in tune* only once the note has settled. Sound is analyzed on the device and discarded a fraction of a second later: nothing is recorded, and the app has no network access at all.
 
 ## Features
 
@@ -118,7 +103,7 @@ Say *"Start tuning in ChitarraTune"*, or use the actions in your own shortcuts. 
 
 Requires **macOS 27**, **iOS 27** or **iPadOS 27**.
 
-- **iPhone, iPad and Mac:** the App Store, free (from 2.0).
+- **iPhone, iPad and Mac:** the App Store, free.
 - **Mac, outside the store:** download `ChitarraTune-<version>.dmg` from the [releases page](https://github.com/gpicchiarelli/ChitarraTune/releases), open it and drag **ChitarraTune** onto **Applications**. The disk image and the app are both signed, notarized and stapled, so macOS opens them without a warning, even offline.
 
 To check a download before opening it:
