@@ -40,6 +40,26 @@ struct NoiseGateTests {
         #expect(!gate.isOpen)
     }
 
+    /// Regression: the floor rises by a factor, and no factor lifts zero. One analysis of digital
+    /// silence set it to zero and it stayed there for the rest of the session — the gate pinned at
+    /// the minimum, a signal reported on room noise, and the idle timeout never firing.
+    @Test("Digital silence does not trap the floor at zero")
+    func recoversFromSilence() {
+        var gate = NoiseGate(parameters: p)
+        gate.update(level: 0, elapsed: 0.025)
+        #expect(gate.noiseFloor == 0, "there is nothing quieter to learn than silence")
+        #expect(gate.openLevel == p.minimumGateLevel)
+
+        // The input comes back, at a level the gate still counts as quiet.
+        gate.update(level: 0.000_5, elapsed: 0.025)
+        #expect(gate.noiseFloor == gate.lowestFloor, "re-seeded, not multiplied by zero for ever")
+        #expect(gate.openLevel == p.minimumGateLevel, "and the gate opens exactly where it already did")
+
+        for _ in 0..<200 { gate.update(level: 0.000_5, elapsed: 0.025) }   // 5 s at 3 dB/s
+        #expect(gate.noiseFloor == 0.000_5, "from there it follows the room again")
+        #expect(gate.openLevel == 0.000_5 * p.gateNoiseMargin)
+    }
+
     @Test("The floor stands still while a note sounds, and rises no faster than documented")
     func floorRate() {
         var gate = NoiseGate(parameters: p)

@@ -39,7 +39,7 @@ The same job also builds an ad-hoc disk image from that build with `Scripts/make
 Locally:
 
 ```bash
-Scripts/release-check.sh
+Scripts/release-check.sh          # deletes its ~1 GB of derived data when every check passes
 ```
 
 With a *Developer ID Application* certificate in your keychain, and a `notarytool` profile created once with `xcrun notarytool store-credentials chitarratune --apple-id you@example.com --team-id TEAMID`, the same script signs, notarizes, staples and asks Gatekeeper:
@@ -79,7 +79,7 @@ The Developer ID artifact is a disk image, not a zip ([ADR 0014](adr/0014-disk-i
 Locally:
 
 ```bash
-Scripts/make-dmg.sh                                             # ad hoc, from the app Scripts/release-check.sh just built
+KEEP_BUILD=1 Scripts/release-check.sh && Scripts/make-dmg.sh    # ad hoc; KEEP_BUILD keeps the app the check just built
 Scripts/make-dmg.sh --app path/to/ChitarraTune.app \
   --identity "Developer ID Application: Your Name (TEAMID)" \
   --notarize chitarratune --output ChitarraTune-2.0.1.dmg        # signed, notarized and stapled

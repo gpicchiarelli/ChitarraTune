@@ -132,9 +132,22 @@ struct ArchitecturePolicyTests {
         let delegate = try Repo.text("App/Platform/AppDelegate.swift")
         #expect(delegate.contains("static let quitTimeout = Duration.seconds(2)"))
         #expect(delegate.contains("Task.sleep(for: Self.quitTimeout)"))
-        let dock = try #require(delegate.components(separatedBy: "func toggleListening()").last)
-        #expect(dock.contains("hub.hasVisibleTuner") && dock.contains("Self.openTunerWindow?()"),
-                "the Dock menu must open a tuner window before it starts listening without one")
+        // Rule 4 lives in one place, so that it is kept for every entry point and not only for the
+        // one somebody remembered. It used to be written into the Dock menu alone, and Siri,
+        // Shortcuts, the Action Button and the Control Center button — all of them `StartTuningIntent`
+        // — started the microphone with no window check at all.
+        let hub = try Repo.text("Packages/ChitarraTuneKit/Sources/TunerFeature/TunerHub.swift")
+        let rule = try #require(hub.components(separatedBy: "func startOnVisibleTuner").last)
+        for step in ["hasVisibleTuner", "presentTuner?()", "waitForVisibleTuner"] {
+            #expect(rule.contains(step), "starting with no window must \(step) first")
+        }
+        // The scanned sources, not the files: a comment saying what the code no longer does is prose,
+        // and prose is not a rule being broken.
+        for path in ["Shared/StartTuningIntent.swift", "App/Platform/AppDelegate.swift"] {
+            let entry = try #require(Self.shipped.first { $0.path == path }, "\(path) is not scanned")
+            #expect(entry.code.contains("startOnVisibleTuner"), "\(path) must start listening through the hub")
+            #expect(!entry.code.contains(".start()"), "\(path) starts the microphone without asking for a window")
+        }
         let window = try Repo.text("App/Tuner/TunerWindow.swift")
         #expect(window.contains("hub.activate(id)") && window.contains("hub.discard(id)"))
     }

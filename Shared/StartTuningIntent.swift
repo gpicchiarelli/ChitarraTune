@@ -19,7 +19,11 @@ struct StartTuningIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        await hub.activeModel.start()
+        // Not `hub.activeModel.start()`: ADR 0012 rule 4. Brought forward by `supportedModes`, the
+        // app may still have no tuner window — launched in the background, or the scene not yet
+        // created — and the microphone must not run for a tuner nobody can see. The hub opens one
+        // and waits for it; the Dock menu takes the same path.
+        await hub.startOnVisibleTuner()
         return .result(dialog: IntentDialog(LocalizedStringResource("intent.start.dialog")))
     }
 }

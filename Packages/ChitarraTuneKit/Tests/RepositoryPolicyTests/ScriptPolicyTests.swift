@@ -169,7 +169,17 @@ struct ScriptPolicyTests {
         let text = try Repo.text("Scripts/clean-caches.sh")
         #expect(text.contains("*/ChitarraTune) ;;"), "it must refuse a root that is not this project's cache")
         #expect(text.contains("$entry/.git"), "it must never delete a git worktree")
-        #expect(text.contains("pgrep"), "it must refuse to run while a build is in flight")
+
+        // ADR 0017 rule 7, both halves of it. The guard used to be written
+        // `! $DRY && pgrep -xq xcodebuild || ! $DRY && pgrep -xq swift-frontend`, and `&&`/`||` bind
+        // left to right, so the whole condition reduced to "swift-frontend is running": the cleaner
+        // would happily delete a tree an `xcodebuild` was writing into. A list, checked one name at a
+        // time, cannot be got wrong that way, and this is what says both names are in it.
+        let builders = try #require(text.firstMatch(of: #/\nBUILDERS=\(([^)]*)\)/#)?.output.1,
+                                    "the build-in-flight guard must name the processes in one list")
+        for builder in ["xcodebuild", "swift-frontend"] {
+            #expect(builders.contains(builder), "the cleaner must refuse to run while \(builder) is going")
+        }
 
         // A dry run against a cache that is not there says so, exits 0 and creates nothing. The path
         // is outside the working tree: nothing may build there, not even a path that is never made
@@ -188,6 +198,25 @@ struct ScriptPolicyTests {
         process.waitUntilExit()
         #expect(process.terminationStatus == 0, "\(output)")
         #expect(!FileManager.default.fileExists(atPath: absent), "a dry run must create nothing")
+    }
+
+    /// ADR 0017 rule 7: the pinned linters are downloads, not build output. `Scripts/clean-caches.sh`
+    /// kept only `swiftlint-*`, so a plain run deleted shellcheck and actionlint — while its own
+    /// header, `Scripts/fetch-tools.sh`, `Scripts/verify.sh` and ADR 0019 all said it left them
+    /// alone. The two scripts are compared here rather than read by a person, so adding a fourth tool
+    /// to one of them and not the other fails the gate.
+    @Test("Every tool the fetcher installs is one the cleaner keeps")
+    func pinnedToolsSurviveTheCleaner() throws {
+        let fetched = try Repo.text("Scripts/fetch-tools.sh")
+            .matches(of: #/\nfetch ([a-z0-9]+)\x20/#)
+            .map { String($0.output.1) }
+        #expect(fetched.count >= 3, "Scripts/fetch-tools.sh fetches \(fetched)")
+        let cleaner = try Repo.text("Scripts/clean-caches.sh")
+        let kept = try #require(cleaner.firstMatch(of: #/\n *case "\$name" in\n *([^)]*)\)/#)?.output.1,
+                                "the cleaner must keep the pinned tools in one `case` branch")
+        for tool in fetched {
+            #expect(kept.contains("\(tool)-*"), "Scripts/clean-caches.sh deletes the pinned \(tool)")
+        }
     }
 
     /// Regression: `--help` used to be unknown, so a script with required arguments answered it with

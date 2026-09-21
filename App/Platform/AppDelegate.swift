@@ -8,8 +8,6 @@ import TunerFeature
 final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Set by the App at launch; the Dock menu and termination act on it.
     static weak var hub: TunerHub?
-    /// Opens the primary tuner window (provided by the menu commands, which own `openWindow`).
-    static var openTunerWindow: (() -> Void)?
 
     /// Demo mode (UI tests, screenshots) brings itself forward: a test runner may launch it behind
     /// its own window, where synthesised clicks would land on something else.
@@ -22,7 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// no window" only happens then: open the tuner, as a click on the Dock icon would.
     func applicationDidBecomeActive(_ notification: Notification) {
         let hasWindow = NSApp.windows.contains { $0.isVisible && $0.canBecomeMain }
-        if !hasWindow { Self.openTunerWindow?() }
+        if !hasWindow { Self.hub?.presentTuner?() }
     }
 
     /// A tuner has no documents: closing its window means "I'm done".
@@ -60,28 +58,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return menu
     }
 
-    /// Longest a start waits for a just-requested window to actually appear.
-    static let windowAppearanceTimeout = Duration.seconds(1)
-
     /// Starting from the Dock with no tuner window on screen opens one first: the microphone never
-    /// runs for a tuner nobody can see.
+    /// runs for a tuner nobody can see (ADR 0012 rule 4, which `TunerHub.startOnVisibleTuner` keeps
+    /// for this and for every other entry point).
     @objc private func toggleListening() {
         guard let hub = Self.hub else { return }
         let model = hub.activeModel
-        guard !model.isBusy, !hub.hasVisibleTuner else {
-            Task { await model.toggle() }
+        guard !model.isBusy else {
+            Task { await model.stop() }
             return
         }
-        Self.openTunerWindow?()
-        // `openTunerWindow` only requests a window; SwiftUI creates it (and fires the `onAppear`/
-        // `onChange` that tells the hub about it) on a later run-loop turn. Wait for that turn before
-        // starting the microphone, or it could briefly run for a tuner still off screen.
         Task {
-            guard await hub.waitForVisibleTuner(timeout: Self.windowAppearanceTimeout) else {
+            if await hub.startOnVisibleTuner() == false {
                 TunerLog.app.error("no tuner window appeared; not starting the microphone")
-                return
             }
-            await model.toggle()
         }
     }
 }

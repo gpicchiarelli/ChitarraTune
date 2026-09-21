@@ -22,6 +22,6 @@ A tuner holds the microphone. On the Mac each window can tune a different instru
 
 ## Enforcement
 
-- `Packages/ChitarraTuneKit/Tests/RepositoryPolicyTests/ArchitecturePolicyTests.swift` (windows and sessions) checks the scene manifest, its generation setting, the quit timeout and the Dock menu's window check.
+- `Packages/ChitarraTuneKit/Tests/RepositoryPolicyTests/ArchitecturePolicyTests.swift` (windows and sessions) checks the scene manifest, its generation setting, the quit timeout, that rule 4 is kept in `TunerHub.startOnVisibleTuner`, and that every entry point which starts listening goes through it rather than keeping its own copy of the rule.
 - `Packages/ChitarraTuneKit/Tests/TunerFeatureTests/TunerSettingsTests.swift` (the hub: focus, open windows, closing the focused one).
 - `ChitarraTuneUITests/ChitarraTuneUITests.swift` (the app launches and listens on iPhone, iPad and Mac).

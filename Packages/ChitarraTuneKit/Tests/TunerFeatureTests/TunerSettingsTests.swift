@@ -193,6 +193,35 @@ struct TunerHubTests {
         #expect(hub.activeID == nil)
     }
 
+    /// ADR 0012 rule 4, in the one place that keeps it. It used to live in the Dock menu alone, so
+    /// Siri, Shortcuts, the Action Button and the Control Center button — every one of them
+    /// `StartTuningIntent` — turned the microphone on without asking whether anything was on screen.
+    @Test("Starting from outside a window opens one first, and gives up when none appears")
+    func startOnVisibleTuner() async {
+        // A window is already there: nothing to open, and nothing to wait for.
+        let showing = makeHub()
+        showing.windowAppeared(showing.primaryID)
+        #expect(await showing.startOnVisibleTuner())
+        #expect(showing.primary.isBusy)
+        await showing.stopAll()
+
+        // None is: the hub asks for one, and starts on the turn it appears.
+        let opening = makeHub()
+        opening.presentTuner = { [weak opening] in
+            guard let opening else { return }
+            Task { @MainActor in opening.windowAppeared(opening.primaryID) }
+        }
+        #expect(await opening.startOnVisibleTuner(timeout: .seconds(30)))
+        #expect(opening.hasVisibleTuner)
+        #expect(opening.primary.isBusy)
+        await opening.stopAll()
+
+        // Nothing can open one: the microphone stays off rather than run where nobody can see it.
+        let blind = makeHub()
+        #expect(await blind.startOnVisibleTuner(timeout: .milliseconds(10)) == false)
+        #expect(!blind.primary.isBusy)
+    }
+
     @Test("Waiting for a tuner window is event-driven and bounded")
     func waitForWindow() async {
         let hub = makeHub()

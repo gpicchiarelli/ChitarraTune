@@ -14,5 +14,10 @@ indent_size = 2
 [*.md]
 trim_trailing_whitespace = false
 
+# Xcode owns the string catalogs: it rewrites each one whole and never ends it with a newline.
+# Asking for one here would turn every localisation edit into a diff with a spurious last line.
+[*.xcstrings]
+insert_final_newline = false
+
 [*.pbxproj]
 indent_style = tab

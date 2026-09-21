@@ -41,10 +41,18 @@ esac
 [ -d "$CACHE" ] || { echo "Nothing to clean: $CACHE does not exist."; exit 0; }
 
 # A build in flight would lose its intermediates half-way through and fail with something that looks
-# like a compiler bug. Wait for it instead.
-if ! $DRY && pgrep -xq xcodebuild 2>/dev/null || ! $DRY && pgrep -xq swift-frontend 2>/dev/null; then
-    echo "error: a build is running (xcodebuild or swift-frontend); let it finish" >&2
-    exit 1
+# like a compiler bug. Wait for it instead (ADR 0017 rule 7).
+#
+# A loop over the names, not `A && B || C && D`: `&&` and `||` bind left to right, so the condition
+# this replaces reduced to "swift-frontend is running" and never once looked for xcodebuild — which
+# is the half that matters for the app, the disk image and the UI tests.
+BUILDERS=(xcodebuild swift-frontend)
+if ! $DRY; then
+    for builder in "${BUILDERS[@]}"; do
+        pgrep -xq "$builder" 2>/dev/null || continue
+        echo "error: a build is running ($builder); let it finish" >&2
+        exit 1
+    done
 fi
 
 kept=0
@@ -66,9 +74,13 @@ for entry in "$CACHE"/*; do
 
     if ! $ALL; then
         # The pinned tools are downloads, not build output: deleting them costs bandwidth, and CI
-        # pins their versions on purpose.
+        # pins their versions on purpose (ADR 0017 rule 7). One entry per tool Scripts/fetch-tools.sh
+        # installs — shellcheck and actionlint were missing here, so a plain run deleted the two
+        # linters the hook relies on while four files said it left them alone. ScriptPolicyTests
+        # compares the two lists.
         case "$name" in
-        swiftlint-* | *.zip | *.pkg)
+        swiftlint-* | shellcheck-* | actionlint-* | *.zip | *.pkg)
+            printf '  keep   %6s  %s (a pinned tool, not build output)\n' "$(du -sh "$entry" | cut -f1)" "$name"
             kept=$((kept + size))
             continue
             ;;

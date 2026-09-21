@@ -4,8 +4,12 @@
 # Finder or AppleScript step (ADR 0014). Never run as an Xcode build phase: the sandbox
 # (ENABLE_USER_SCRIPT_SANDBOXING) would block the mount and the writes outside declared outputs.
 #
-#   Scripts/make-dmg.sh                              ad hoc, from the app Scripts/release-check.sh
-#                                                     just built; every check that needs no certificate
+#   KEEP_BUILD=1 Scripts/release-check.sh && Scripts/make-dmg.sh
+#                                                    ad hoc, from the app the check just built; every
+#                                                    check that needs no certificate. KEEP_BUILD is
+#                                                    what stops the check deleting the app it made
+#                                                    (ADR 0017 rule 3); Scripts/verify.sh --release
+#                                                    runs both this way.
 #   Scripts/make-dmg.sh --app path/to/ChitarraTune.app --version 2.1.0 --output ChitarraTune-2.1.0.dmg
 #                                                     wrap a specific app
 #   Scripts/make-dmg.sh --identity "Developer ID Application: …" [--keychain PATH] \
@@ -145,7 +149,7 @@ volume_icon() {
 
 if [ -z "$VERIFY" ]; then
   [ -n "$APP" ] || APP="${SCRATCH:-$HOME/Library/Caches/ChitarraTune}/release-check/Build/Products/Release/ChitarraTune.app"
-  [ -d "$APP" ] || { echo "error: no app at $APP (run Scripts/release-check.sh first, or pass --app)"; exit 1; }
+  [ -d "$APP" ] || { echo "error: no app at $APP (run KEEP_BUILD=1 Scripts/release-check.sh first, or pass --app)"; exit 1; }
   [ -n "$VERSION" ] || VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist" 2>/dev/null || true)"
   [ -n "$VERSION" ] || { echo "error: could not read the app's version; pass --version"; exit 1; }
   VOLUME="ChitarraTune $VERSION"

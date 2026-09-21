@@ -10,15 +10,21 @@ struct WorkflowPolicyTests {
         try String(contentsOf: file, encoding: .utf8).components(separatedBy: "\n")
     }
 
-    /// Runs a tool and returns its status and combined output, or `nil` if it cannot be launched.
-    private func run(_ tool: String, _ arguments: [String]) -> (status: Int32, output: String)? {
+    /// Runs a tool and returns its status and output, or `nil` if it cannot be launched.
+    ///
+    /// One pipe for both streams, never two: a tool that fills the one nothing is reading would block
+    /// for ever. `keepingErrors: false` sends the error stream to the null device instead, for the
+    /// callers that parse the output line by line and must not see a runtime's warnings in it.
+    ///
+    /// Static, so that ``ciJobs()`` uses this and not a second copy of it.
+    static func run(_ tool: String, _ arguments: [String], keepingErrors: Bool = true) -> (status: Int32, output: String)? {
         guard FileManager.default.isExecutableFile(atPath: tool) else { return nil }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: tool)
         process.arguments = arguments
         let pipe = Pipe()
         process.standardOutput = pipe
-        process.standardError = pipe
+        process.standardError = keepingErrors ? pipe : FileHandle.nullDevice
         do { try process.run() } catch { return nil }
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
@@ -38,7 +44,7 @@ struct WorkflowPolicyTests {
         ]
         var checked = false
         for parser in parsers {
-            guard let result = run(parser.tool, parser.arguments + files) else { continue }
+            guard let result = Self.run(parser.tool, parser.arguments + files) else { continue }
             if result.status == 0 { checked = true; break }
             if result.output.contains("ModuleNotFoundError") || result.output.contains("cannot load such file") { continue }
             Issue.record("invalid YAML: \(result.output)")
@@ -206,8 +212,33 @@ struct WorkflowPolicyTests {
     /// Every job of `ci.yml` the `gate` waits for, as GitHub names it, with its timeout in seconds.
     /// A matrix job is named once per entry, with the `matrix` placeholders filled in, which is what
     /// appears on the run and what `.github/ci-baseline.json` has to match.
-    static func ciJobs() throws -> [(name: String, timeout: Double)] {
-        let program = """
+    ///
+    /// Ruby first and python3 second, the way `validYAML` above does it: a runner that has one and
+    /// not the other must still be able to run this, and hard-requiring one parser was how an
+    /// earlier version of this made the whole gate depend on PyYAML being installed.
+    static func ciJobs() -> [(name: String, timeout: Double)] {
+        let path = Repo.url(".github/workflows/ci.yml").path
+        let ruby = """
+        require 'yaml'
+        doc = YAML.load_file(ARGV[0])
+        jobs = doc['jobs']
+        needed = (jobs['gate']['needs'] || []) + ['gate']
+        jobs.each do |key, job|
+          next unless needed.include?(key)
+          timeout = job['timeout-minutes'].to_f * 60
+          template = job['name'] || key
+          entries = job.dig('strategy', 'matrix', 'include')
+          if entries.nil?
+            puts "#{template}\\t#{timeout}"
+            next
+          end
+          entries.each do |entry|
+            name = template.gsub(/\\$\\{\\{\\s*matrix\\.(\\w+)\\s*\\}\\}/) { entry[$1].to_s }
+            puts "#{name}\\t#{timeout}"
+          end
+        end
+        """
+        let python = """
         import re, sys, yaml
         doc = yaml.safe_load(open(sys.argv[1]))
         jobs = doc["jobs"]
@@ -226,23 +257,21 @@ struct WorkflowPolicyTests {
                               lambda m: str(entry.get(m.group(1), "")), template)
                 print(f"{name}\\t{timeout}")
         """
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
-        process.arguments = ["-c", program, Repo.url(".github/workflows/ci.yml").path]
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-        try process.run()
-        let output = String(bytes: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-        process.waitUntilExit()
-        try #require(process.terminationStatus == 0, "python3 with PyYAML is needed to read the workflow")
-        let rows = output.split(separator: "\n").compactMap { line -> (String, Double)? in
-            let parts = line.split(separator: "\t")
-            guard parts.count == 2, let seconds = Double(parts[1]) else { return nil }
-            return (String(parts[0]), seconds)
+        let candidates: [(tool: String, arguments: [String])] = [
+            ("/usr/bin/ruby", ["-e", ruby, path]),
+            ("/usr/bin/python3", ["-c", python, path]),
+        ]
+        for candidate in candidates {
+            guard let result = run(candidate.tool, candidate.arguments, keepingErrors: false), result.status == 0 else { continue }
+            let rows = result.output.split(separator: "\n").compactMap { line -> (String, Double)? in
+                let parts = line.split(separator: "\t")
+                guard parts.count == 2, let seconds = Double(parts[1]) else { return nil }
+                return (String(parts[0]), seconds)
+            }
+            if rows.count >= 7 { return rows }
         }
-        try #require(rows.count >= 7, "only \(rows.count) jobs were read out of ci.yml")
-        return rows
+        Issue.record("neither ruby nor python3 with YAML could read .github/workflows/ci.yml")
+        return []
     }
 
     /// ADR 0020. The run that makes the gate slower is the run that has to say so — this repository
@@ -269,7 +298,7 @@ struct WorkflowPolicyTests {
         }
         // Which jobs exist, and what they are called, is read out of the workflow itself: a list
         // written here by hand is a list that does not notice a job somebody adds (ADR 0021).
-        for (job, timeout) in try Self.ciJobs() {
+        for (job, timeout) in Self.ciJobs() {
             let budget = try #require(jobs[job] as? Double,
                                       "\(job) has no entry in .github/ci-baseline.json (ADR 0020 rule 3)")
             // Jidoka: a hung job stops in minutes instead of burning a runner for half an hour, and

@@ -15,6 +15,13 @@ public final class TunerHub {
     /// Windows showing a tuner right now, in the order they appeared.
     public private(set) var visibleIDs: [UUID] = []
 
+    /// How a tuner window is put on screen when an entry point needs one. The app sets it once at
+    /// launch, because opening a window is SwiftUI's `openWindow`, which only a scene has. Where
+    /// there is nothing to open — one scene on iPhone and iPad, the Controls extension, the tests —
+    /// it stays `nil` and ``startOnVisibleTuner(timeout:)`` simply waits for the window the system is
+    /// already presenting.
+    @ObservationIgnored public var presentTuner: (@MainActor () -> Void)?
+
     @ObservationIgnored private var models: [UUID: TunerModel] = [:]
     @ObservationIgnored private var visibilityWaiters: [UUID: CheckedContinuation<Bool, Never>] = [:]
     @ObservationIgnored private let makeModel: @MainActor (UUID, TunerSettings) -> TunerModel
@@ -54,7 +61,12 @@ public final class TunerHub {
     public func windowAppeared(_ id: UUID) {
         _ = model(for: id)
         if !visibleIDs.contains(id) { visibleIDs.append(id) }
-        for waiter in visibilityWaiters.keys { resumeWaiter(waiter, visible: true) }
+        // Taken out first, then resumed: the loop this replaces called `resumeWaiter`, which removes
+        // from the dictionary it was walking, and stayed correct only by the copy a mutation happens
+        // to make. An array owes nothing to that.
+        let waiting = Array(visibilityWaiters.values)
+        visibilityWaiters.removeAll()
+        for waiter in waiting { waiter.resume(returning: true) }
     }
 
     /// Suspends until a tuner window is on screen, or until `timeout` has passed, and returns whether
@@ -73,6 +85,28 @@ public final class TunerHub {
 
     private func resumeWaiter(_ waiter: UUID, visible: Bool) {
         visibilityWaiters.removeValue(forKey: waiter)?.resume(returning: visible)
+    }
+
+    /// Longest an entry point waits for a just-requested window to actually appear.
+    public static let windowAppearanceTimeout = Duration.seconds(1)
+
+    /// Starts the active tuner, opening a window first when none is on screen (ADR 0012 rule 4).
+    ///
+    /// Every entry point that starts listening from outside a window goes through here — Siri,
+    /// Shortcuts, the Action Button, Control Center, the Dock menu — so the rule is kept in one
+    /// place. ``presentTuner`` only *requests* a window; SwiftUI creates it, and fires the
+    /// `onAppear`/`onChange` that tells the hub about it, on a later run-loop turn, which is what
+    /// there is to wait for.
+    ///
+    /// - Returns: `false` when no window appeared, and the microphone was therefore not started.
+    @discardableResult
+    public func startOnVisibleTuner(timeout: Duration = TunerHub.windowAppearanceTimeout) async -> Bool {
+        if !hasVisibleTuner {
+            presentTuner?()
+            guard await waitForVisibleTuner(timeout: timeout) else { return false }
+        }
+        await activeModel.start()
+        return true
     }
 
     /// The window of `id` became the focused one.

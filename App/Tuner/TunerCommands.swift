@@ -14,10 +14,11 @@ struct TunerCommands: Commands {
 
     var body: some Commands {
         #if os(macOS)
-        // The commands exist as soon as the menu bar does, windows or not: hand AppKit a way to open
-        // the tuner when the app becomes active without one (see AppDelegate).
+        // The commands exist as soon as the menu bar does, windows or not: this is where `openWindow`
+        // is in scope, so it is where the hub is handed the way to put a tuner on screen (ADR 0012
+        // rule 4). AppKit reaches it through the hub too, when the app becomes active with no window.
         // swiftlint:disable:next redundant_discardable_let - a result builder accepts `let`, not `_ =`
-        let _ = AppDelegate.openTunerWindow = { [openWindow, hub] in openWindow(id: "tuner", value: hub.primaryID) }
+        let _ = hub.presentTuner = { [openWindow, hub] in openWindow(id: "tuner", value: hub.primaryID) }
         CommandGroup(replacing: .appInfo) {
             Button(.menuAbout) { openWindow(id: "about") }
         }

@@ -1,54 +1,52 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "Set tuning in ${applicationName}": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Set tuning in ${applicationName}" : {
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "Set tuning in ${applicationName}"
             ]
           }
         },
-        "it": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "Imposta accordatura in ${applicationName}"
             ]
           }
         }
       }
     },
-    "Start tuner in ${applicationName}": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avvia l'accordatore in ${applicationName}"
+    "Start tuner in ${applicationName}" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvia l'accordatore in ${applicationName}"
           }
         }
       }
     },
-    "Start tuning in ${applicationName}": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+    "Start tuning in ${applicationName}" : {
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "Start tuning in ${applicationName}",
               "Start tuner in ${applicationName}",
               "Tune my guitar with ${applicationName}"
             ]
           }
         },
-        "it": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "Avvia accordatura in ${applicationName}",
               "Avvia l'accordatore in ${applicationName}",
               "Accorda la chitarra con ${applicationName}"
@@ -57,32 +55,31 @@
         }
       }
     },
-    "Stop tuner in ${applicationName}": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ferma l'accordatore in ${applicationName}"
+    "Stop tuner in ${applicationName}" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferma l'accordatore in ${applicationName}"
           }
         }
       }
     },
-    "Stop tuning in ${applicationName}": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "en": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+    "Stop tuning in ${applicationName}" : {
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "Stop tuning in ${applicationName}",
               "Stop tuner in ${applicationName}"
             ]
           }
         },
-        "it": {
-          "stringSet": {
-            "state": "translated",
-            "values": [
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
               "Ferma accordatura in ${applicationName}",
               "Ferma l'accordatore in ${applicationName}"
             ]
@@ -90,16 +87,16 @@
         }
       }
     },
-    "Tune my guitar with ${applicationName}": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Accorda la chitarra con ${applicationName}"
+    "Tune my guitar with ${applicationName}" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accorda la chitarra con ${applicationName}"
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }
